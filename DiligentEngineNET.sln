@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiligentCore", "DiligentCore\DiligentCore.csproj", "{8F9B1389-A9D5-4569-9699-E97C31749ADB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiligentCore.Tests", "DiligentCore.Tests\DiligentCore.Tests.csproj", "{2192C485-CD98-4297-8146-7576FE5242AD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodeGenerator", "CodeGenerator\CodeGenerator.csproj", "{AABC1BB4-C024-4450-A57D-3055282DE981}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8F9B1389-A9D5-4569-9699-E97C31749ADB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8F9B1389-A9D5-4569-9699-E97C31749ADB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8F9B1389-A9D5-4569-9699-E97C31749ADB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8F9B1389-A9D5-4569-9699-E97C31749ADB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2192C485-CD98-4297-8146-7576FE5242AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2192C485-CD98-4297-8146-7576FE5242AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2192C485-CD98-4297-8146-7576FE5242AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2192C485-CD98-4297-8146-7576FE5242AD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AABC1BB4-C024-4450-A57D-3055282DE981}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AABC1BB4-C024-4450-A57D-3055282DE981}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AABC1BB4-C024-4450-A57D-3055282DE981}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AABC1BB4-C024-4450-A57D-3055282DE981}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

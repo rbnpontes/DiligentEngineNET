@@ -1,0 +1,20 @@
+{
+  "name": "diligentenginenet",
+  "version": "1.0.0",
+  "description": "**DiligentEngineNET** is a .NET Core binding for [DiligentCore](https://github.com/DiligentGraphics/DiligentCore), a powerful cross-platform rendering engine. While Diligent Engine offers C# bindings through its [NuGet package](https://www.nuget.org/packages/DiligentGraphics.DiligentEngine.Core), these bindings currently lack full cross-platform support for Linux, macOS, Android, and Web platforms.",
+  "main": "index.js",
+  "scripts": {
+    "test": "jake test",
+    "build:codegen" : "jake build:codegen",
+    "build:native" : "jake build:native",
+    "build:bindings" : "jake build:bindings",
+    "generate:native" : "jake generate:native",
+    "generate:bindings" : "jake generate:bindings"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "jake": "^10.9.2"
+  }
+}
