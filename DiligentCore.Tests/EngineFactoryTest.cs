@@ -2,17 +2,15 @@ using Moq;
 
 namespace Diligent.Tests;
 
-public class EngineFactoryTest
+[TestFixture]
+public class EngineFactoryTest : BaseFactoryTest
 {
-    private IEngineFactory GetFactory()
+    private struct TestStruct
     {
-        IEngineFactory? result;
-        if (OperatingSystem.IsWindows())
-             result = DiligentCore.GetEngineFactoryD3D11();
-        else
-            result = DiligentCore.GetEngineFactoryVk();
-        return result ?? throw new NullReferenceException();
+        public int A;
+        public IntPtr B;
     }
+    
     [Test]
     public void MustEnumerateAdapters()
     {
@@ -48,14 +46,34 @@ public class EngineFactoryTest
         engineFactory.SetBreakOnError(true);
         engineFactory.SetBreakOnError(false);
     }
+
+    [Test]
+    public void MustCreateDefaultShaderSourceStreamFactory()
+    {
+        var engineFactory = GetFactory();
+        using (engineFactory.CreateDefaultShaderSourceStreamFactory(Environment.CurrentDirectory)){}
+        
+        Assert.Pass();
+    }
     
     [Test]
     public void MustCreateDataBlob()
     {
         var factory = GetFactory();
-        using var dataBlob = factory.CreateDataBlob(1024);
+        var dataBlob = factory.CreateDataBlob(1024);
         Assert.That(dataBlob, Is.Not.Null);
+        dataBlob.Dispose();
+
+        var values = new[] { 1, 2, 3, 4 };
+        dataBlob = factory.CreateDataBlob<int>(values);
+        Assert.That(dataBlob, Is.Not.Null);
+        dataBlob.Dispose();
+
+        var data = new TestStruct();
+        data.A = 20;
+        data.B = new IntPtr(0xFF);
+        dataBlob = factory.CreateDataBlob(ref data);
+        Assert.That(dataBlob, Is.Not.Null);
+        dataBlob.Dispose();
     }
-    
-    
 }

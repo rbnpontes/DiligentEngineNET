@@ -64,6 +64,18 @@ public abstract partial class EngineFactory : IEngineFactory
         Interop.engine_factory_set_break_on_error(Handle, breakOnError);
     }
 
+    public unsafe IShaderSourceInputStreamFactory CreateDefaultShaderSourceStreamFactory(string searchDirectories)
+    {
+        var searchDirPtr = Marshal.StringToHGlobalAnsi(searchDirectories);
+        var factoryPtr = IntPtr.Zero;
+        Interop.engine_factory_create_default_shader_source_stream_factory(Handle, searchDirPtr, new IntPtr(&factoryPtr));
+        Marshal.FreeHGlobal(searchDirPtr);
+
+        if (factoryPtr == IntPtr.Zero)
+            throw new NullReferenceException($"Failed to create {nameof(IShaderSourceInputStreamFactory)}.");
+        return new ShaderSourceInputStreamFactory(factoryPtr);
+    }
+
     public IDataBlob CreateDataBlob(ulong initialSize)
     {
         return CreateDataBlob(initialSize, IntPtr.Zero);
@@ -80,7 +92,7 @@ public abstract partial class EngineFactory : IEngineFactory
         return new DataBlob(dataBlobPtr);
     }
 
-    public unsafe IDataBlob CreateDataBlob<T>(T data) where T : struct
+    public unsafe IDataBlob CreateDataBlob<T>(ref T data) where T : struct
     {
         var initialSize = (ulong)Marshal.SizeOf<T>();
         return CreateDataBlob(initialSize, new IntPtr(Unsafe.AsPointer(ref data)));
