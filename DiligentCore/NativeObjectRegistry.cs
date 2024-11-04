@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 
 namespace Diligent;
@@ -5,12 +6,16 @@ namespace Diligent;
 internal static class NativeObjectRegistry
 {
     private static Dictionary<IntPtr, WeakReference<INativeObject>> Registry = new();
-
-    public static void AddToRegister(INativeObject obj)
+    public static void AddToRegister(IntPtr nativePointer, INativeObject obj)
     {
-        Registry.Add(obj.Handle, new WeakReference<INativeObject>(obj));
+        Registry.TryAdd(nativePointer, new WeakReference<INativeObject>(obj));
     }
 
+    public static void RemoveObject(IntPtr handle)
+    {
+        Registry.Remove(handle);
+    }
+    
     public static bool TryGetObject(IntPtr nativePointer, out INativeObject? output)
     {
         if (!Registry.TryGetValue(nativePointer, out var obj))
@@ -19,10 +24,6 @@ internal static class NativeObjectRegistry
             return false;
         }
 
-        if (obj.TryGetTarget(out output))
-            return true;
-
-        Registry.Remove(nativePointer);
-        return false;
+        return obj.TryGetTarget(out output);
     }
 }
