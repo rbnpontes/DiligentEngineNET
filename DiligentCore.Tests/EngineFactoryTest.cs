@@ -1,4 +1,4 @@
-using Moq;
+using System.Runtime.InteropServices;
 
 namespace Diligent.Tests;
 
@@ -10,24 +10,58 @@ public class EngineFactoryTest : BaseFactoryTest
         public int A;
         public IntPtr B;
     }
-    
+
     [Test]
     public void MustEnumerateAdapters()
     {
         var engineFactory = GetFactory();
         var adapters = engineFactory.EnumerateAdapters(new Version(11, 0));
         Assert.That(adapters, Has.No.Empty);
-        
+
         foreach (var adapter in adapters)
             Assert.That(adapter.Description, Is.Not.Empty);
     }
 
+
+    [DllImport(Constants.LibName, EntryPoint = "exec_debug_message_callback",
+        CallingConvention = CallingConvention.Cdecl)]
+    private static extern IntPtr ExecDbgMsgCallback(int severity, IntPtr msgPtr, IntPtr funcPtr,
+        IntPtr filePtr, int line);
+
     [Test]
     public void MustSetMessageCallback()
     {
-        var engineFactory = GetFactory();
-        var messageCallback = new Mock<DebugMessageCallbackDelegate>();
-        engineFactory.SetMessageCallback(messageCallback.Object);
+        var passed = false;
+        using var engineFactory = GetFactory();
+        DebugMessageCallbackDelegate callback = (severity, message, function, file, line) =>
+        {
+            Assert.That(severity, Is.EqualTo(DebugMessageSeverity.DebugMessageSeverityInfo));
+            Assert.That(message, Is.EqualTo("Test Message"));
+            Assert.That(function, Is.EqualTo(nameof(MustSetMessageCallback)));
+            Assert.That(file, Is.EqualTo("EngineFactoryTest.cs"));
+            Assert.That(line, Is.EqualTo(1234));
+            passed = true;
+        };
+        engineFactory.SetMessageCallback(callback);
+
+        var stringPointers = new[]
+        {
+            Marshal.StringToHGlobalAnsi("Test Message"),
+            Marshal.StringToHGlobalAnsi(nameof(MustSetMessageCallback)),
+            Marshal.StringToHGlobalAnsi("EngineFactoryTest.cs"),
+        };
+
+        // do unmanaged call
+        ExecDbgMsgCallback((int)DebugMessageSeverity.DebugMessageSeverityInfo, stringPointers[0], stringPointers[1],
+            stringPointers[2], 1234);
+
+        Assert.That(passed, Is.True);
+
+        // free resources
+        foreach (var ptr in stringPointers)
+            Marshal.FreeHGlobal(ptr);
+
+        Assert.Pass();
     }
 
     [Test]
@@ -35,7 +69,7 @@ public class EngineFactoryTest : BaseFactoryTest
     {
         var engineFactory = GetFactory();
         var apiInfo = engineFactory.APIInfo;
-        
+
         Assert.That(apiInfo, Is.Not.Null);
     }
 
@@ -51,11 +85,13 @@ public class EngineFactoryTest : BaseFactoryTest
     public void MustCreateDefaultShaderSourceStreamFactory()
     {
         var engineFactory = GetFactory();
-        using (engineFactory.CreateDefaultShaderSourceStreamFactory(Environment.CurrentDirectory)){}
-        
+        using (engineFactory.CreateDefaultShaderSourceStreamFactory(Environment.CurrentDirectory))
+        {
+        }
+
         Assert.Pass();
     }
-    
+
     [Test]
     public void MustCreateDataBlob()
     {

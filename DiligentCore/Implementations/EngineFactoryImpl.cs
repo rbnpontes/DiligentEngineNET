@@ -3,12 +3,15 @@ using System.Runtime.InteropServices;
 
 namespace Diligent;
 
+[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+internal delegate void NativeDebugMessageCallbackDelegate(DebugMessageSeverity severity, IntPtr message, IntPtr function,
+    IntPtr file, int line);
 public abstract partial class EngineFactory : IEngineFactory
 {
-    // prevent destruction of delegate when unmanaged code call
-    private static DebugMessageCallbackDelegate GlobalMessageCallback = DummyMessageCallbackCall;
+    private DebugMessageCallbackDelegate? _callback;
+    private NativeDebugMessageCallbackDelegate _nativeDelegate;
+    private IntPtr _nativeDelegatePtr;
 
-    private IntPtr _tmpHandle;
     
     public unsafe APIInfo APIInfo
     {
@@ -22,12 +25,18 @@ public abstract partial class EngineFactory : IEngineFactory
     public EngineFactory(): base(){}
     internal EngineFactory(IntPtr handle) : base(handle)
     {
-        _tmpHandle = handle;
+        _nativeDelegate = NativeMessageCallbackCall;
+        _nativeDelegatePtr = Marshal.GetFunctionPointerForDelegate(_nativeDelegate);
+        Interop.engine_factory_set_message_callback(handle, _nativeDelegatePtr);
     }
 
     protected override void Release()
     {
-        GlobalMessageCallback = DummyMessageCallbackCall;
+        if (_nativeDelegatePtr == IntPtr.Zero)
+            return;
+        
+        _nativeDelegatePtr = IntPtr.Zero;
+        _callback = null;
     }
 
     protected override int AddRef()
@@ -62,11 +71,9 @@ public abstract partial class EngineFactory : IEngineFactory
         return adaptersInternals.Select(GraphicsAdapterInfo.FromInternalStruct).ToArray();
     }
 
-    public void SetMessageCallback(DebugMessageCallbackDelegate messageCallback)
+    public void SetMessageCallback(DebugMessageCallbackDelegate? messageCallback)
     {
-        GlobalMessageCallback = messageCallback;
-        var functionPtr = Marshal.GetFunctionPointerForDelegate(GlobalMessageCallback);
-        Interop.engine_factory_set_message_callback(Handle, functionPtr);
+        _callback = messageCallback;
     }
 
     public void SetBreakOnError(bool breakOnError)
@@ -117,5 +124,16 @@ public abstract partial class EngineFactory : IEngineFactory
         }
     }
 
-    private static void DummyMessageCallbackCall(DebugMessageSeverity severity, string message, string function, string file, int line) {}
+    private void NativeMessageCallbackCall(DebugMessageSeverity severity, IntPtr message, IntPtr function,
+        IntPtr file, int line)
+    {
+        if (_callback is null)
+            return;
+
+        var messageStr = Marshal.PtrToStringAnsi(message) ?? string.Empty;
+        var funcStr = Marshal.PtrToStringAnsi(function) ?? string.Empty;
+        var fileStr = Marshal.PtrToStringAnsi(file) ?? string.Empty;
+
+        _callback(severity, messageStr, funcStr, fileStr, line);
+    }
 }
