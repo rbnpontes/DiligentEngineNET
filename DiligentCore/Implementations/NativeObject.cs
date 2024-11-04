@@ -2,14 +2,22 @@ namespace Diligent;
 
 public class NativeObject : INativeObject
 {
-    public IntPtr Handle { get; internal set; }
+    private IntPtr _handle;
+
+    public IntPtr Handle => GetCurrentHandle();
+
     internal NativeObject(IntPtr handle)
     {
-        Handle = handle;
+        _handle = handle;
     }
 
-    protected void AddToRegister()
+    protected virtual IntPtr GetCurrentHandle()
     {
-        NativeObjectRegistry.AddToRegister(this);
+        return _handle;
+    }
+
+    protected virtual void SetCurrentHandle(IntPtr handle)
+    {
+        _handle = handle;
     }
 }
