@@ -1,6 +1,6 @@
 namespace Diligent;
 
-public partial class ReferenceCounters : NativeObject
+public partial class ReferenceCounters : NativeObject, IDisposable
 {
     private WeakReference<INativeObject> _owner;
 
@@ -25,6 +25,18 @@ public partial class ReferenceCounters : NativeObject
     internal ReferenceCounters(IntPtr handle, INativeObject owner) : base(handle)
     {
         _owner = new WeakReference<INativeObject>(owner);
+        NativeObjectRegistry.AddToRegister(handle, this);
+    }
+
+    ~ReferenceCounters()
+    {
+        Dispose();
+    }
+
+    public void Dispose()
+    {
+        NativeObjectRegistry.RemoveObject(Handle);
+        GC.SuppressFinalize(this);
     }
 
     private void AssertAlive()
