@@ -62,6 +62,7 @@ public class CSharpCodeGenerator(string diligentCorePath, string outputBaseDir, 
         var builder = new CSharpBuilder();
         var classFields = AstUtils.HasClassFields(@class);
         var isConstructable = CSharpUtils.IsConstructable(@class);
+        var className = CSharpUtils.GetFixedClassName(@class);
 
         builder.Line("// ReSharper disable All");
         if (!isConstructable || classFields)
@@ -98,7 +99,6 @@ public class CSharpCodeGenerator(string diligentCorePath, string outputBaseDir, 
                 builder.EndRegion();
 
                 builder.BeginRegion("Helper Methods");
-                var className = CSharpUtils.GetFixedClassName(@class);
                 builder.Line(
                         $"internal static unsafe {className} FromInternalStruct(__Internal data)")
                     .Closure(funcBuilder => BuildFromInternalStructMethod(@class, funcBuilder))
@@ -128,11 +128,11 @@ public class CSharpCodeGenerator(string diligentCorePath, string outputBaseDir, 
         {
             builder.Class(
                 classDefCall,
-                CSharpUtils.GetFixedClassName(@class),
+                className,
                 classQualifiers);
         }
         
-        var outputCodePath = Path.Combine(_outputDir, $"class_{CSharpUtils.GetFixedClassName(@class)}_binding.cs");
+        var outputCodePath = Path.Combine(_outputDir, $"class_{className}_binding.cs");
         CodeUtils.WriteCode(outputCodePath, builder);
     }
 

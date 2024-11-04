@@ -79,8 +79,11 @@ public class CppTypeUtils
                 break;
             case CppTypeKind.StructOrClass:
                 result += "*";
-                break;    
+                break;
         }
+
+        if (AstUtils.IsFunctionPointer(type))
+            result = "void*";
         
         return result;
     }
@@ -135,6 +138,22 @@ public class CppTypeUtils
         return @class.Name.StartsWith("I");
     }
 
+    public static string GetFunctionArgAccess(CppParameter parameter, int argIdx)
+    {
+        var funcParamType = parameter.Type;
+        var result = $"arg{argIdx}";
+        switch (funcParamType.TypeKind)
+        {
+            case CppTypeKind.StructOrClass:
+                result = '*' + result;
+                break;
+        }
+
+        if (AstUtils.IsFunctionPointer(funcParamType))
+            result = $"static_cast<{funcParamType.GetDisplayName()}>({result})";
+        
+        return result;
+    }
     
     public static string CreateFunctionCall(CppClass @class, CppFunction func)
     {
@@ -145,11 +164,7 @@ public class CppTypeUtils
         for (var i = 0; i < func.Parameters.Count; ++i)
         {
             var funcParam = func.Parameters[i];
-            if (funcParam.Type.TypeKind == CppTypeKind.StructOrClass)
-                result.Append("*");
-            result.Append("arg");
-            result.Append(i);
-
+            result.Append(GetFunctionArgAccess(funcParam, i));
             if (i < func.Parameters.Count - 1)
                 result.Append(", ");
         }

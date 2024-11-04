@@ -35,6 +35,36 @@ public static class AstUtils
         return func.Name.Contains("operator");
     }
 
+    public static bool IsFunctionPointer(CppType type)
+    {
+        if (type.TypeKind == CppTypeKind.Typedef)
+            type = ResolveTypeDef((CppTypedef)type);
+        if (type.TypeKind != CppTypeKind.Pointer)
+            return false;
+        
+        var pointerType = (CppPointerType)type;
+        return pointerType.ElementType.TypeKind == CppTypeKind.Function;
+    }
+
+    public static CppFunctionType GetFunctionPointerType(CppType type)
+    {
+        if (type.TypeKind == CppTypeKind.Typedef)
+            type = ResolveTypeDef((CppTypedef)type);
+        if (type.TypeKind != CppTypeKind.Pointer)
+            ThrowInvalidType();
+
+        var pointerType = (CppPointerType)type;
+        if(pointerType.ElementType.TypeKind != CppTypeKind.Function)
+            ThrowInvalidType();
+
+        return (CppFunctionType)pointerType.ElementType;
+        
+        void ThrowInvalidType()
+        {
+            throw new ArgumentException("Invalid argument type. The provided type is not a function type.");
+        }
+    }
+
     public static bool HasClassFields(CppClass @class)
     {
         var result = false;
