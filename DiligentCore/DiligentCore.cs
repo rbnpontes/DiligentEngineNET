@@ -28,6 +28,8 @@ public static partial class DiligentCore
         var ptr = Interop.diligent_core_get_d3d11_factory();
         if (ptr == IntPtr.Zero)
             return null;
+        if (NativeObjectRegistry.TryGetObject(ptr, out var output))
+            return output as IEngineFactoryD3D11;
         return new EngineFactoryD3D11(ptr);
     }
 
@@ -36,6 +38,8 @@ public static partial class DiligentCore
         var ptr = Interop.diligent_core_get_d3d12_factory();
         if (ptr == IntPtr.Zero)
             return null;
+        if (NativeObjectRegistry.TryGetObject(ptr, out var output))
+            return output as IEngineFactoryD3D12;
         return new EngineFactoryD3D12(ptr);
     }
 
@@ -44,6 +48,8 @@ public static partial class DiligentCore
         var ptr = Interop.diligent_core_get_vk_factory();
         if (ptr == IntPtr.Zero)
             return null;
+        if (NativeObjectRegistry.TryGetObject(ptr, out var output))
+            return output as IEngineFactoryVk;
         return new EngineFactoryVk(ptr);
     }
 
@@ -52,6 +58,8 @@ public static partial class DiligentCore
         var ptr = Interop.diligent_core_get_opengl_factory();
         if (ptr == IntPtr.Zero)
             return null;
+        if (NativeObjectRegistry.TryGetObject(ptr, out var output))
+            return output as IEngineFactoryOpenGL;
         return new EngineFactoryOpenGL(ptr);
     }
 }
