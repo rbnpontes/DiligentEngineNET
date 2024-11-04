@@ -1,67 +1,70 @@
 namespace Diligent;
 
-public partial class DiligentObject : IDiligentObject
+public partial class DiligentObject : NativeObject, IDiligentObject
 {
-    private IntPtr _handle;
-    public IntPtr Handle => _handle;
-    
-    public bool IsDisposed
-    {
-        get => _handle == IntPtr.Zero;
-    }
+    public bool IsDisposed { get; private set; }
 
-    public ReferenceCounters ReferenceCounters => new(
-        Interop.object_get_reference_counters(Handle),
-        this
-    );
+    public ReferenceCounters ReferenceCounters => GetReferenceCounters();
 
-    public DiligentObject()
+    public DiligentObject() : base(IntPtr.Zero)
     {
         throw new NotSupportedException("Constructor without parameters isn't supported.");
     }
     
-    public DiligentObject(IntPtr handle)
+    public DiligentObject(IntPtr handle) : base(handle)
     {
-        _handle = handle;
-        AddRef();
+        NativeObjectRegistry.AddToRegister(handle, this);
     }
 
     ~DiligentObject()
     {
-        Release();
+        Dispose();
     }
 
+    protected override IntPtr GetCurrentHandle()
+    {
+        AssertDispose();
+        return base.GetCurrentHandle();
+    }
 
     private void AssertDispose()
     {
-        if (_handle == IntPtr.Zero)
+        if (IsDisposed)
             throw new ObjectDisposedException("Object already disposed");
     }
     
     private ReferenceCounters GetReferenceCounters()
     {
-        AssertDispose();
-        return new ReferenceCounters(Interop.object_get_reference_counters(Handle), this);
+        var pointer = Interop.object_get_reference_counters(Handle);
+        if (NativeObjectRegistry.TryGetObject(pointer, out var output))
+            return output as ReferenceCounters ?? throw new InvalidOperationException();
+        return new ReferenceCounters(pointer, this);
     }
     
     public void Dispose()
     {
-        AssertDispose();
-        Release();
-        GC.SuppressFinalize(this);
-    }
-
-    public virtual int AddRef()
-    {
-        AssertDispose();
-        return DiligentObject.Interop.object_add_ref(Handle);
-    }
-
-    public virtual void Release()
-    {
-        if (_handle == IntPtr.Zero)
+        if(IsDisposed)
             return;
-        DiligentObject.Interop.object_release(Handle);
-        _handle = IntPtr.Zero;
+        
+        GC.SuppressFinalize(this);
+        NativeObjectRegistry.RemoveObject(Handle);
+        Release();
+        SetCurrentHandle(IntPtr.Zero);
+        IsDisposed = true;
+    }
+
+    protected virtual int AddRef()
+    {
+        AssertDispose();
+        return Interop.object_add_ref(Handle);
+    }
+
+    
+    protected virtual void Release()
+    {
+        if (IsDisposed)
+            return;
+        
+        Interop.object_release(Handle);
     }
 }
