@@ -16,6 +16,7 @@
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
       <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+      <Optimize>false</Optimize>
     </PropertyGroup>
 
     <ItemGroup>
