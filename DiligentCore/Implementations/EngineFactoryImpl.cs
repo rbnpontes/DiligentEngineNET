@@ -7,6 +7,9 @@ public abstract partial class EngineFactory : IEngineFactory
 {
     // prevent destruction of delegate when unmanaged code call
     private static DebugMessageCallbackDelegate GlobalMessageCallback = DummyMessageCallbackCall;
+
+    private IntPtr _tmpHandle;
+    
     public unsafe APIInfo APIInfo
     {
         get
@@ -19,12 +22,19 @@ public abstract partial class EngineFactory : IEngineFactory
     public EngineFactory(): base(){}
     internal EngineFactory(IntPtr handle) : base(handle)
     {
+        _tmpHandle = handle;
     }
 
-    ~EngineFactory()
+    protected override void Release()
     {
         GlobalMessageCallback = DummyMessageCallbackCall;
     }
+
+    protected override int AddRef()
+    {
+        return 0;
+    }
+
     public unsafe GraphicsAdapterInfo[] EnumerateAdapters(Version minVersion)
     {
         var versionStruct = Version.GetInternalStruct(minVersion);
@@ -56,7 +66,7 @@ public abstract partial class EngineFactory : IEngineFactory
     {
         GlobalMessageCallback = messageCallback;
         var functionPtr = Marshal.GetFunctionPointerForDelegate(GlobalMessageCallback);
-        EngineFactory.Interop.engine_factory_set_message_callback(Handle, functionPtr);
+        Interop.engine_factory_set_message_callback(Handle, functionPtr);
     }
 
     public void SetBreakOnError(bool breakOnError)
