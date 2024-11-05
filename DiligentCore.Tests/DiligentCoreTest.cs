@@ -13,23 +13,16 @@ public class DiligentCoreTest
     ];
     
     [Test]
+    [Platform("Win")]
     public void MustGetFactoryD3D11()
     {
-        if (!OperatingSystem.IsWindows())
-        {
-            Assert.Pass();
-            return;
-        }
-        
         Assert.That(DiligentCore.GetEngineFactoryD3D11(), Is.Not.Null);
     }
 
     [Test]
+    [Platform("Win")]
     public void MustGetFactoryD3D12()
     {
-        if(!OperatingSystem.IsWindows())
-            return;
-        
         Assert.That(DiligentCore.GetEngineFactoryD3D12(), Is.Not.Null);
     }
     
