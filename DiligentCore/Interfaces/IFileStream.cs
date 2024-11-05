@@ -4,6 +4,7 @@ public interface IFileStream : IDiligentObject
 {
     bool IsValid { get; }
     ulong Size { get; }
+    ulong Pos { get; }
     bool Read(IntPtr data, ulong bufferSize);
     bool Read<T>(ref T data) where T : unmanaged;
     bool Read<T>(ref T[] data) where T : unmanaged;
@@ -11,4 +12,6 @@ public interface IFileStream : IDiligentObject
     bool Write(IntPtr data, ulong size);
     bool Write<T>(ref T data) where T : unmanaged;
     bool Write<T>(T[] data) where T : unmanaged;
+
+    bool SetPos(ulong offset, int origin);
 }

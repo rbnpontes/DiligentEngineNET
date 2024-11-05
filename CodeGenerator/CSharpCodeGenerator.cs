@@ -138,7 +138,10 @@ public class CSharpCodeGenerator(string diligentCorePath, string outputBaseDir, 
 
     private void BuildUnmanagedCalls(CppClass @class, CSharpBuilder builder)
     {
-        var grpFunctions = @class.Functions.GroupBy(x => x.Name).ToArray();
+        var grpFunctions = @class.Functions
+            .Where(AstUtils.IsAllowedFunction)
+            .GroupBy(x => x.Name)
+            .ToArray();
         foreach (var grpFunction in grpFunctions)
         {
             var isFunctionVariant = grpFunction.Count() > 1;

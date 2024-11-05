@@ -13,7 +13,7 @@ public unsafe class DataBlobTest : BaseFactoryTest
     [Test]
     public void MustCreateFromGivenSize()
     {
-        var factory = GetFactory();
+        using var factory = GetFactory();
         using var dataBlob = factory.CreateDataBlob(32);
 
         Assert.That(dataBlob, Is.Not.Null);
@@ -27,7 +27,7 @@ public unsafe class DataBlobTest : BaseFactoryTest
         testStruct.A = 10;
         testStruct.B = new IntPtr(0x2048);
 
-        var factory = GetFactory();
+        using var factory = GetFactory();
         using var dataBlob = factory.CreateDataBlob((ulong)Marshal.SizeOf<TestStruct>(), new IntPtr(&testStruct));
         
         Assert.That(dataBlob, Is.Not.Null);
@@ -42,7 +42,7 @@ public unsafe class DataBlobTest : BaseFactoryTest
     public void MustCreateWithArrayPrimitive()
     {
         var arr = new[] { 1, 2, 3 };
-        var factory = GetFactory();
+        using var factory = GetFactory();
         using var dataBlob = factory.CreateDataBlob<int>(arr);
         var data = new ReadOnlySpan<int>(dataBlob.DataPtr.ToPointer(), arr.Length);
         
@@ -56,7 +56,7 @@ public unsafe class DataBlobTest : BaseFactoryTest
         testStruct.A = 20;
         testStruct.B = new IntPtr(0x1024);
         
-        var factory = GetFactory();
+        using var factory = GetFactory();
         using var dataBlob = factory.CreateDataBlob(ref testStruct);
         var dataPtr = (TestStruct*)dataBlob.DataPtr.ToPointer();
         
@@ -65,9 +65,18 @@ public unsafe class DataBlobTest : BaseFactoryTest
     }
 
     [Test]
+    public void MustGetDataPtr()
+    {
+        using var factory = GetFactory();
+        using var dataBlob = factory.CreateDataBlob(32);
+        
+        Assert.That(dataBlob.GetDataPtr(4), Is.Not.EqualTo(IntPtr.Zero));
+    }
+    
+    [Test]
     public void MustReturnSize()
     {
-        var factory = GetFactory();
+        using var factory = GetFactory();
         using var dataBlob = factory.CreateDataBlob(1024);
         
         Assert.That(dataBlob.Size, Is.EqualTo(1024));
@@ -76,7 +85,7 @@ public unsafe class DataBlobTest : BaseFactoryTest
     [Test]
     public void MustResize()
     {
-        var factory = GetFactory();
+        using var factory = GetFactory();
         using var dataBlob = factory.CreateDataBlob(1024);
         dataBlob.Resize(2048);
         dataBlob.Resize(64);

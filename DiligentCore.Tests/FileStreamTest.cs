@@ -29,7 +29,7 @@ public class FileStreamTest : BaseFactoryTest
     [Test]
     public void MustRead()
     {
-        var factory = GetFactory();
+        using var factory = GetFactory();
         using var shaderSrcStreamFactory = factory.CreateDefaultShaderSourceStreamFactory(_basePath);
         using var fileStream = shaderSrcStreamFactory.CreateInputStream("test-file.txt");
         var data = new byte[fileStream.Size];
@@ -51,7 +51,7 @@ public class FileStreamTest : BaseFactoryTest
     [Test]
     public void MustReadAsStruct()
     {
-        var factory = GetFactory();
+        using var factory = GetFactory();
         using var shaderSrcStreamFactory = factory.CreateDefaultShaderSourceStreamFactory(_basePath);
         using var fileStream = shaderSrcStreamFactory.CreateInputStream("test-file.txt");
 
@@ -68,7 +68,7 @@ public class FileStreamTest : BaseFactoryTest
     [Test]
     public unsafe void MustReadFromIntPtr()
     {
-        var factory = GetFactory();
+        using var factory = GetFactory();
         using var shaderSrcStreamFactory = factory.CreateDefaultShaderSourceStreamFactory(_basePath);
         using var fileStream = shaderSrcStreamFactory.CreateInputStream("test-file.txt");
         var block = Marshal.AllocHGlobal((int)fileStream.Size);
@@ -79,9 +79,10 @@ public class FileStreamTest : BaseFactoryTest
         Assert.That(txt, Is.EqualTo("Test File"));
     }
 
+    [Test]
     public void MustReadIntoDataBlob()
     {
-        var factory = GetFactory();
+        using var factory = GetFactory();
         using var shaderSrcStreamFactory = factory.CreateDefaultShaderSourceStreamFactory(_basePath);
         using var fileStream = shaderSrcStreamFactory.CreateInputStream("test-file.txt");
         using var dataBlob = factory.CreateDataBlob(fileStream.Size);
@@ -94,7 +95,7 @@ public class FileStreamTest : BaseFactoryTest
     [Test]
     public void MustWrite()
     {
-        var factory = GetFactory();
+        using var factory = GetFactory();
         using var shaderSrcStreamFactory = factory.CreateDefaultShaderSourceStreamFactory(_basePath);
         using var fileStream = shaderSrcStreamFactory.CreateInputStream("test-file.txt");
 
@@ -103,5 +104,37 @@ public class FileStreamTest : BaseFactoryTest
         // file as readonly, so write method will return internally as 
         // false.
         Assert.That(fileStream.Write(bytes), Is.False);
+    }
+
+    [Test]
+    public void MustGetSize()
+    {
+        using var factory = GetFactory();
+        using var shaderSrcStreamFactory = factory.CreateDefaultShaderSourceStreamFactory(_basePath);
+        using var fileStream = shaderSrcStreamFactory.CreateInputStream("test-file.txt");
+        
+        Assert.That(fileStream.Size, Is.EqualTo("Test File".Length));
+    }
+
+    [Test]
+    public void MustGetPos()
+    {
+        using var factory = GetFactory();
+        using var shaderSrcStreamFactory = factory.CreateDefaultShaderSourceStreamFactory(_basePath);
+        using var fileStream = shaderSrcStreamFactory.CreateInputStream("test-file.txt");
+        
+        Assert.That(fileStream.Pos, Is.EqualTo(0));
+    }
+
+    [Test]
+    public void MustSetPos()
+    {
+        using var factory = GetFactory();
+        using var shaderSrcStreamFactory = factory.CreateDefaultShaderSourceStreamFactory(_basePath);
+        using var fileStream = shaderSrcStreamFactory.CreateInputStream("test-file.txt");
+
+        fileStream.SetPos(1, 0);
+        
+        Assert.Pass();
     }
 }

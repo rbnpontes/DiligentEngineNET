@@ -7,7 +7,8 @@ public partial class FileStream : IFileStream
 {
     public bool IsValid => Interop.file_stream_is_valid(Handle);
     public ulong Size => Interop.file_stream_get_size(Handle);
-    
+    public ulong Pos => Interop.file_stream_get_pos(Handle);
+
     public FileStream() : base() {}
     internal FileStream(IntPtr handle) : base(handle){}
     
@@ -48,5 +49,10 @@ public partial class FileStream : IFileStream
     {
         fixed (T* dataPtr = &data.AsSpan().GetPinnableReference())
             return Write(new IntPtr(dataPtr), (ulong)(Unsafe.SizeOf<T>() * data.Length));
+    }
+
+    public bool SetPos(ulong offset, int origin)
+    {
+        return Interop.file_stream_set_pos(Handle, offset, origin);
     }
 }

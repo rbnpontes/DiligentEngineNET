@@ -6,4 +6,5 @@ public interface IDataBlob : IDiligentObject
     IntPtr DataPtr { get; }
     void Resize(ulong newSize);
     ulong GetSize();
+    IntPtr GetDataPtr(ulong offset);
 }

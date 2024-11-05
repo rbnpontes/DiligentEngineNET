@@ -23,6 +23,7 @@ parserOptions.IncludeFolders.AddRange([
 
 var compilation = CppParser.ParseFiles([
     Path.Combine(diligentCorePath, "Primitives/interface/DebugOutput.h"),
+    Path.Combine(diligentCorePath, "Primitives/interface/FileStream.h"),
     Path.Combine(diligentCorePath, "Graphics/GraphicsEngine/interface/Dearchiver.h"),
     Path.Combine(diligentCorePath, "Graphics/GraphicsEngineD3D11/interface/EngineFactoryD3D11.h"),
     Path.Combine(diligentCorePath, "Graphics/GraphicsEngineD3D12/interface/EngineFactoryD3D12.h"),

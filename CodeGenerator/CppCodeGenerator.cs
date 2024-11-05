@@ -41,7 +41,10 @@ public class CppCodeGenerator(string diligentCorePath, string baseOutputDir, Cpp
 
         // Functions can have multiple declarations, but we can only export
         // a single declaration, in this case we will add a index at the end of decl.
-        var functionGroups = @class.Functions.GroupBy(x => x.Name).ToArray();
+        var functionGroups = @class.Functions
+            .Where(AstUtils.IsAllowedFunction)
+            .GroupBy(x => x.Name)
+            .ToArray();
         for (var grpIdx = 0; grpIdx < functionGroups.Count(); ++grpIdx)
         {
             var grp = functionGroups[grpIdx];
@@ -68,12 +71,16 @@ public class CppCodeGenerator(string diligentCorePath, string baseOutputDir, Cpp
     {
         var classHeaderFile = CppTypeUtils.GetBaseClassFileName(@class) + ".h";
         var builder = new CppBuilder();
-        builder.IncludeLiteral($"./{classHeaderFile}");
-        builder.Line();
+        builder
+            .IncludeLiteral($"./{classHeaderFile}")
+            .Line();
 
         // Functions can have multiple declarations, but we can only export
         // a single declaration, in this case we will add a index at the end of decl.
-        var functionGroups = @class.Functions.GroupBy(x => x.Name).ToArray();
+        var functionGroups = @class.Functions
+            .Where(AstUtils.IsAllowedFunction)
+            .GroupBy(x => x.Name)
+            .ToArray();
         for (var grpIdx = 0; grpIdx < functionGroups.Length; ++grpIdx)
         {
             var grp = functionGroups[grpIdx];
