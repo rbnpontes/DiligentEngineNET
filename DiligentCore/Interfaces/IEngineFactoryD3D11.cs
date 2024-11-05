@@ -2,7 +2,7 @@ namespace Diligent;
 
 public interface IEngineFactoryD3D11 : IEngineFactory
 {
-    (IDeviceContext[], IRenderDevice) CreateDeviceAndContexts(EngineCreateInfo createInfo);
+    (IRenderDevice, IDeviceContext[]) CreateDeviceAndContexts(EngineD3D11CreateInfo createInfo);
 
     ISwapChain CreateSwapChain(IRenderDevice device, IDeviceContext immediateContext, SwapChainDesc swapChainDesc,
         FullScreenModeDesc fullScreenDesc, NativeWindow window);
