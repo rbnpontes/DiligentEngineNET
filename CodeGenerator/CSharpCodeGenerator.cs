@@ -100,16 +100,16 @@ public class CSharpCodeGenerator(string diligentCorePath, string outputBaseDir, 
 
                 builder.BeginRegion("Helper Methods");
                 builder.Line(
-                        $"internal static unsafe {className} FromInternalStruct(__Internal data)")
+                        $"internal static {className} FromInternalStruct(__Internal data)")
                     .Closure(funcBuilder => BuildFromInternalStructMethod(@class, funcBuilder))
                     .Line()
                     .Line(
-                        $"internal static __Internal GetInternalStruct({className} obj)")
+                        $"internal static unsafe __Internal GetInternalStruct({className} obj)")
                     .Closure(funcBuilder => BuildGetInternalStructMethod(@class, funcBuilder))
                     .Line()
                     .Line(
-                         $"internal static void UpdateInternalStruct({className} target, {className}.__Internal data)")
-                     .Closure(BuildUpdateInternalStructMethod);
+                         $"internal static unsafe void UpdateInternalStruct({className} target, {className}.__Internal data)")
+                     .Closure(funcBuilder => BuildUpdateInternalStructMethod(@class, funcBuilder));
                 builder.EndRegion();
             }
         };
@@ -349,15 +349,20 @@ public class CSharpCodeGenerator(string diligentCorePath, string outputBaseDir, 
         builder
             .Line($"var result = new {className}();")
             .Line($"{className}.UpdateInternalStruct(result, data);");
+        builder.Line("return result;");
+    }
 
+    private void BuildGetInternalStructMethod(CppClass @class, CSharpBuilder builder)
+    {
+        builder.Line("var result = obj._data;");
         if (AstUtils.HasBaseClass(@class))
         {
             var parentClass = AstUtils.GetClassParent(@class);
             var parentClassName = CSharpUtils.GetFixedClassName(parentClass);
             var parentClassFields = AstUtils.GetAllClassFields(parentClass);
 
-            builder.Line("// update child data");
-            builder.Line($"var childData = {parentClassName}.GetInternalStruct(result);");
+            builder.Line("// update child data into current data");
+            builder.Line($"var childData = {parentClassName}.GetInternalStruct(obj);");
             foreach (var classField in parentClassFields)
             {
                 var fieldType = AstUtils.Resolve(classField.Type);
@@ -365,24 +370,40 @@ public class CSharpCodeGenerator(string diligentCorePath, string outputBaseDir, 
                 {
                     builder.Line("// copy manually when type is fixed");
                     builder.Line($"for (var i = 0; i < {arrayType.Size}; ++i)");
-                    builder.Line($"\tchildData.{classField.Name}[i] = data.{classField.Name}[i];");
+                    builder.Line($"\tresult.{classField.Name}[i] = childData.{classField.Name}[i];");
                     continue;
                 }
-                builder.Line($"childData.{classField.Name} = data.{classField.Name};");
+                builder.Line($"result.{classField.Name} = childData.{classField.Name};");
             }
-            builder.Line($"{parentClassName}.UpdateInternalStruct(result, childData);");
         }
         
         builder.Line("return result;");
     }
 
-    private void BuildGetInternalStructMethod(CppClass @class, CSharpBuilder builder)
-    {
-        builder.Line("return obj._data;");
-    }
-
-    private void BuildUpdateInternalStructMethod(CSharpBuilder builder)
+    private void BuildUpdateInternalStructMethod(CppClass @class, CSharpBuilder builder)
     {
         builder.Line("target._data = data;");
+
+        if (!AstUtils.HasBaseClass(@class)) 
+            return;
+        var parentClass = AstUtils.GetClassParent(@class);
+        var parentClassName = CSharpUtils.GetFixedClassName(parentClass);
+        var parentClassFields = AstUtils.GetAllClassFields(parentClass);
+
+        builder.Line("// update child data");
+        builder.Line($"var childData = {parentClassName}.GetInternalStruct(target);");
+        foreach (var classField in parentClassFields)
+        {
+            var fieldType = AstUtils.Resolve(classField.Type);
+            if (fieldType is CppArrayType arrayType)
+            {
+                builder.Line("// copy manually when type is fixed");
+                builder.Line($"for (var i = 0; i < {arrayType.Size}; ++i)");
+                builder.Line($"\tchildData.{classField.Name}[i] = data.{classField.Name}[i];");
+                continue;
+            }
+            builder.Line($"childData.{classField.Name} = data.{classField.Name};");
+        }
+        builder.Line($"{parentClassName}.UpdateInternalStruct(target, childData);");
     }
 }
