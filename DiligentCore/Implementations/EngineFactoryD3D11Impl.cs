@@ -1,6 +1,6 @@
 namespace Diligent;
 
-public partial class EngineFactoryD3D11 : IEngineFactoryD3D11
+internal partial class EngineFactoryD3D11 : IEngineFactoryD3D11
 {
     internal EngineFactoryD3D11(IntPtr handle) : base(handle){}
 

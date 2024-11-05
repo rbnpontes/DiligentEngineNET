@@ -1,6 +1,6 @@
 namespace Diligent;
 
-public partial class ReferenceCounters : NativeObject, IDisposable
+internal partial class ReferenceCounters : NativeObject, IReferenceCounters
 {
     private WeakReference<INativeObject> _owner;
 

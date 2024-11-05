@@ -26,4 +26,17 @@ internal static class NativeObjectRegistry
 
         return obj.TryGetTarget(out output);
     }
+
+    public static T GetOrCreate<T>(Func<T> creationCall, IntPtr handle) where T : INativeObject
+    {
+        if (!TryGetObject(handle, out var output))
+        {
+            var result = creationCall();
+            AddToRegister(handle, result);
+            return result;
+        }
+
+        var target = (T?)output;
+        return target ?? throw new InvalidCastException($"Failed cast to type '{typeof(T).Name}'");
+    }
 }

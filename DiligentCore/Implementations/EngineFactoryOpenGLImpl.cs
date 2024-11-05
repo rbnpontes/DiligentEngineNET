@@ -1,6 +1,6 @@
 namespace Diligent;
 
-public partial class EngineFactoryOpenGL : IEngineFactoryOpenGL
+internal partial class EngineFactoryOpenGL : IEngineFactoryOpenGL
 {
     public EngineFactoryOpenGL() : base(){}
     

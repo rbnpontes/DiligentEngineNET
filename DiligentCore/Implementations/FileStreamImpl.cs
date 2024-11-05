@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 
 namespace Diligent;
 
-public partial class FileStream : IFileStream
+internal partial class FileStream : IFileStream
 {
     public bool IsValid => Interop.file_stream_is_valid(Handle);
     public ulong Size => Interop.file_stream_get_size(Handle);

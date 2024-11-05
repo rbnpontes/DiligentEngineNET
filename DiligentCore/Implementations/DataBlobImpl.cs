@@ -1,6 +1,6 @@
 namespace Diligent;
 
-public partial class DataBlob : IDataBlob
+internal partial class DataBlob : IDataBlob
 {
     public ulong Size
     {

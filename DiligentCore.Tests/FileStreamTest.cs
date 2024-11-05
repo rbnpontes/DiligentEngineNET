@@ -137,4 +137,14 @@ public class FileStreamTest : BaseFactoryTest
         
         Assert.Pass();
     }
+
+    [Test]
+    public void MustReturnIsValid()
+    {
+        using var factory = GetFactory();
+        using var shaderSrcStreamFactory = factory.CreateDefaultShaderSourceStreamFactory(_basePath);
+        using var fileStream = shaderSrcStreamFactory.CreateInputStream("test-file.txt");
+        
+        Assert.That(fileStream.IsValid, Is.True);
+    }
 }

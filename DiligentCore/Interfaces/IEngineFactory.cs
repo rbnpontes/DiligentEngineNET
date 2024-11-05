@@ -13,5 +13,5 @@ public interface IEngineFactory : IDiligentObject
     IDataBlob CreateDataBlob(ulong initialSize, IntPtr data);
     IDataBlob CreateDataBlob<T>(ref T data) where T : struct;
     IDataBlob CreateDataBlob<T>(ReadOnlySpan<T> data) where T : unmanaged;
-    
+    IDearchiver CreateDearchiver(DearchiverCreateInfo createInfo);
 }

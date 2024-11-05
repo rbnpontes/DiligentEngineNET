@@ -1,6 +1,6 @@
 namespace Diligent;
 
-public partial class EngineFactoryVk : IEngineFactoryVk
+internal partial class EngineFactoryVk : IEngineFactoryVk
 {
      public EngineFactoryVk() : base() {}
      

@@ -6,7 +6,7 @@ namespace Diligent;
 [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 internal delegate void NativeDebugMessageCallbackDelegate(DebugMessageSeverity severity, IntPtr message, IntPtr function,
     IntPtr file, int line);
-public abstract partial class EngineFactory : IEngineFactory
+internal abstract partial class EngineFactory : IEngineFactory
 {
     private DebugMessageCallbackDelegate? _callback;
     private NativeDebugMessageCallbackDelegate _nativeDelegate;
@@ -122,6 +122,19 @@ public abstract partial class EngineFactory : IEngineFactory
         {
             return CreateDataBlob(initialSize, new IntPtr(dataPtr));
         }
+    }
+
+    public unsafe IDearchiver CreateDearchiver(DearchiverCreateInfo createInfo)
+    {
+        var createInfoInternal = DearchiverCreateInfo.GetInternalStruct(createInfo);
+        DearchiverCreateInfo.__Internal* createInfoPtr = &createInfoInternal;
+        var dearchiverPtr = IntPtr.Zero;
+        
+        Interop.engine_factory_create_dearchiver(Handle, new IntPtr(createInfoPtr), new IntPtr(&dearchiverPtr));
+        if (dearchiverPtr == IntPtr.Zero)
+            throw new NullReferenceException($"Failed to create {nameof(IDearchiver)}");
+
+        return new Dearchiver(dearchiverPtr);
     }
 
     private void NativeMessageCallbackCall(DebugMessageSeverity severity, IntPtr message, IntPtr function,

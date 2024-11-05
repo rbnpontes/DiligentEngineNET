@@ -75,7 +75,7 @@ public class CSharpCodeGenerator(string diligentCorePath, string outputBaseDir, 
         builder.Namespace("Diligent").Line();
         var classDefCall = (CSharpBuilder builder) =>
         {
-            if (!CSharpUtils.IsConstructable(@class))
+            if (!isConstructable)
                 builder.Class(x => BuildUnmanagedCalls(@class, x), "Interop", "internal static partial");
 
             if (classFields)
@@ -115,12 +115,17 @@ public class CSharpCodeGenerator(string diligentCorePath, string outputBaseDir, 
         };
 
         var baseClass = @class.BaseTypes.FirstOrDefault();
-        var classQualifiers = "public partial";
+        string classQualifiers;
+        if (isConstructable)
+            classQualifiers = "public partial";
+        else
+            classQualifiers = "internal partial";
+        
         if (baseClass is not null)
         {
             builder.Class(
                 classDefCall,
-                CSharpUtils.GetFixedClassName(@class),
+                className,
                 CSharpUtils.GetFixedClassName((CppClass)baseClass.Type),
                 classQualifiers);
         }

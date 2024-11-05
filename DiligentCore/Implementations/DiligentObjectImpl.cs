@@ -1,10 +1,10 @@
 namespace Diligent;
 
-public partial class DiligentObject : NativeObject, IDiligentObject
+internal partial class DiligentObject : NativeObject, IDiligentObject
 {
     public bool IsDisposed { get; private set; }
 
-    public ReferenceCounters ReferenceCounters => GetReferenceCounters();
+    public IReferenceCounters ReferenceCounters => GetReferenceCounters();
 
     public DiligentObject() : base(IntPtr.Zero)
     {
