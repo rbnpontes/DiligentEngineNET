@@ -52,6 +52,19 @@ public class CodeUtils
 
         return result.ToString();
     }
+
+    public static bool IsScreamingCase(string input)
+    {
+        foreach (var c in input)
+        {
+            if(c == '_')
+                continue;
+            if (char.IsLower(c))
+                return false;
+        }
+
+        return true;
+    }
     
     public static void WriteCode(string filePath, string source)
     {

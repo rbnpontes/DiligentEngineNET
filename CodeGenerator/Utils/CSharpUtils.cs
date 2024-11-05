@@ -11,7 +11,7 @@ public static class CSharpUtils
     {
         // On diligent, types that starts with 'I'. Ex: IDeviceContext
         // cannot be constructed, they can be created by the unmanaged code.
-        return !Regex.IsMatch(@class.Name, InterfacePattern);
+        return !Regex.IsMatch(@class.Name, InterfacePattern) || CodeUtils.IsScreamingCase(@class.Name);
     }
 
     public static string GetFixedClassName(CppClass @class)
@@ -19,7 +19,7 @@ public static class CSharpUtils
         var result = @class.Name;
         if (@class.Name == "IObject")
             result = "DiligentObject";
-        else if (Regex.IsMatch(@class.Name, InterfacePattern))
+        else if (!IsConstructable(@class))
             result = result.Remove(0, 1);
         return result;
     }

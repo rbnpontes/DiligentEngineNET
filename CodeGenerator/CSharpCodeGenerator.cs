@@ -25,7 +25,7 @@ public class CSharpCodeGenerator(string diligentCorePath, string outputBaseDir, 
             BuildClassCode(@class);
         foreach (var @enum in diligentNamespace.Enums)
             BuildEnumCode(@enum);
-        
+        BuildConstantsCode(diligentNamespace.Fields.ToArray());
     }
 
     private void BuildEnumCode(CppEnum @enum)
@@ -141,6 +141,96 @@ public class CSharpCodeGenerator(string diligentCorePath, string outputBaseDir, 
         CodeUtils.WriteCode(outputCodePath, builder);
     }
 
+    private void BuildConstantsCode(CppField[] fields)
+    {
+        // filter allowed fields
+        fields = fields
+            .Where(x =>
+            {
+                if (x.StorageQualifier == CppStorageQualifier.Extern)
+                    return false;
+                if (x.Name == "True" || x.Name == "False")
+                    return false;
+                return x.InitValue is not null || x.InitExpression is not null;
+            })
+            .ToArray();
+        var builder = new CSharpBuilder();
+        builder.Namespace("Diligent").Line();
+
+        
+        builder.Class(classBuilder =>
+        {
+            foreach (var field in fields)
+            {
+                var fieldType = (CppQualifiedType)field.Type;
+                var elementType = AstUtils.Resolve(fieldType.ElementType);
+
+                if (elementType.TypeKind == CppTypeKind.Primitive)
+                    BuildPrimitiveField(field, classBuilder);
+                else if(field.Name.StartsWith("IID_"))
+                    BuildInterfaceField(field, classBuilder);
+            }
+        }, "Constants", "public static partial");
+        
+        var outputCodePath = Path.Combine(_outputDir, "constants.cs");
+        CodeUtils.WriteCode(outputCodePath, builder);
+
+        void BuildPrimitiveField(CppField field, CSharpBuilder builder)
+        {
+            var fieldName = CodeUtils.ConvertScreamingToPascalCase(field.Name);
+            builder.Line($"public const {CSharpUtils.GetUnmanagedType(field.Type)} {fieldName} = {field.InitValue.Value};");
+        }
+
+        // special handle case
+        void BuildInterfaceField(CppField field, CSharpBuilder builder)
+        {
+            var fieldName = field.Name;
+            var ctorArgs = new StringBuilder();
+            var args = field.InitExpression.Arguments;
+            for (var i = 0; i < args.Count; ++i)
+            {
+                var arg = args[i];
+                switch (arg.Kind)
+                {
+                    case CppExpressionKind.IntegerLiteral:
+                    {
+                        var literalExp = (CppLiteralExpression)arg;
+                        ctorArgs.Append(literalExp.Value);
+                    }
+                        break;
+                    case CppExpressionKind.InitList:
+                    {
+                        var listExp = (CppInitListExpression)arg;
+                        var listArgs = listExp.Arguments;
+                        ctorArgs.Append('[');
+                        for (var j = 0; j < listArgs.Count; ++j)
+                        {
+                            var listArg = listArgs[j];
+                            if (listArg.Kind != CppExpressionKind.IntegerLiteral)
+                                throw new NotImplementedException();
+
+                            var listIntArg = (CppLiteralExpression)listArg;
+                            ctorArgs.Append(listIntArg.Value);
+
+                            if (j < listArgs.Count - 1)
+                                ctorArgs.Append(", ");
+                        }
+
+                        ctorArgs.Append(']');
+                    }
+                        break;
+                    default:
+                        throw new NotImplementedException();
+                }
+                
+                if (i < args.Count - 1)
+                    ctorArgs.Append(", ");
+            }
+            
+            builder.Line($"public static readonly INTERFACE_ID {fieldName} = new ({ctorArgs});");
+        }
+    }
+    
     private void BuildUnmanagedCalls(CppClass @class, CSharpBuilder builder)
     {
         var grpFunctions = @class.Functions
