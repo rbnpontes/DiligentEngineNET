@@ -1,3 +1,6 @@
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+
 namespace Diligent;
 
 internal partial class EngineFactoryD3D11 : IEngineFactoryD3D11
@@ -8,21 +11,22 @@ internal partial class EngineFactoryD3D11 : IEngineFactoryD3D11
 
     public unsafe (IRenderDevice, IDeviceContext[]) CreateDeviceAndContexts(EngineD3D11CreateInfo createInfo)
     {
+        var numDevices = (int)(int.Max((int)createInfo.NumImmediateContexts, 1) + createInfo.NumDeferredContexts);
         var createInfoData = EngineD3D11CreateInfo.GetInternalStruct(createInfo);
         var createInfoPtr = &createInfoData;
         var renderDevicePtr = IntPtr.Zero;
-        var deviceContextsPointers = IntPtr.Zero;
 
-        Interop.engine_factory_d3d11_create_device_and_contexts_d3d11(
-            Handle,
-            new IntPtr(createInfoPtr),
-            new IntPtr(&renderDevicePtr),
-            new IntPtr(&deviceContextsPointers));
+        var deviceContextsPointers = new IntPtr[numDevices];
+        fixed(void* deviceContextsPtr = deviceContextsPointers.AsSpan())
+            Interop.engine_factory_d3d11_create_device_and_contexts_d3d11(
+                Handle,
+                new IntPtr(createInfoPtr),
+                new IntPtr(&renderDevicePtr),
+                new IntPtr(deviceContextsPtr));
 
         return (
             CreateRenderDevice(renderDevicePtr),
-            CreateDeviceContexts(deviceContextsPointers,
-                (int)(createInfo.NumImmediateContexts + createInfo.NumDeferredContexts))
+            CreateDeviceContexts(deviceContextsPointers)
         );
 
         IRenderDevice CreateRenderDevice(IntPtr handle)
@@ -32,19 +36,12 @@ internal partial class EngineFactoryD3D11 : IEngineFactoryD3D11
             return NativeObjectRegistry.GetOrCreate(() => new RenderDevice(handle), handle);
         }
 
-        IDeviceContext[] CreateDeviceContexts(IntPtr handle, int numDevices)
+        IDeviceContext[] CreateDeviceContexts(IntPtr[] handle)
         {
-            if (handle == IntPtr.Zero)
-                throw new NullReferenceException($"Failed to create {nameof(IDeviceContext)}[]");
-            
-            var result = new IDeviceContext[int.Max(numDevices, 1)];
-            for (var i = 0; i < result.Length; ++i)
+            return handle.Select(x =>
             {
-                var target = IntPtr.Add(handle, i * sizeof(IntPtr));
-                result[i] = NativeObjectRegistry.GetOrCreate(() => new DeviceContext(target), target);
-            }
-
-            return result;
+                return NativeObjectRegistry.GetOrCreate<IDeviceContext>(() => new DeviceContext(x), x);
+            }).ToArray();
         }
     }
 
