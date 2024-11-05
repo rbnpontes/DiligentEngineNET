@@ -2,27 +2,29 @@ namespace Diligent;
 
 internal partial class EngineFactoryD3D11 : IEngineFactoryD3D11
 {
-    internal EngineFactoryD3D11(IntPtr handle) : base(handle){}
+    internal EngineFactoryD3D11(IntPtr handle) : base(handle)
+    {
+    }
 
     public unsafe (IRenderDevice, IDeviceContext[]) CreateDeviceAndContexts(EngineD3D11CreateInfo createInfo)
     {
         var createInfoData = EngineD3D11CreateInfo.GetInternalStruct(createInfo);
         var createInfoPtr = &createInfoData;
         var renderDevicePtr = IntPtr.Zero;
-        var deviceContextsPointers = new IntPtr[createInfo.NumImmediateContexts + createInfo.NumDeferredContexts];
-        var deviceContextsPointersSpan = deviceContextsPointers.AsSpan();
+        var deviceContextsPointers = IntPtr.Zero;
 
-        fixed (void* deviceContextsPtr = deviceContextsPointersSpan)
-        {
-            Interop.engine_factory_d3d11_create_device_and_contexts_d3d11(
-                Handle,
-                new IntPtr(createInfoPtr),
-                new IntPtr(&renderDevicePtr),
-                new IntPtr(&deviceContextsPtr));
-        }
+        Interop.engine_factory_d3d11_create_device_and_contexts_d3d11(
+            Handle,
+            new IntPtr(createInfoPtr),
+            new IntPtr(&renderDevicePtr),
+            new IntPtr(&deviceContextsPointers));
 
-        return (CreateRenderDevice(renderDevicePtr), CreateDeviceContexts(deviceContextsPointers));
-        
+        return (
+            CreateRenderDevice(renderDevicePtr),
+            CreateDeviceContexts(deviceContextsPointers,
+                (int)(createInfo.NumImmediateContexts + createInfo.NumDeferredContexts))
+        );
+
         IRenderDevice CreateRenderDevice(IntPtr handle)
         {
             if (handle == IntPtr.Zero)
@@ -30,44 +32,35 @@ internal partial class EngineFactoryD3D11 : IEngineFactoryD3D11
             return NativeObjectRegistry.GetOrCreate(() => new RenderDevice(handle), handle);
         }
 
-        IDeviceContext[] CreateDeviceContexts(IntPtr[] handles)
+        IDeviceContext[] CreateDeviceContexts(IntPtr handle, int numDevices)
         {
-            var result = new IDeviceContext[handles.Length];
-            var failedIdx = -1;
+            if (handle == IntPtr.Zero)
+                throw new NullReferenceException($"Failed to create {nameof(IDeviceContext)}[]");
             
-            for (var i = 0; i < handles.Length; ++i)
+            var result = new IDeviceContext[int.Max(numDevices, 1)];
+            for (var i = 0; i < result.Length; ++i)
             {
-                var handle = handles[i];
-                if (handle == IntPtr.Zero)
-                {
-                    failedIdx = i;
-                    break;
-                }
                 var target = IntPtr.Add(handle, i * sizeof(IntPtr));
                 result[i] = NativeObjectRegistry.GetOrCreate(() => new DeviceContext(target), target);
             }
 
-            if (failedIdx == -1) 
-                return result;
-            
-            // release created devices
-            for (var i = 0; i < failedIdx; ++i)
-                result[i].Dispose();
-            throw new NullReferenceException($"Failed to create {nameof(IDeviceContext)} at '{failedIdx}' index.");
+            return result;
         }
     }
 
-    public ISwapChain CreateSwapChain(IRenderDevice device, IDeviceContext immediateContext, SwapChainDesc swapChainDesc,
+    public ISwapChain CreateSwapChain(IRenderDevice device, IDeviceContext immediateContext,
+        SwapChainDesc swapChainDesc,
         FullScreenModeDesc fullScreenDesc, NativeWindow window)
     {
         throw new NotImplementedException();
     }
 
-    public unsafe DisplayModeAttribs[] EnumerateDisplayModes(Version minFeatureLevel, uint adapterId, uint outputId, TextureFormat format)
+    public unsafe DisplayModeAttribs[] EnumerateDisplayModes(Version minFeatureLevel, uint adapterId, uint outputId,
+        TextureFormat format)
     {
         uint numDisplayModes = 0;
         var minFeatureLvlStruct = Version.GetInternalStruct(minFeatureLevel);
-        
+
         var versionPtr = &minFeatureLvlStruct;
         var numDisplayModesPtr = &numDisplayModes;
 
