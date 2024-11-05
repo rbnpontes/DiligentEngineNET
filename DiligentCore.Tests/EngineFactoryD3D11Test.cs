@@ -29,7 +29,6 @@ public class EngineFactoryD3D11Test
         var createInfo = new EngineD3D11CreateInfo()
         {
             EnableValidation = true,
-            NumImmediateContexts = 1,
             GraphicsAPIVersion = new Version(11, 0)
         };
         
