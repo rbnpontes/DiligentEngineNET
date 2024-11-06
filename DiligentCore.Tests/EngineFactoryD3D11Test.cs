@@ -1,5 +1,4 @@
 using Diligent.Tests.Utils;
-
 namespace Diligent.Tests;
 
 [TestFixture]
@@ -59,6 +58,40 @@ public class EngineFactoryD3D11Test
 
         foreach (var deviceCtx in deviceContexts)
             deviceCtx.Dispose();
+        renderDevice.Dispose();
+    }
+
+    
+    [Test]
+    public void MustCreateSwapChain()
+    {
+        if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("CI")))
+        {
+            Assert.Pass();
+            return;
+        }
+
+        using var window = new TestWindow();
+        using var factory = GetFactory();
+        (var renderDevice, var deviceContexts) = factory.CreateDeviceAndContexts(new EngineD3D11CreateInfo());
+        
+        Assert.That(window.Handle, Is.Not.EqualTo(IntPtr.Zero));
+        
+        var swapChain = factory.CreateSwapChain(
+            renderDevice,
+            deviceContexts[0],
+            new SwapChainDesc(),
+            new FullScreenModeDesc(),
+            WindowHandle.CreateWin32Window(window.Handle));
+        
+        Assert.That(swapChain, Is.Not.Null);
+        
+        window.PollEvents();
+        
+        swapChain.Dispose();
+        
+        foreach (var ctx in deviceContexts)
+            ctx.Dispose();
         renderDevice.Dispose();
     }
 }
