@@ -1,10 +1,20 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Security;
 
 namespace Diligent;
 
 internal partial class EngineFactoryD3D11 : IEngineFactoryD3D11
 {
+    internal partial class Interop
+    {
+        [LibraryImport(Constants.LibName)]
+        [SuppressUnmanagedCodeSecurity]
+        [UnmanagedCallConv(CallConvs = new System.Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
+        public static partial void engine_factory_d3d11_create_swapchain_d3d11(IntPtr handle, IntPtr renderDevice,
+            IntPtr immediateContext, IntPtr swapChainDesc, IntPtr fullScreenDesc, IntPtr window, IntPtr swapChain);
+    }
+    
     internal EngineFactoryD3D11(IntPtr handle) : base(handle)
     {
     }
@@ -45,11 +55,32 @@ internal partial class EngineFactoryD3D11 : IEngineFactoryD3D11
         }
     }
 
-    public ISwapChain CreateSwapChain(IRenderDevice device, IDeviceContext immediateContext,
+    public unsafe ISwapChain CreateSwapChain(IRenderDevice device, IDeviceContext immediateContext,
         SwapChainDesc swapChainDesc,
-        FullScreenModeDesc fullScreenDesc, NativeWindow window)
+        FullScreenModeDesc fullScreenDesc, WindowHandle window)
     {
-        throw new NotImplementedException();
+        var windowHandleData = WindowHandle.GetInternalStruct(window);
+        var swapChainDescData = SwapChainDesc.GetInternalStruct(swapChainDesc);
+        var fullScreenDescData = FullScreenModeDesc.GetInternalStruct(fullScreenDesc);
+        var swapChainPtr = IntPtr.Zero;
+     
+        Interop.engine_factory_d3d11_create_swapchain_d3d11(Handle, 
+            device.Handle, 
+            immediateContext.Handle, 
+            new IntPtr(&swapChainDescData),
+            new IntPtr(&fullScreenDescData),
+            new IntPtr(&windowHandleData),
+            new IntPtr(&swapChainPtr));
+
+        return InternalCreateSwapChain(swapChainPtr);
+        
+        ISwapChain InternalCreateSwapChain(IntPtr handle)
+        {
+            if (handle == IntPtr.Zero)
+                throw new NullReferenceException($"Failed to create {nameof(ISwapChain)}");
+
+            return NativeObjectRegistry.GetOrCreate(() => new SwapChain(handle), handle);
+        }
     }
 
     public unsafe DisplayModeAttribs[] EnumerateDisplayModes(Version minFeatureLevel, uint adapterId, uint outputId,
