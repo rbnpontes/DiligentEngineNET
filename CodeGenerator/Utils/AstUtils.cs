@@ -46,9 +46,16 @@ public static class AstUtils
         return pointerType.ElementType.TypeKind == CppTypeKind.Function;
     }
 
+    public static bool IsAllowedClass(CppClass @class)
+    {
+        return !ExclusionList.Classes.Contains(@class.Name);
+    }
+    
     public static bool IsAllowedFunction(CppFunction function)
     {
-        return !function.IsFunctionTemplate;
+        if (function.IsFunctionTemplate)
+            return false;
+        return !ExclusionList.Methods.Contains(function.Name);
     }
     
     public static CppFunctionType GetFunctionPointerType(CppType type)

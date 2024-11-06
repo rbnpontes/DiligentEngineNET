@@ -21,7 +21,7 @@ public class CppCodeGenerator(string diligentCorePath, string baseOutputDir, Cpp
     public void Build()
     {
         var diligentNamespace = compilation.Namespaces.First(x => x.Name == "Diligent");
-        foreach (var @class in diligentNamespace.Classes)
+        foreach (var @class in diligentNamespace.Classes.Where(AstUtils.IsAllowedClass))
         {
             if(!CppTypeUtils.CanBeGenerated(@class))
                 continue;

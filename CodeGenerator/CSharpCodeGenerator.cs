@@ -21,9 +21,11 @@ public class CSharpCodeGenerator(string diligentCorePath, string outputBaseDir, 
     public void Build()
     {
         var diligentNamespace = compilation.Namespaces.First(x => x.Name == "Diligent");
-        foreach (var @class in diligentNamespace.Classes)
+        var classes = compilation.Classes.Concat(diligentNamespace.Classes).Where(AstUtils.IsAllowedClass);
+        var enums = compilation.Enums.Concat(diligentNamespace.Enums);
+        foreach (var @class in classes)
             BuildClassCode(@class);
-        foreach (var @enum in diligentNamespace.Enums)
+        foreach (var @enum in enums)
             BuildEnumCode(@enum);
         BuildConstantsCode(diligentNamespace.Fields.ToArray());
     }

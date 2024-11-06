@@ -5,6 +5,7 @@ using CodeGenerator;
 
 var diligentCorePath = args[0];
 var outDir = args[1];
+var glueDir = args[2];
 
 var parserOptions = new CppParserOptions();
 parserOptions.Defines.AddRange([
@@ -22,6 +23,7 @@ parserOptions.IncludeFolders.AddRange([
 ]);
 
 var compilation = CppParser.ParseFiles([
+    Path.Combine(glueDir, "WindowHandle.h"),
     Path.Combine(diligentCorePath, "Primitives/interface/DebugOutput.h"),
     Path.Combine(diligentCorePath, "Primitives/interface/FileStream.h"),
     Path.Combine(diligentCorePath, "Graphics/GraphicsEngine/interface/Dearchiver.h"),
