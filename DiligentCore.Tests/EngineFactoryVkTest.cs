@@ -3,6 +3,7 @@ using Diligent.Tests.Utils;
 namespace Diligent.Tests;
 
 [TestFixture]
+[NonParallelizable]
 public class EngineFactoryVkTest
 {
     private IEngineFactoryVk GetFactory()
@@ -39,7 +40,7 @@ public class EngineFactoryVkTest
             EnableValidation = true,
             NumDeferredContexts = 3
         };
-        (var device, var contexts) = factory.CreateDeviceAndContexts(new EngineVkCreateInfo());
+        (var device, var contexts) = factory.CreateDeviceAndContexts(createInfo);
         Assert.That(contexts, Has.Length.EqualTo(4));
 
         foreach (var ctx in contexts)

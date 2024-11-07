@@ -1,6 +1,7 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security;
+using Diligent.Utils;
 
 namespace Diligent;
 
@@ -21,12 +22,12 @@ internal partial class EngineFactoryD3D11 : IEngineFactoryD3D11
 
     public unsafe (IRenderDevice, IDeviceContext[]) CreateDeviceAndContexts(EngineD3D11CreateInfo createInfo)
     {
-        var numDevices = (int)(int.Max((int)createInfo.NumImmediateContexts, 1) + createInfo.NumDeferredContexts);
+        var numDeferredContexts = (int)(int.Max((int)createInfo.NumImmediateContexts, 1) + createInfo.NumDeferredContexts);
         var createInfoData = EngineD3D11CreateInfo.GetInternalStruct(createInfo);
         var createInfoPtr = &createInfoData;
         var renderDevicePtr = IntPtr.Zero;
 
-        var deviceContextsPointers = new IntPtr[numDevices];
+        var deviceContextsPointers = new IntPtr[numDeferredContexts];
         fixed(void* deviceContextsPtr = deviceContextsPointers.AsSpan())
             Interop.engine_factory_d3d11_create_device_and_contexts_d3d11(
                 Handle,
@@ -35,24 +36,9 @@ internal partial class EngineFactoryD3D11 : IEngineFactoryD3D11
                 new IntPtr(deviceContextsPtr));
 
         return (
-            CreateRenderDevice(renderDevicePtr),
-            CreateDeviceContexts(deviceContextsPointers)
+            DiligentObjectsFactory.CreateRenderDevice(renderDevicePtr),
+            DiligentObjectsFactory.CreateDeviceContexts(deviceContextsPointers)
         );
-
-        IRenderDevice CreateRenderDevice(IntPtr handle)
-        {
-            if (handle == IntPtr.Zero)
-                throw new NullReferenceException($"Failed to create {nameof(IRenderDevice)}");
-            return NativeObjectRegistry.GetOrCreate(() => new RenderDevice(handle), handle);
-        }
-
-        IDeviceContext[] CreateDeviceContexts(IntPtr[] handle)
-        {
-            return handle.Select(x =>
-            {
-                return NativeObjectRegistry.GetOrCreate<IDeviceContext>(() => new DeviceContext(x), x);
-            }).ToArray();
-        }
     }
 
     public unsafe ISwapChain CreateSwapChain(IRenderDevice device, IDeviceContext immediateContext,
@@ -72,15 +58,7 @@ internal partial class EngineFactoryD3D11 : IEngineFactoryD3D11
             new IntPtr(&windowHandleData),
             new IntPtr(&swapChainPtr));
 
-        return InternalCreateSwapChain(swapChainPtr);
-        
-        ISwapChain InternalCreateSwapChain(IntPtr handle)
-        {
-            if (handle == IntPtr.Zero)
-                throw new NullReferenceException($"Failed to create {nameof(ISwapChain)}");
-
-            return NativeObjectRegistry.GetOrCreate(() => new SwapChain(handle), handle);
-        }
+        return DiligentObjectsFactory.CreateSwapChain(swapChainPtr);
     }
 
     public unsafe DisplayModeAttribs[] EnumerateDisplayModes(Version minFeatureLevel, uint adapterId, uint outputId,
