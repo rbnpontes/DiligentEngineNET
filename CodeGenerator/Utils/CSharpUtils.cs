@@ -93,7 +93,7 @@ public static class CSharpUtils
 
         return result.ToString();
     }
-
+    
     public static string GetStructField(CppType type, string fieldName)
     {
         var result = new StringBuilder();

@@ -337,6 +337,71 @@ public class CSharpCodeGenerator(string diligentCorePath, string outputBaseDir, 
         {
             if (CSharpUtils.RequiresSpecialSetStructMethod(field))
                 continue;
+            if (AstUtils.IsStringType(field.Type))
+            {
+                var arrayType = (CppArrayType)field.Type;
+                builder
+                    .Line($"public unsafe string {field.Name}")
+                    .Closure(propBodyBuilder =>
+                    {
+                        propBodyBuilder
+                            .Line("get")
+                            .Closure(getBuilder =>
+                            {
+                                getBuilder
+                                    .Line($"fixed (sbyte* ptr = _data.{field.Name})")
+                                    .Line($"\treturn new string(ptr, 0, {arrayType.Size});");
+                            })
+                            .Line("set")
+                            .Closure(setBuilder =>
+                            {
+                                setBuilder
+                                    .Line($"for (var i = 0; i < int.Min(value.Length, {arrayType.Size}); ++i)")
+                                    .Line($"\t_data.{field.Name}[i] = (sbyte)value[i];");
+                            });
+                    });
+                continue;
+            } 
+            
+            if (AstUtils.IsArrayType(field.Type) && !AstUtils.IsMultiDimensionalArray(field.Type))
+            {
+                var arrayType = (CppArrayType)field.Type;
+                var propType = CSharpUtils.GetPropertyType(arrayType.ElementType);
+                var isEnum = AstUtils.IsEnumType(arrayType.ElementType);
+                
+                builder.Line($"public unsafe {propType}[] {field.Name}");
+                builder.Closure(propBodyBuilder =>
+                {
+                    propBodyBuilder
+                        .Line("get")
+                        .Closure(getBuilder =>
+                        {
+                            var accessor = $"_data.{field.Name}[i]";
+                            if (isEnum)
+                                accessor = $"({propType}){accessor}";
+                            getBuilder
+                                .Line($"var result = new {propType}[{arrayType.Size}];")
+                                .Line("for (var i = 0; i < result.Length; ++i)")
+                                .Line($"\tresult[i] = {accessor};")
+                                .Line("return result;");
+                        })
+                        .Line("set")
+                        .Closure(setBuilder =>
+                        {
+                            var accessor = $"value[i]";
+                            if (isEnum)
+                            {
+                                var enumType = (CppEnum)arrayType.ElementType;
+                                accessor = $"({CSharpUtils.GetPropertyType(enumType.IntegerType)}){accessor}";
+                            }
+                            setBuilder
+                                .Line($"for (var i = 0; i < int.Min(value.Length, {arrayType.Size}); ++i)")
+                                .Line($"\t_data.{field.Name}[i] = {accessor};");
+                        });
+                });
+                continue;
+            }
+            
             var propDef = CSharpUtils.GetPropertyField(field.Type, field.Name);
             if(string.IsNullOrEmpty(propDef))
                 continue;

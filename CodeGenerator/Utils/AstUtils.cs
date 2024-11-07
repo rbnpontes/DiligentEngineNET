@@ -57,24 +57,31 @@ public static class AstUtils
             return false;
         return !ExclusionList.Methods.Contains(function.Name);
     }
-    
-    public static CppFunctionType GetFunctionPointerType(CppType type)
+
+    public static bool IsArrayType(CppType type)
     {
-        if (type.TypeKind == CppTypeKind.Typedef)
-            type = ResolveTypeDef((CppTypedef)type);
-        if (type.TypeKind != CppTypeKind.Pointer)
-            ThrowInvalidType();
+        return type is CppArrayType;
+    }
 
-        var pointerType = (CppPointerType)type;
-        if(pointerType.ElementType.TypeKind != CppTypeKind.Function)
-            ThrowInvalidType();
-
-        return (CppFunctionType)pointerType.ElementType;
-        
-        void ThrowInvalidType()
-        {
-            throw new ArgumentException("Invalid argument type. The provided type is not a function type.");
-        }
+    public static bool IsEnumType(CppType type)
+    {
+        return type is CppEnum;
+    }
+    
+    public static CppPrimitiveType? GetPrimitiveType(CppType type)
+    {
+        type = Resolve(type);
+        return type as CppPrimitiveType;
+    }
+    public static bool IsStringType(CppType type)
+    {
+        if (!IsArrayType(type))
+            return false;
+        var arrayType = (CppArrayType)type;
+        var primitiveType = GetPrimitiveType(arrayType.ElementType);
+        if (primitiveType is null)
+            return false;
+        return primitiveType.Kind == CppPrimitiveKind.Char;
     }
 
     public static bool HasClassFields(CppClass @class)
