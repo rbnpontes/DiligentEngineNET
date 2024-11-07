@@ -19,7 +19,7 @@ public class BaseRenderTest
         else
         {
             var vkFactory = DiligentCore.GetEngineFactoryVk() ?? throw new NullReferenceException();
-            (var device, var contexts) = vkFactory.CreateAndContexts(new EngineVkCreateInfo());
+            (var device, var contexts) = vkFactory.CreateDeviceAndContexts(new EngineVkCreateInfo());
             Factory = vkFactory;
             Device = device;
             Context = contexts.First();

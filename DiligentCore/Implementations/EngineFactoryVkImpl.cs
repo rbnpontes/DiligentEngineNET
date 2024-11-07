@@ -6,7 +6,7 @@ internal partial class EngineFactoryVk : IEngineFactoryVk
     {
     }
 
-    public (IRenderDevice, IDeviceContext[]) CreateAndContexts(EngineVkCreateInfo createInfo)
+    public (IRenderDevice, IDeviceContext[]) CreateDeviceAndContexts(EngineVkCreateInfo createInfo)
     {
         throw new NotImplementedException();
     }
