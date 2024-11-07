@@ -16,7 +16,7 @@ public unsafe class TestWindow : IDisposable
         if (!SDL_Init(0))
             throw new Exception("Failed to initialize Test Window");
 
-        _window = SDL_CreateWindow("Test Window", 800, 400, 0x0);
+        _window = SDL_CreateWindow("Test Window", 800, 400, SDL_WindowFlags.SDL_WINDOW_BORDERLESS);
         SDL_ShowWindow(_window);
     }
 
