@@ -9,6 +9,13 @@ internal static class DiligentObjectsFactory
         return NativeObjectRegistry.GetOrCreate(() => new RenderDevice(handle), handle);
     }
 
+    public static IDeviceContext CreateDeviceContext(IntPtr handle)
+    {
+        if (handle == IntPtr.Zero)
+            throw new NullReferenceException($"Failed to create {nameof(IDeviceContext)}");
+        return NativeObjectRegistry.GetOrCreate(() => new DeviceContext(handle), handle);
+    }
+    
     public static IDeviceContext[] CreateDeviceContexts(IntPtr[] handle)
     {
         return handle.Select(x =>
@@ -23,5 +30,12 @@ internal static class DiligentObjectsFactory
             throw new NullReferenceException($"Failed to create {nameof(ISwapChain)}");
 
         return NativeObjectRegistry.GetOrCreate(() => new SwapChain(handle), handle);
+    }
+
+    public static IHLSL2GLSLConverter CreateHlsl2GlslConverter(IntPtr handle)
+    {
+        if (handle == IntPtr.Zero)
+            throw new NullReferenceException($"Failed to create {nameof(IHLSL2GLSLConverter)}");
+        return NativeObjectRegistry.GetOrCreate(() => new HLSL2GLSLConverter(handle), handle);
     }
 }

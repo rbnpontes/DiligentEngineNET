@@ -8,6 +8,7 @@ public static class ExclusionList
         "CreateSwapChainD3D12",
         "CreateSwapChainVk",
         "CreateDeviceAndSwapChainGL",
+        "AttachToActiveGLContext"
     ];
 
     public static string[] Classes =

@@ -69,4 +69,11 @@ public partial class WindowHandle
         wnd._data.window_handle_ = systemWindowPtr;
         return wnd;
     }
+
+    public static WindowHandle CreateNull()
+    {
+        var wnd = new WindowHandle();
+        wnd._data.window_handle_ = IntPtr.Zero;
+        return wnd;
+    }
 }

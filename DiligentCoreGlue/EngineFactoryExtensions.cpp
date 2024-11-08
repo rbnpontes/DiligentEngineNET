@@ -118,7 +118,7 @@ EXPORT void engine_factory_vk_create_swap_chain_vk(void* factory,
 		swap_chain);
 }
 
-EXPORT void engine_factory_open_gl_create_device_and_swap_chain_gl(void* factory,
+EXPORT void engine_factory_open_gl_create_device_and_swap_chain_gl(IEngineFactoryOpenGL* factory,
 	EngineOpenGlCreateInfo* create_info,
 	IRenderDevice** device,
 	IDeviceContext** immediate_context,
@@ -128,11 +128,23 @@ EXPORT void engine_factory_open_gl_create_device_and_swap_chain_gl(void* factory
 	EngineGLCreateInfo ci;
 	utils_get_gl_create_info(create_info, ci);
 
-	IEngineFactoryOpenGL* gl_factory = static_cast<IEngineFactoryOpenGL*>(factory);
-	gl_factory->CreateDeviceAndSwapChainGL(
+	factory->CreateDeviceAndSwapChainGL(
 		ci,
 		device,
 		immediate_context,
 		*swap_chain_desc,
 		swap_chain);
+}
+
+EXPORT void engine_factory_open_gl_attach_to_active_glcontext(IEngineFactoryOpenGL* factory,
+	EngineOpenGlCreateInfo* create_info,
+	IRenderDevice** device,
+	IDeviceContext** immediate_context)
+{
+	EngineGLCreateInfo ci;
+	utils_get_gl_create_info(create_info, ci);
+	factory->AttachToActiveGLContext(
+		ci,
+		device,
+		immediate_context);
 }
