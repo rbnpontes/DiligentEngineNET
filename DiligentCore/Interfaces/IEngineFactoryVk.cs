@@ -6,4 +6,6 @@ public interface IEngineFactoryVk : IEngineFactory
 
     ISwapChain CreateSwapChain(IRenderDevice device, IDeviceContext immediateContext, SwapChainDesc swapChainDesc,
         WindowHandle window);
+
+    void EnableDeviceSimulation();
 }

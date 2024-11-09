@@ -33,6 +33,9 @@ var compilation = CppParser.ParseFiles([
     Path.Combine(diligentCorePath, "Graphics/GraphicsEngineOpenGL/interface/EngineFactoryOpenGL.h"),
 ], parserOptions);
 
+if (compilation.HasErrors)
+    throw new Exception(compilation.Diagnostics.ToString());
+
 ICodeGenerator[] generators = [
     new CppCodeGenerator(diligentCorePath, outDir, compilation),
     new CSharpCodeGenerator(diligentCorePath, outDir, compilation)

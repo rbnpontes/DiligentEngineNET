@@ -99,7 +99,7 @@ EXPORT void engine_factory_d3d12_create_swap_chain_d3d12(void* factory,
 #endif
 }
 
-EXPORT void engine_factory_vk_create_swap_chain_vk(void* factory,
+EXPORT void engine_factory_vk_create_swap_chain_vk(IEngineFactoryVk* factory,
 	IRenderDevice* device,
 	IDeviceContext* immediate_ctx,
 	SwapChainDesc* swap_chain_desc,
@@ -109,8 +109,7 @@ EXPORT void engine_factory_vk_create_swap_chain_vk(void* factory,
 	NativeWindow native_window;
 	utils_get_native_window(window, native_window);
 
-	IEngineFactoryVk* vk_factory = static_cast<IEngineFactoryVk*>(factory);
-	vk_factory->CreateSwapChainVk(
+	factory->CreateSwapChainVk(
 		device,
 		immediate_ctx,
 		*swap_chain_desc,
