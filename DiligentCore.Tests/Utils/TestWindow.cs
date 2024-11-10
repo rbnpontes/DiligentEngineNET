@@ -1,3 +1,4 @@
+using System.Drawing;
 using SDL;
 using static SDL.SDL3;
 
@@ -6,6 +7,17 @@ namespace Diligent.Tests.Utils;
 public unsafe class TestWindow : IDisposable
 {
     private SDL_Window* _window;
+
+    public Size Size
+    {
+        get
+        {
+            var x = 0;
+            var y = 0;
+            SDL_GetWindowSize(_window, &x, &y);
+            return new Size(x, y);
+        }
+    }
 
     public IntPtr Handle => SDL_GetPointerProperty(
         SDL_GetWindowProperties(_window), SDL_PROP_WINDOW_WIN32_HWND_POINTER, IntPtr.Zero
