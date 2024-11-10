@@ -14,10 +14,6 @@ internal partial class EngineFactoryD3D12 : IEngineFactoryD3D12
         public static partial void engine_factory_d3d12_create_swap_chain_d3d12(IntPtr factory, IntPtr device,
             IntPtr immediateContext, IntPtr swapChainDesc, IntPtr fullScreenModeDesc, IntPtr window, IntPtr swapChain);
     }
-    
-    public EngineFactoryD3D12() : base()
-    {
-    }
 
     internal EngineFactoryD3D12(IntPtr handle) : base(handle)
     {
@@ -26,6 +22,7 @@ internal partial class EngineFactoryD3D12 : IEngineFactoryD3D12
     public void LoadD3D12(string dllName = "d3d12.dll")
     {
         var dllNamePtr = Marshal.StringToHGlobalAnsi(dllName);
+        Interop.engine_factory_d3d12_load_d3d12(Handle, dllNamePtr);
         Marshal.FreeHGlobal(dllNamePtr);
     }
 

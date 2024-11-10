@@ -21,8 +21,7 @@ internal partial class EngineFactoryVk : IEngineFactoryVk
 
     public unsafe (IRenderDevice, IDeviceContext[]) CreateDeviceAndContexts(EngineVkCreateInfo createInfo)
     {
-        var numDeferredContexts =
-            (int)(int.Max((int)createInfo.NumImmediateContexts, 1) + createInfo.NumDeferredContexts);
+        var numDeferredContexts = GetNumDeferredContexts(createInfo);
         var createInfoData = EngineVkCreateInfo.GetInternalStruct(createInfo);
         var renderDevicePtr = IntPtr.Zero;
         var deviceContexts = new IntPtr[numDeferredContexts];
