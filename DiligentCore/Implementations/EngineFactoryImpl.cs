@@ -149,4 +149,9 @@ internal abstract partial class EngineFactory : IEngineFactory
 
         _callback(severity, messageStr, funcStr, fileStr, line);
     }
+
+    protected int GetNumDeferredContexts(EngineCreateInfo createInfo)
+    {
+        return (int)(int.Max((int)createInfo.NumImmediateContexts, 1) + createInfo.NumDeferredContexts);
+    }
 }

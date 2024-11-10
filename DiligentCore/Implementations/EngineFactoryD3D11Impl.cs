@@ -22,7 +22,7 @@ internal partial class EngineFactoryD3D11 : IEngineFactoryD3D11
 
     public unsafe (IRenderDevice, IDeviceContext[]) CreateDeviceAndContexts(EngineD3D11CreateInfo createInfo)
     {
-        var numDeferredContexts = (int)(int.Max((int)createInfo.NumImmediateContexts, 1) + createInfo.NumDeferredContexts);
+        var numDeferredContexts = GetNumDeferredContexts(createInfo);
         var createInfoData = EngineD3D11CreateInfo.GetInternalStruct(createInfo);
         var createInfoPtr = &createInfoData;
         var renderDevicePtr = IntPtr.Zero;
