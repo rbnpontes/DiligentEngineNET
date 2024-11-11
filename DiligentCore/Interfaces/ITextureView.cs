@@ -1,6 +1,6 @@
 namespace Diligent;
 
-public interface ITextureView : IDiligentObject
+public interface ITextureView : IDeviceObject
 {
     
 }
