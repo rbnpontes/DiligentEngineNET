@@ -33,5 +33,6 @@ public interface IRenderDevice : IDiligentObject
      TextureFormatInfoExt GetTextureFormatInfoExt(TextureFormat format);
      SparseTextureFormatInfo GetSparseTextureFormatInfo(TextureFormat format, ResourceDimension dimension,
           uint sampleCount);
+     void ReleaseStaleResources(bool forceRelease = false);
      void IdleGPU();
 }
