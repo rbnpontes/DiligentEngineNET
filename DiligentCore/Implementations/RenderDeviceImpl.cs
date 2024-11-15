@@ -99,10 +99,28 @@ internal unsafe partial class RenderDevice : IRenderDevice
         var compilerOutputPtr = IntPtr.Zero;
 
         createInfoData.Desc.Name = strAlloc.Acquire(createInfo.Desc.Name);
-        Interop.render_device_create_shader(Handle, 
-            new IntPtr(&createInfoData),
-            new IntPtr(&shaderPtr),
-            new IntPtr(&compilerOutputPtr));
+        createInfoData.Source = strAlloc.Acquire(createInfo.Source);
+        createInfoData.EntryPoint = strAlloc.Acquire(createInfo.EntryPoint);
+
+        var byteCode = createInfo.ByteCodeData.AsSpan();
+        fixed (void* byteCodePtr = byteCode)
+        {
+            if (createInfo.ByteCode == IntPtr.Zero)
+            {
+                createInfoData.ByteCode = new IntPtr(byteCodePtr);
+                createInfoData.ByteCodeSize = (uint)createInfo.ByteCodeData.Length;
+            }
+            else
+            {
+                createInfoData.ByteCode = createInfo.ByteCode;
+                createInfoData.ByteCodeSize = createInfo.ByteCodeSize;
+            }
+            
+            Interop.render_device_create_shader(Handle, 
+                new IntPtr(&createInfoData),
+                new IntPtr(&shaderPtr),
+                new IntPtr(&compilerOutputPtr));
+        }
 
         compilerOutput = DiligentObjectsFactory.CreateDataBlob(compilerOutputPtr);
         return DiligentObjectsFactory.CreateShader(shaderPtr);
