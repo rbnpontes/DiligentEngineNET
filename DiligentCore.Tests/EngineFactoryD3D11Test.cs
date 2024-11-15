@@ -18,7 +18,7 @@ public class EngineFactoryD3D11Test
         var version = new Version(11, 0);
         
         Assert.That(factory, Is.Not.Null);
-        var displayModes = factory.EnumerateDisplayModes(version, 0, 0, TextureFormat.TexFormatRgba8Unorm);
+        var displayModes = factory.EnumerateDisplayModes(version, 0, 0, TextureFormat.Rgba8Unorm);
         Assert.That(displayModes, Has.No.Empty);
     }
 

@@ -35,7 +35,7 @@ public class EngineFactoryTest : BaseFactoryTest
         using var engineFactory = GetFactory();
         DebugMessageCallbackDelegate callback = (severity, message, function, file, line) =>
         {
-            Assert.That(severity, Is.EqualTo(DebugMessageSeverity.DebugMessageSeverityInfo));
+            Assert.That(severity, Is.EqualTo(DebugMessageSeverity.Info));
             Assert.That(message, Is.EqualTo("Test Message"));
             Assert.That(function, Is.EqualTo(nameof(MustSetMessageCallback)));
             Assert.That(file, Is.EqualTo("EngineFactoryTest.cs"));
@@ -52,7 +52,7 @@ public class EngineFactoryTest : BaseFactoryTest
         };
 
         // do unmanaged call
-        ExecDbgMsgCallback((int)DebugMessageSeverity.DebugMessageSeverityInfo, stringPointers[0], stringPointers[1],
+        ExecDbgMsgCallback((int)DebugMessageSeverity.Info, stringPointers[0], stringPointers[1],
             stringPointers[2], 1234);
 
         Assert.That(passed, Is.True);

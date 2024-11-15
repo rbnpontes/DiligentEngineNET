@@ -12,7 +12,7 @@ public interface ISwapChain : IDiligentObject
     void Present(uint syncInterval = 1);
 
     void Resize(uint newWidth, uint newHeight,
-        SurfaceTransform newTransform = SurfaceTransform.SurfaceTransformOptimal);
+        SurfaceTransform newTransform = SurfaceTransform.Optimal);
 
     void SetFullscreenMode(DisplayModeAttribs displayMode);
 

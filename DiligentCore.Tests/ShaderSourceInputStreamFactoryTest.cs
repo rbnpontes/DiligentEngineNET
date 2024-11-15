@@ -19,7 +19,7 @@ public class ShaderSourceInputStreamFactoryTest : BaseFactoryTest
         var assemblyName = Path.GetFileName(typeof(IShaderSourceInputStreamFactory).Assembly.Location);
         var factory = GetFactory();
         using var shaderSourceStream = factory.CreateDefaultShaderSourceStreamFactory(Environment.CurrentDirectory);
-        using (shaderSourceStream.CreateInputStream(assemblyName, CreateShaderSourceInputStreamFlags.CreateShaderSourceInputStreamFlagSilent)){}
+        using (shaderSourceStream.CreateInputStream(assemblyName, CreateShaderSourceInputStreamFlags.Silent)){}
         Assert.Pass();
     }
 }

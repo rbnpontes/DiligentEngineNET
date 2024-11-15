@@ -31,7 +31,37 @@ public static class CSharpUtils
 
     public static string GetFixedEnumItemName(CppEnumItem enumItem)
     {
-        return CodeUtils.ConvertScreamingToPascalCase(enumItem.Name);
+        var @enum = (CppEnum)enumItem.Parent;
+        var name = CodeUtils.ConvertScreamingToPascalCase(enumItem.Name);
+        var originalName = name;
+
+        if (Remapper.EnumItemRemap.TryGetValue(name, out var remappedName))
+            return remappedName;
+        
+        // Diligent Engine uses C enum style instead of new enum class style
+        // so we will fix these names
+
+        var enumNameCases = @enum.Name.Split('_');
+        foreach (var enumNameCase in enumNameCases)
+        {
+            int stripIdx = 0;
+            for (stripIdx = 0; stripIdx < Math.Min(enumNameCase.Length, name.Length); ++stripIdx)
+            {
+                if(char.ToLower(enumNameCase[stripIdx]) != char.ToLower(name[stripIdx]))
+                    break;
+            }
+            name = name.Substring(stripIdx);
+        }
+
+        if (string.IsNullOrEmpty(name))
+            name = originalName;
+        
+        // if strip generates an invalid enum
+        // like the first digit is a number
+        // we place 'N' as prefix.
+        if (char.IsDigit(name.First()))
+            name = 'N' + name;
+        return name;
     }
 
     public static string GetEnumTypeSize(CppEnum @enum)

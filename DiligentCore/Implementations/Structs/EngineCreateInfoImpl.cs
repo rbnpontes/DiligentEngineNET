@@ -12,9 +12,9 @@ public partial class EngineCreateInfo
 
      public virtual void SetValidation(ValidationLevel level)
      {
-          EnableValidation = level > ValidationLevel.ValidationLevelDisabled;
-          ValidationFlags = ValidationFlags.ValidationFlagNone;
-          if (level >= ValidationLevel.ValidationLevel1)
-               ValidationFlags |= ValidationFlags.ValidationFlagCheckShaderBufferSize;
+          EnableValidation = level > ValidationLevel.Disabled;
+          ValidationFlags = ValidationFlags.None;
+          if (level >= ValidationLevel.N1)
+               ValidationFlags |= ValidationFlags.CheckShaderBufferSize;
      }
 }

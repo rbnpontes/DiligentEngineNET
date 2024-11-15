@@ -7,7 +7,7 @@ public partial class EngineD3D12CreateInfo
     {
         D3D12DllName = "d3d12.dll";
         
-        _data.D3D12ValidationFlags = D3d12ValidationFlags.D3d12ValidationFlagBreakOnCorruption;
+        _data.D3D12ValidationFlags = D3d12ValidationFlags.BreakOnCorruption;
         
         _data.CPUDescriptorHeapAllocationSize[0] = 8192;
         _data.CPUDescriptorHeapAllocationSize[1] = 2048;
@@ -38,10 +38,10 @@ public partial class EngineD3D12CreateInfo
     {
         base.SetValidation(level);
 
-        _data.D3D12ValidationFlags = D3d12ValidationFlags.D3d12ValidationFlagNone;
-        if (level >= ValidationLevel.ValidationLevel1)
-            _data.D3D12ValidationFlags |= D3d12ValidationFlags.D3d12ValidationFlagBreakOnCorruption;
-        if (level >= ValidationLevel.ValidationLevel2)
-            _data.D3D12ValidationFlags |= D3d12ValidationFlags.D3d12ValidationFlagEnableGpuBasedValidation;
+        _data.D3D12ValidationFlags = D3d12ValidationFlags.None;
+        if (level >= ValidationLevel.N1)
+            _data.D3D12ValidationFlags |= D3d12ValidationFlags.BreakOnCorruption;
+        if (level >= ValidationLevel.N2)
+            _data.D3D12ValidationFlags |= D3d12ValidationFlags.EnableGpuBasedValidation;
     }
 }

@@ -81,7 +81,7 @@ public class EngineFactoryD3D12Test
         
         Assert.That(factory, Is.Not.Null);
         factory.LoadD3D12();
-        var displayModes = factory.EnumerateDisplayModes(version, 0, 0, TextureFormat.TexFormatRgba8Unorm);
+        var displayModes = factory.EnumerateDisplayModes(version, 0, 0, TextureFormat.Rgba8Unorm);
         Assert.That(displayModes, Has.No.Empty);
     }
 }

@@ -51,7 +51,7 @@ public class SwapChainTest
         var swapChain = factory.CreateSwapChain(device, contexts[0], new SwapChainDesc(),
             new FullScreenModeDesc(), WindowHandle.CreateWin32Window(window.Handle));
 
-        var displayMode = factory.EnumerateDisplayModes(new Version(11, 0), 0, 0, TextureFormat.TexFormatRgba8Unorm)
+        var displayMode = factory.EnumerateDisplayModes(new Version(11, 0), 0, 0, TextureFormat.Rgba8Unorm)
             .First();
         swapChain.SetFullscreenMode(displayMode);
         swapChain.Dispose();

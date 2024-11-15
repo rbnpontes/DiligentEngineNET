@@ -4,10 +4,10 @@ public partial class SwapChainDesc
 {
     public SwapChainDesc()
     {
-        _data.ColorBufferFormat = TextureFormat.TexFormatRgba8UnormSrgb;
-        _data.DepthBufferFormat = TextureFormat.TexFormatD32Float;
-        _data.Usage = SwapChainUsageFlags.SwapChainUsageRenderTarget;
-        _data.PreTransform = SurfaceTransform.SurfaceTransformOptimal;
+        _data.ColorBufferFormat = TextureFormat.Rgba8UnormSrgb;
+        _data.DepthBufferFormat = TextureFormat.D32Float;
+        _data.Usage = SwapChainUsageFlags.RenderTarget;
+        _data.PreTransform = SurfaceTransform.Optimal;
         if (OperatingSystem.IsAndroid() || OperatingSystem.IsIOS())
             _data.BufferCount = 3;
         else

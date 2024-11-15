@@ -10,8 +10,8 @@ public partial class EngineD3D11CreateInfo
     {
         base.SetValidation(level);
         
-        _data.D3D11ValidationFlags = D3d11ValidationFlags.D3d11ValidationFlagNone;
-        if (level >= ValidationLevel.ValidationLevel2)
-            _data.D3D11ValidationFlags |= D3d11ValidationFlags.D3d11ValidationFlagVerifyCommittedResourceRelevance;
+        _data.D3D11ValidationFlags = D3d11ValidationFlags.None;
+        if (level >= ValidationLevel.N2)
+            _data.D3D11ValidationFlags |= D3d11ValidationFlags.VerifyCommittedResourceRelevance;
     }
 }
