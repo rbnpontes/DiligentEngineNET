@@ -359,10 +359,17 @@ public class CSharpCodeGenerator(string diligentCorePath, string outputBaseDir, 
 
             if (AstUtils.IsArrayType(field.Type) && !AstUtils.IsMultiDimensionalArray(field.Type))
             {
-                BuildArrayProperty(field);
+                BuildFixedArrayProperty(field);
                 continue;
             }
 
+            // Array members has pField and NumField
+            if (field.Name.StartsWith("Num"))
+            {
+                if(BuildArrayProperty(field))
+                    continue;
+            }
+            
             var propDef = CSharpUtils.GetPropertyField(field.Type, field.Name);
             if (string.IsNullOrEmpty(propDef))
                 continue;
@@ -425,7 +432,7 @@ public class CSharpCodeGenerator(string diligentCorePath, string outputBaseDir, 
                 });
         }
 
-        void BuildArrayProperty(CppField field)
+        void BuildFixedArrayProperty(CppField field)
         {
             var arrayType = (CppArrayType)field.Type;
             var propType = CSharpUtils.GetPropertyType(arrayType.ElementType);
@@ -462,6 +469,37 @@ public class CSharpCodeGenerator(string diligentCorePath, string outputBaseDir, 
                             .Line($"\t_data.{field.Name}[i] = {accessor};");
                     });
             });
+        }
+
+        bool BuildArrayProperty(CppField field)
+        {
+            var targetField = @class.Fields.FirstOrDefault(x => x.Name == field.Name.Replace("Num", "p"));
+            // Sometimes, when the 'Num' prefix exists but the field is not found,
+            // it indicates that the field doesn't represents an array. 
+            if (targetField is null)
+                return false;
+            
+            var propName = field.Name.Replace("Num", string.Empty);
+            var privatePropName = "_"+CodeUtils.ToCamelCase(propName);
+            var classType = AstUtils.ResolveClassPointer(targetField.Type);
+
+            builder
+                .Line($"private {classType.Name}[] {privatePropName} = [];")
+                .Line($"public {classType.Name}[] {propName}")
+                .Closure(propBodyBuilder =>
+                {
+                    propBodyBuilder
+                        .Line($"get => {privatePropName};")
+                        .Line("set")
+                        .Closure(setBuilder =>
+                        {
+                            setBuilder
+                                .Line($"{privatePropName} = value;")
+                                .Line($"_data.{field.Name} = (uint)value.Length;");
+                        });
+                });
+
+            return true;
         }
     }
 

@@ -23,7 +23,11 @@ public static class AstUtils
     {
         type = Resolve(type);
         var pointerType = (CppPointerType)type;
-        return (CppClass)pointerType.ElementType;
+        var finalType = pointerType.ElementType;
+        // Sometimes type contains 'const' qualifier
+        if (finalType.TypeKind == CppTypeKind.Qualified)
+            finalType = ((CppQualifiedType)finalType).ElementType;
+        return (CppClass)finalType;
     }
 
     public static bool IsMultiDimensionalArray(CppType type)
