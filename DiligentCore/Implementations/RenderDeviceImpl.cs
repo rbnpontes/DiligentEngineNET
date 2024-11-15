@@ -43,7 +43,7 @@ internal unsafe partial class RenderDevice : IRenderDevice
     public IBuffer CreateBuffer(BufferDesc bufferDesc)
     {
         using var strAlloc = new StringAllocator();
-        
+
         var bufferDescData = BufferDesc.GetInternalStruct(bufferDesc);
         var bufferPtr = IntPtr.Zero;
 
@@ -59,7 +59,7 @@ internal unsafe partial class RenderDevice : IRenderDevice
     public IBuffer CreateBuffer(BufferDesc bufferDesc, BufferData initialData)
     {
         using var strAlloc = new StringAllocator();
-        
+
         var bufferDescData = BufferDesc.GetInternalStruct(bufferDesc);
         var bufferDataStruct = BufferData.GetInternalStruct(new BufferData());
         var bufferPtr = IntPtr.Zero;
@@ -115,8 +115,8 @@ internal unsafe partial class RenderDevice : IRenderDevice
                 createInfoData.ByteCode = createInfo.ByteCode;
                 createInfoData.ByteCodeSize = createInfo.ByteCodeSize;
             }
-            
-            Interop.render_device_create_shader(Handle, 
+
+            Interop.render_device_create_shader(Handle,
                 new IntPtr(&createInfoData),
                 new IntPtr(&shaderPtr),
                 new IntPtr(&compilerOutputPtr));
@@ -133,7 +133,7 @@ internal unsafe partial class RenderDevice : IRenderDevice
         var texturePtr = IntPtr.Zero;
 
         textureDescData.Name = strAlloc.Acquire(textureDesc.Name);
-        Interop.render_device_create_texture(Handle, 
+        Interop.render_device_create_texture(Handle,
             new IntPtr(&textureDescData),
             IntPtr.Zero,
             new IntPtr(&texturePtr));
@@ -154,8 +154,8 @@ internal unsafe partial class RenderDevice : IRenderDevice
         {
             textureDataStruct.NumSubresources = (uint)subResourcesData.Length;
             textureDataStruct.pSubResources = new IntPtr(subResourcesPtr);
-            Interop.render_device_create_texture(Handle, 
-                new IntPtr(&textureDescData), 
+            Interop.render_device_create_texture(Handle,
+                new IntPtr(&textureDescData),
                 new IntPtr(&textureDataStruct),
                 new IntPtr(&texturePtr));
         }
@@ -167,19 +167,30 @@ internal unsafe partial class RenderDevice : IRenderDevice
     {
         var samplerDescData = SamplerDesc.GetInternalStruct(samplerDesc);
         var samplerPtr = IntPtr.Zero;
-        
+
         Interop.render_device_create_sampler(Handle, new IntPtr(&samplerDescData), new IntPtr(&samplerPtr));
         return DiligentObjectsFactory.CreateSampler(samplerPtr);
     }
 
-    public unsafe IResourceMapping CreateResourceMapping(ResourceMappingCreateInfo createInfo)
+    public IResourceMapping CreateResourceMapping(ResourceMappingCreateInfo createInfo)
     {
+        using var strAlloc = new StringAllocator();
         var createInfoData = ResourceMappingCreateInfo.GetInternalStruct(createInfo);
+        var entriesData = createInfo.Entries.Select(x =>
+        {
+            var entryData = ResourceMappingEntry.GetInternalStruct(x);
+            entryData.Name = strAlloc.Acquire(x.Name);
+            return entryData;
+        }).ToArray().AsSpan();
         var resourceMappingPtr = IntPtr.Zero;
-        
-        Interop.render_device_create_resource_mapping(Handle, 
-            new IntPtr(&createInfoData), 
-            new IntPtr(&resourceMappingPtr));
+
+        fixed (void* entriesPtr = entriesData)
+        {
+            createInfoData.pEntries = new IntPtr(entriesPtr);
+            Interop.render_device_create_resource_mapping(Handle,
+                new IntPtr(&createInfoData),
+                new IntPtr(&resourceMappingPtr));
+        }
 
         return DiligentObjectsFactory.CreateResourceMapping(resourceMappingPtr);
     }
