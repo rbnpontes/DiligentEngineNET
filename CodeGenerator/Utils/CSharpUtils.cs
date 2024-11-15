@@ -90,7 +90,21 @@ public static class CSharpUtils
             result.Append(className);
             result.Append(".GetInternalStruct(value); }");
         }
-
+        else if (AstUtils.IsVoidPointer(type))
+        {
+            // void pointer props usually has 'p' prefix
+            var fixedPropName = propName;
+            if (fixedPropName.StartsWith('p'))
+                fixedPropName = fixedPropName.Substring(1);
+            result.Append(
+                $"public IntPtr {fixedPropName} {{ get => _data.{propName}; set => _data.{propName} = value; }}");
+        }
+        else if (AstUtils.IsStringPointer(type))
+        {
+            result.Append("public string ");
+            result.Append(propName);
+            result.Append(" { get; set; } = string.Empty;");
+        }
         return result.ToString();
     }
     

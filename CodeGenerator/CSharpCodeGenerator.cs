@@ -4,16 +4,18 @@ using CppAst;
 
 namespace CodeGenerator;
 
-public class CSharpCodeGenerator(string diligentCorePath, string outputBaseDir, CppCompilation compilation) : ICodeGenerator
+public class CSharpCodeGenerator(string diligentCorePath, string outputBaseDir, CppCompilation compilation)
+    : ICodeGenerator
 {
     private readonly string _outputDir = Path.Combine(outputBaseDir, "NET");
+
     public void Setup()
     {
         if (!Directory.Exists(_outputDir))
             Directory.CreateDirectory(_outputDir);
         else
         {
-            foreach(var file in Directory.GetFiles(_outputDir))
+            foreach (var file in Directory.GetFiles(_outputDir))
                 File.Delete(file);
         }
     }
@@ -59,6 +61,7 @@ public class CSharpCodeGenerator(string diligentCorePath, string outputBaseDir, 
         var outputCodePath = Path.Combine(_outputDir, $"enum_{CSharpUtils.GetFixedEnumName(@enum)}_binding.cs");
         CodeUtils.WriteCode(outputCodePath, builder);
     }
+
     private void BuildClassCode(CppClass @class)
     {
         var builder = new CSharpBuilder();
@@ -73,7 +76,7 @@ public class CSharpCodeGenerator(string diligentCorePath, string outputBaseDir, 
             if (!isConstructable)
                 builder.Using("System.Security");
         }
-        
+
         builder.Namespace("Diligent").Line();
         var classDefCall = (CSharpBuilder builder) =>
         {
@@ -110,8 +113,8 @@ public class CSharpCodeGenerator(string diligentCorePath, string outputBaseDir, 
                     .Closure(funcBuilder => BuildGetInternalStructMethod(@class, funcBuilder))
                     .Line()
                     .Line(
-                         $"internal static unsafe void UpdateInternalStruct({className} target, {className}.__Internal data)")
-                     .Closure(funcBuilder => BuildUpdateInternalStructMethod(@class, funcBuilder));
+                        $"internal static unsafe void UpdateInternalStruct({className} target, {className}.__Internal data)")
+                    .Closure(funcBuilder => BuildUpdateInternalStructMethod(@class, funcBuilder));
                 builder.EndRegion();
             }
         };
@@ -122,7 +125,7 @@ public class CSharpCodeGenerator(string diligentCorePath, string outputBaseDir, 
             classQualifiers = "public partial";
         else
             classQualifiers = "internal partial";
-        
+
         if (baseClass is not null)
         {
             builder.Class(
@@ -138,7 +141,7 @@ public class CSharpCodeGenerator(string diligentCorePath, string outputBaseDir, 
                 className,
                 classQualifiers);
         }
-        
+
         var outputCodePath = Path.Combine(_outputDir, $"class_{className}_binding.cs");
         CodeUtils.WriteCode(outputCodePath, builder);
     }
@@ -159,7 +162,7 @@ public class CSharpCodeGenerator(string diligentCorePath, string outputBaseDir, 
         var builder = new CSharpBuilder();
         builder.Namespace("Diligent").Line();
 
-        
+
         builder.Class(classBuilder =>
         {
             foreach (var field in fields)
@@ -169,18 +172,19 @@ public class CSharpCodeGenerator(string diligentCorePath, string outputBaseDir, 
 
                 if (elementType.TypeKind == CppTypeKind.Primitive)
                     BuildPrimitiveField(field, classBuilder);
-                else if(field.Name.StartsWith("IID_"))
+                else if (field.Name.StartsWith("IID_"))
                     BuildInterfaceField(field, classBuilder);
             }
         }, "Constants", "public static partial");
-        
+
         var outputCodePath = Path.Combine(_outputDir, "constants.cs");
         CodeUtils.WriteCode(outputCodePath, builder);
 
         void BuildPrimitiveField(CppField field, CSharpBuilder builder)
         {
             var fieldName = CodeUtils.ConvertScreamingToPascalCase(field.Name);
-            builder.Line($"public const {CSharpUtils.GetUnmanagedType(field.Type)} {fieldName} = {field.InitValue.Value};");
+            builder.Line(
+                $"public const {CSharpUtils.GetUnmanagedType(field.Type)} {fieldName} = {field.InitValue.Value};");
         }
 
         // special handle case
@@ -224,15 +228,15 @@ public class CSharpCodeGenerator(string diligentCorePath, string outputBaseDir, 
                     default:
                         throw new NotImplementedException();
                 }
-                
+
                 if (i < args.Count - 1)
                     ctorArgs.Append(", ");
             }
-            
+
             builder.Line($"public static readonly INTERFACE_ID {fieldName} = new ({ctorArgs});");
         }
     }
-    
+
     private void BuildUnmanagedCalls(CppClass @class, CSharpBuilder builder)
     {
         var grpFunctions = @class.Functions
@@ -242,16 +246,16 @@ public class CSharpCodeGenerator(string diligentCorePath, string outputBaseDir, 
         foreach (var grpFunction in grpFunctions)
         {
             var isFunctionVariant = grpFunction.Count() > 1;
-            for(var funcIdx = 0; funcIdx < grpFunction.Count(); ++funcIdx)
+            for (var funcIdx = 0; funcIdx < grpFunction.Count(); ++funcIdx)
             {
                 var func = grpFunction.ElementAt(funcIdx);
-                if(AstUtils.IsOperatorFunction(func))
+                if (AstUtils.IsOperatorFunction(func))
                     continue;
                 builder.DllImport("Constants.LibName");
-                if(CSharpUtils.IsUnmanagedSpecialTypeRequiresAttr(func.ReturnType))
+                if (CSharpUtils.IsUnmanagedSpecialTypeRequiresAttr(func.ReturnType))
                     builder.Line($"[return: {CSharpUtils.GetUnmanagedSpecialAttribute(func.ReturnType)}]");
                 builder.Line(
-                    isFunctionVariant 
+                    isFunctionVariant
                         ? CSharpUtils.GetUnmanagedVariantCallDecl(@class, func, funcIdx)
                         : CSharpUtils.GetUnmanagedCallDecl(@class, func)
                 );
@@ -275,11 +279,11 @@ public class CSharpCodeGenerator(string diligentCorePath, string outputBaseDir, 
                     builder.FieldOffset((int)field.Offset + targetType.SizeOf * i);
                     builder.Line(CSharpUtils.GetStructField(targetType, $"{field.Name}_{i}"));
                 }
-                
+
                 specialMethods2Gen.Add((targetType, field.Name, arrayType.Size));
-                continue;    
+                continue;
             }
-            
+
             builder.FieldOffset((int)field.Offset);
             if (CSharpUtils.IsUnmanagedSpecialTypeRequiresAttr(field.Type))
                 builder.Line($"[{CSharpUtils.GetUnmanagedSpecialAttribute(field.Type)}]");
@@ -337,76 +341,127 @@ public class CSharpCodeGenerator(string diligentCorePath, string outputBaseDir, 
         {
             if (CSharpUtils.RequiresSpecialSetStructMethod(field))
                 continue;
-            if (AstUtils.IsStringType(field.Type))
+            if (AstUtils.IsFixedStringType(field.Type))
             {
-                var arrayType = (CppArrayType)field.Type;
-                builder
-                    .Line($"public unsafe string {field.Name}")
-                    .Closure(propBodyBuilder =>
-                    {
-                        propBodyBuilder
-                            .Line("get")
-                            .Closure(getBuilder =>
-                            {
-                                getBuilder
-                                    .Line($"fixed (sbyte* ptr = _data.{field.Name})")
-                                    .Line($"\treturn new string(ptr, 0, {arrayType.Size});");
-                            })
-                            .Line("set")
-                            .Closure(setBuilder =>
-                            {
-                                setBuilder
-                                    .Line($"for (var i = 0; i < int.Min(value.Length, {arrayType.Size}); ++i)")
-                                    .Line($"\t_data.{field.Name}[i] = (sbyte)value[i];");
-                            });
-                    });
+                BuildFixedStringProperty(field);
                 continue;
-            } 
-            
+            }
+
+            if (AstUtils.IsClassPointer(field.Type))
+            {
+                var classType = AstUtils.ResolveClassPointer(field.Type);
+                if (AstUtils.InheritsDiligentObject(classType))
+                {
+                    BuildDiligentObjectProperty(field, classType);
+                    continue;
+                }
+            }
+
             if (AstUtils.IsArrayType(field.Type) && !AstUtils.IsMultiDimensionalArray(field.Type))
             {
-                var arrayType = (CppArrayType)field.Type;
-                var propType = CSharpUtils.GetPropertyType(arrayType.ElementType);
-                var isEnum = AstUtils.IsEnumType(arrayType.ElementType);
-                
-                builder.Line($"public unsafe {propType}[] {field.Name}");
-                builder.Closure(propBodyBuilder =>
+                BuildArrayProperty(field);
+                continue;
+            }
+
+            var propDef = CSharpUtils.GetPropertyField(field.Type, field.Name);
+            if (string.IsNullOrEmpty(propDef))
+                continue;
+
+            builder.Line(propDef);
+        }
+
+        void BuildFixedStringProperty(CppField field)
+        {
+            var arrayType = (CppArrayType)field.Type;
+            builder
+                .Line($"public unsafe string {field.Name}")
+                .Closure(propBodyBuilder =>
                 {
                     propBodyBuilder
                         .Line("get")
                         .Closure(getBuilder =>
                         {
-                            var accessor = $"_data.{field.Name}[i]";
-                            if (isEnum)
-                                accessor = $"({propType}){accessor}";
                             getBuilder
-                                .Line($"var result = new {propType}[{arrayType.Size}];")
-                                .Line("for (var i = 0; i < result.Length; ++i)")
-                                .Line($"\tresult[i] = {accessor};")
-                                .Line("return result;");
+                                .Line($"fixed (sbyte* ptr = _data.{field.Name})")
+                                .Line($"\treturn new string(ptr, 0, {arrayType.Size});");
                         })
                         .Line("set")
                         .Closure(setBuilder =>
                         {
-                            var accessor = $"value[i]";
-                            if (isEnum)
-                            {
-                                var enumType = (CppEnum)arrayType.ElementType;
-                                accessor = $"({CSharpUtils.GetPropertyType(enumType.IntegerType)}){accessor}";
-                            }
                             setBuilder
                                 .Line($"for (var i = 0; i < int.Min(value.Length, {arrayType.Size}); ++i)")
-                                .Line($"\t_data.{field.Name}[i] = {accessor};");
+                                .Line($"\t_data.{field.Name}[i] = (sbyte)value[i];");
                         });
                 });
-                continue;
-            }
-            
-            var propDef = CSharpUtils.GetPropertyField(field.Type, field.Name);
-            if(string.IsNullOrEmpty(propDef))
-                continue;
+        }
 
-            builder.Line(propDef);
+        void BuildDiligentObjectProperty(CppField field, CppClass fieldClass)
+        {
+            var fieldName = field.Name;
+            // field names usually starts with 'p' prefix
+            if (fieldName.StartsWith('p'))
+                fieldName = fieldName.Substring(1);
+            // In this case, class name doesn't need to be normalized.
+            builder
+                .Line($"public {fieldClass.Name}? {fieldName}")
+                .Closure(propBodyBuilder =>
+                {
+                    propBodyBuilder
+                        .Line("get")
+                        .Closure(getBuilder =>
+                        {
+                            getBuilder.Line(
+                                $"NativeObjectRegistry.TryGetObject<{fieldClass.Name}>(_data.{field.Name}, out var output);"
+                            ).Line("return output;");
+                        })
+                        .Line($"set => _data.{field.Name} = value?.Handle ?? IntPtr.Zero;");
+                })
+                .Line($"public IntPtr {fieldName}Ptr")
+                .Closure(propBodyBuilder =>
+                {
+                    propBodyBuilder
+                        .Line($"get => _data.{field.Name};")
+                        .Line($"set => _data.{field.Name} = value;");
+                });
+        }
+
+        void BuildArrayProperty(CppField field)
+        {
+            var arrayType = (CppArrayType)field.Type;
+            var propType = CSharpUtils.GetPropertyType(arrayType.ElementType);
+            var isEnum = AstUtils.IsEnumType(arrayType.ElementType);
+
+            builder.Line($"public unsafe {propType}[] {field.Name}");
+            builder.Closure(propBodyBuilder =>
+            {
+                propBodyBuilder
+                    .Line("get")
+                    .Closure(getBuilder =>
+                    {
+                        var accessor = $"_data.{field.Name}[i]";
+                        if (isEnum)
+                            accessor = $"({propType}){accessor}";
+                        getBuilder
+                            .Line($"var result = new {propType}[{arrayType.Size}];")
+                            .Line("for (var i = 0; i < result.Length; ++i)")
+                            .Line($"\tresult[i] = {accessor};")
+                            .Line("return result;");
+                    })
+                    .Line("set")
+                    .Closure(setBuilder =>
+                    {
+                        var accessor = $"value[i]";
+                        if (isEnum)
+                        {
+                            var enumType = (CppEnum)arrayType.ElementType;
+                            accessor = $"({CSharpUtils.GetPropertyType(enumType.IntegerType)}){accessor}";
+                        }
+
+                        setBuilder
+                            .Line($"for (var i = 0; i < int.Min(value.Length, {arrayType.Size}); ++i)")
+                            .Line($"\t_data.{field.Name}[i] = {accessor};");
+                    });
+            });
         }
     }
 
@@ -440,10 +495,11 @@ public class CSharpCodeGenerator(string diligentCorePath, string outputBaseDir, 
                     builder.Line($"\tresult.{classField.Name}[i] = childData.{classField.Name}[i];");
                     continue;
                 }
+
                 builder.Line($"result.{classField.Name} = childData.{classField.Name};");
             }
         }
-        
+
         builder.Line("return result;");
     }
 
@@ -451,7 +507,7 @@ public class CSharpCodeGenerator(string diligentCorePath, string outputBaseDir, 
     {
         builder.Line("target._data = data;");
 
-        if (!AstUtils.HasBaseClass(@class)) 
+        if (!AstUtils.HasBaseClass(@class))
             return;
         var parentClass = AstUtils.GetClassParent(@class);
         var parentClassName = CSharpUtils.GetFixedClassName(parentClass);
@@ -469,8 +525,10 @@ public class CSharpCodeGenerator(string diligentCorePath, string outputBaseDir, 
                 builder.Line($"\tchildData.{classField.Name}[i] = data.{classField.Name}[i];");
                 continue;
             }
+
             builder.Line($"childData.{classField.Name} = data.{classField.Name};");
         }
+
         builder.Line($"{parentClassName}.UpdateInternalStruct(target, childData);");
     }
 }

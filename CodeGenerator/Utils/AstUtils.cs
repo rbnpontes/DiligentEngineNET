@@ -19,6 +19,13 @@ public static class AstUtils
         return result;
     }
 
+    public static CppClass ResolveClassPointer(CppType type)
+    {
+        type = Resolve(type);
+        var pointerType = (CppPointerType)type;
+        return (CppClass)pointerType.ElementType;
+    }
+
     public static bool IsMultiDimensionalArray(CppType type)
     {
         if (type is not CppArrayType arrayType)
@@ -67,13 +74,37 @@ public static class AstUtils
     {
         return type is CppEnum;
     }
+
+    public static bool IsClassPointer(CppType type)
+    {
+        type = Resolve(type);
+        if (type.TypeKind != CppTypeKind.Pointer)
+            return false;
+        var pointerType = (CppPointerType)type;
+        return pointerType.ElementType.TypeKind == CppTypeKind.StructOrClass;
+    }
+    
+    public static bool InheritsDiligentObject(CppClass type)
+    {
+        var baseType = type.BaseTypes.FirstOrDefault();
+        while (baseType is not null)
+        {
+            var baseClassType = (CppClass)baseType.Type;
+            if (baseClassType.Name == "IObject")
+                return true;
+
+            baseType = baseClassType.BaseTypes.FirstOrDefault();
+        }
+
+        return false;
+    }
     
     public static CppPrimitiveType? GetPrimitiveType(CppType type)
     {
         type = Resolve(type);
         return type as CppPrimitiveType;
     }
-    public static bool IsStringType(CppType type)
+    public static bool IsFixedStringType(CppType type)
     {
         if (!IsArrayType(type))
             return false;
@@ -84,6 +115,21 @@ public static class AstUtils
         return primitiveType.Kind == CppPrimitiveKind.Char;
     }
 
+    public static bool IsStringPointer(CppType type)
+    {
+        return type.ToString() == "Char const *";
+    }
+    
+    private static readonly HashSet<string> VoidTypeDecl = new()
+    {
+        "void const *",
+        "void *"
+    };
+    public static bool IsVoidPointer(CppType type)
+    {
+        return VoidTypeDecl.Contains(type.ToString());
+    }
+    
     public static bool HasClassFields(CppClass @class)
     {
         var result = false;
