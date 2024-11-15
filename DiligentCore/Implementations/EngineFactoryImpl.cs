@@ -1,5 +1,6 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Diligent.Utils;
 
 namespace Diligent;
 
@@ -22,7 +23,6 @@ internal abstract partial class EngineFactory : IEngineFactory
         }
     }
 
-    public EngineFactory(): base(){}
     internal EngineFactory(IntPtr handle) : base(handle)
     {
         _nativeDelegate = NativeMessageCallbackCall;
@@ -48,11 +48,10 @@ internal abstract partial class EngineFactory : IEngineFactory
     {
         var versionStruct = Version.GetInternalStruct(minVersion);
         uint numAdapters = 0;
-
-        uint* numAdaptersPtr = &numAdapters;
-        Version.__Internal* minVersionPtr = &versionStruct;
-
-        Interop.engine_factory_enumerate_adapters(Handle, new IntPtr(minVersionPtr), new IntPtr(numAdaptersPtr),
+        
+        Interop.engine_factory_enumerate_adapters(Handle, 
+            new IntPtr(&versionStruct), 
+            new IntPtr(&numAdapters),
             IntPtr.Zero);
 
         if (numAdapters == 0)
@@ -63,8 +62,8 @@ internal abstract partial class EngineFactory : IEngineFactory
         {
             Interop.engine_factory_enumerate_adapters(
                 Handle,
-                new IntPtr(minVersionPtr),
-                new IntPtr(numAdaptersPtr),
+                new IntPtr(&versionStruct),
+                new IntPtr(&numAdapters),
                 new IntPtr(adaptersPtr));
         }
 
@@ -83,14 +82,12 @@ internal abstract partial class EngineFactory : IEngineFactory
 
     public unsafe IShaderSourceInputStreamFactory CreateDefaultShaderSourceStreamFactory(string searchDirectories)
     {
-        var searchDirPtr = Marshal.StringToHGlobalAnsi(searchDirectories);
+        using var strAlloc = new StringAllocator();
         var factoryPtr = IntPtr.Zero;
-        Interop.engine_factory_create_default_shader_source_stream_factory(Handle, searchDirPtr, new IntPtr(&factoryPtr));
-        Marshal.FreeHGlobal(searchDirPtr);
-
-        if (factoryPtr == IntPtr.Zero)
-            throw new NullReferenceException($"Failed to create {nameof(IShaderSourceInputStreamFactory)}.");
-        return new ShaderSourceInputStreamFactory(factoryPtr);
+        Interop.engine_factory_create_default_shader_source_stream_factory(Handle, 
+            strAlloc.Acquire(searchDirectories), 
+            new IntPtr(&factoryPtr));
+        return DiligentObjectsFactory.CreateShaderSourceInputStreamFactory(factoryPtr);
     }
 
     public IDataBlob CreateDataBlob(ulong initialSize)
@@ -102,11 +99,7 @@ internal abstract partial class EngineFactory : IEngineFactory
     {
         var dataBlobPtr = IntPtr.Zero;
         Interop.engine_factory_create_data_blob(Handle, initialSize, data, new IntPtr(&dataBlobPtr));
-
-        if (dataBlobPtr == IntPtr.Zero)
-            throw new NullReferenceException("Failed to create IDataBlob. Diligent Core returns null");
-
-        return new DataBlob(dataBlobPtr);
+        return DiligentObjectsFactory.CreateDataBlob(dataBlobPtr);
     }
 
     public unsafe IDataBlob CreateDataBlob<T>(ref T data) where T : struct
@@ -119,22 +112,17 @@ internal abstract partial class EngineFactory : IEngineFactory
     {
         var initialSize = (ulong)(Marshal.SizeOf<T>() * data.Length);
         fixed (T* dataPtr = data)
-        {
             return CreateDataBlob(initialSize, new IntPtr(dataPtr));
-        }
     }
 
     public unsafe IDearchiver CreateDearchiver(DearchiverCreateInfo createInfo)
     {
         var createInfoInternal = DearchiverCreateInfo.GetInternalStruct(createInfo);
-        DearchiverCreateInfo.__Internal* createInfoPtr = &createInfoInternal;
         var dearchiverPtr = IntPtr.Zero;
-        
-        Interop.engine_factory_create_dearchiver(Handle, new IntPtr(createInfoPtr), new IntPtr(&dearchiverPtr));
-        if (dearchiverPtr == IntPtr.Zero)
-            throw new NullReferenceException($"Failed to create {nameof(IDearchiver)}");
-
-        return new Dearchiver(dearchiverPtr);
+        Interop.engine_factory_create_dearchiver(Handle, 
+            new IntPtr(&createInfoInternal), 
+            new IntPtr(&dearchiverPtr));
+        return DiligentObjectsFactory.CreateDearchiver(dearchiverPtr);
     }
 
     private void NativeMessageCallbackCall(DebugMessageSeverity severity, IntPtr message, IntPtr function,

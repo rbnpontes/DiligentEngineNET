@@ -2,10 +2,11 @@ namespace Diligent;
 
 public partial class EngineD3D12CreateInfo
 {
-    public string D3D12DllName { get; set; } = "d3d12.dll";
     public string DxCompilerPath { get; set; } = string.Empty;
     public unsafe EngineD3D12CreateInfo()
     {
+        D3D12DllName = "d3d12.dll";
+        
         _data.D3D12ValidationFlags = D3d12ValidationFlags.D3d12ValidationFlagBreakOnCorruption;
         
         _data.CPUDescriptorHeapAllocationSize[0] = 8192;

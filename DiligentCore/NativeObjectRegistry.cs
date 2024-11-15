@@ -27,6 +27,13 @@ internal static class NativeObjectRegistry
         return obj.TryGetTarget(out output);
     }
 
+    public static bool TryGetObject<T>(IntPtr nativePointer, out T? output) where T : INativeObject
+    {
+        var result = TryGetObject(nativePointer, out INativeObject? resultObj);
+        output = (T?)resultObj;
+        return result;
+    }
+
     public static T GetOrCreate<T>(Func<T> creationCall, IntPtr handle) where T : INativeObject
     {
         if (!TryGetObject(handle, out var output))

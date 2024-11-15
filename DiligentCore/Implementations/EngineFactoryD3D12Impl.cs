@@ -21,35 +21,26 @@ internal partial class EngineFactoryD3D12 : IEngineFactoryD3D12
 
     public void LoadD3D12(string dllName = "d3d12.dll")
     {
-        var dllNamePtr = Marshal.StringToHGlobalAnsi(dllName);
-        Interop.engine_factory_d3d12_load_d3d12(Handle, dllNamePtr);
-        Marshal.FreeHGlobal(dllNamePtr);
+        using var strAlloc = new StringAllocator();
+        Interop.engine_factory_d3d12_load_d3d12(Handle, strAlloc.Acquire(dllName));
     }
 
     public unsafe (IRenderDevice, IDeviceContext[]) CreateDeviceAndContext(EngineD3D12CreateInfo createInfo)
     {
-        var d3d12DllNamePtr = string.IsNullOrEmpty(createInfo.D3D12DllName)
-            ? IntPtr.Zero
-            : Marshal.StringToHGlobalAnsi(createInfo.D3D12DllName);
-        var dxCompilerPathPtr = string.IsNullOrEmpty(createInfo.DxCompilerPath)
-            ? IntPtr.Zero
-            : Marshal.StringToHGlobalAnsi(createInfo.DxCompilerPath);
+        using var strAlloc = new StringAllocator();
         var numDeferredContexts = GetNumDeferredContexts(createInfo);
 
         var createInfoData = EngineD3D12CreateInfo.GetInternalStruct(createInfo);
         var renderDevicePtr = IntPtr.Zero;
         var deviceContexts = new IntPtr[numDeferredContexts];
 
-        createInfoData.D3D12DllName = d3d12DllNamePtr;
-        createInfoData.pDxCompilerPath = dxCompilerPathPtr;
+        createInfoData.D3D12DllName = strAlloc.Acquire(createInfo.D3D12DllName);
+        createInfoData.pDxCompilerPath = strAlloc.Acquire(createInfo.DxCompilerPath);
         fixed (void* deviceContextsPtr = deviceContexts.AsSpan())
             Interop.engine_factory_d3d12_create_device_and_contexts_d3d12(Handle,
                 new IntPtr(&createInfoData),
                 new IntPtr(&renderDevicePtr),
                 new IntPtr(deviceContextsPtr));
-
-        Marshal.FreeHGlobal(d3d12DllNamePtr);
-        Marshal.FreeHGlobal(dxCompilerPathPtr);
         return (
             DiligentObjectsFactory.CreateRenderDevice(renderDevicePtr),
             DiligentObjectsFactory.CreateDeviceContexts(deviceContexts)
@@ -65,12 +56,7 @@ internal partial class EngineFactoryD3D12 : IEngineFactoryD3D12
         ICommandQueueD3D12[] commandQueues,
         EngineD3D12CreateInfo createInfo)
     {
-        var d3d12DllNamePtr = string.IsNullOrEmpty(createInfo.D3D12DllName)
-            ? IntPtr.Zero
-            : Marshal.StringToHGlobalAnsi(createInfo.D3D12DllName);
-        var dxCompilerPathPtr = string.IsNullOrEmpty(createInfo.DxCompilerPath)
-            ? IntPtr.Zero
-            : Marshal.StringToHGlobalAnsi(createInfo.DxCompilerPath);
+        using var strAlloc = new StringAllocator();
         var numDeferredContexts = GetNumDeferredContexts(createInfo);
         
         var createInfoData = EngineD3D12CreateInfo.GetInternalStruct(createInfo);
@@ -80,8 +66,8 @@ internal partial class EngineFactoryD3D12 : IEngineFactoryD3D12
             .Select(x => x.Handle)
             .ToArray();
         
-        createInfoData.D3D12DllName = d3d12DllNamePtr;
-        createInfoData.pDxCompilerPath = dxCompilerPathPtr;
+        createInfoData.D3D12DllName = strAlloc.Acquire(createInfo.D3D12DllName);
+        createInfoData.pDxCompilerPath = strAlloc.Acquire(createInfo.DxCompilerPath);
         fixed (void* deviceContextsPtr = deviceContexts.AsSpan())
         {
             fixed (void* commandQueuesPtr = commandQueuesPointers.AsSpan())
@@ -97,8 +83,6 @@ internal partial class EngineFactoryD3D12 : IEngineFactoryD3D12
             }
         }
 
-        Marshal.FreeHGlobal(d3d12DllNamePtr);
-        Marshal.FreeHGlobal(dxCompilerPathPtr);
         return (
             DiligentObjectsFactory.CreateRenderDevice(renderDevicePtr),
             DiligentObjectsFactory.CreateDeviceContexts(deviceContexts)
