@@ -64,6 +64,12 @@ internal static class DiligentObjectsFactory
         return NativeObjectRegistry.GetOrCreate(() => new Buffer(handle), handle);
     }
 
+    public static IBufferView CreateBufferView(IntPtr handle)
+    {
+        ThrowIfNullPointer(handle, nameof(IBufferView));
+        return NativeObjectRegistry.GetOrCreate(() => new BufferView(handle), handle);
+    }
+
     public static IShader CreateShader(IntPtr handle)
     {
         ThrowIfNullPointer(handle, nameof(IShader));
@@ -98,5 +104,71 @@ internal static class DiligentObjectsFactory
     {
         ThrowIfNullPointer(handle, nameof(IResourceMapping));
         return NativeObjectRegistry.GetOrCreate(() => new ResourceMapping(handle), handle);
+    }
+
+    public static IPipelineState CreatePipelineState(IntPtr handle)
+    {
+        ThrowIfNullPointer(handle, nameof(IPipelineState));
+        return NativeObjectRegistry.GetOrCreate(() => new PipelineState(handle), handle);
+    }
+
+    public static IFence CreateFence(IntPtr handle)
+    {
+        ThrowIfNullPointer(handle, nameof(IFence));
+        return NativeObjectRegistry.GetOrCreate(() => new Fence(handle), handle);
+    }
+
+    public static IQuery CreateQuery(IntPtr handle)
+    {
+        ThrowIfNullPointer(handle, nameof(IQuery));
+        return NativeObjectRegistry.GetOrCreate(() => new Query(handle), handle);
+    }
+
+    public static IRenderPass CreateRenderPass(IntPtr handle)
+    {
+        ThrowIfNullPointer(handle, nameof(IQuery));
+        return NativeObjectRegistry.GetOrCreate(() => new RenderPass(handle), handle);
+    }
+
+    public static IFramebuffer CreateFramebuffer(IntPtr handle)
+    {
+        ThrowIfNullPointer(handle, nameof(IFramebuffer));
+        return NativeObjectRegistry.GetOrCreate(() => new Framebuffer(handle), handle);
+    }
+
+    public static IBottomLevelAS CreateBLAS(IntPtr handle)
+    {
+        ThrowIfNullPointer(handle, nameof(IBottomLevelAS));
+        return NativeObjectRegistry.GetOrCreate(() => new BottomLevelAS(handle), handle);
+    }
+
+    public static ITopLevelAS CreateTLAS(IntPtr handle)
+    {
+        ThrowIfNullPointer(handle, nameof(ITopLevelAS));
+        return NativeObjectRegistry.GetOrCreate(() => new TopLevelAS(handle), handle);
+    }
+
+    public static IShaderBindingTable CreateSBT(IntPtr handle)
+    {
+        ThrowIfNullPointer(handle, nameof(IShaderBindingTable));
+        return NativeObjectRegistry.GetOrCreate(() => new ShaderBindingTable(handle), handle);
+    }
+
+    public static IPipelineResourceSignature CreatePipelineResourceSignature(IntPtr handle)
+    {
+        ThrowIfNullPointer(handle, nameof(IPipelineResourceSignature));
+        return NativeObjectRegistry.GetOrCreate(() => new PipelineResourceSignature(handle), handle);
+    }
+
+    public static IDeviceMemory CreateDeviceMemory(IntPtr handle)
+    {
+        ThrowIfNullPointer(handle, nameof(IDeviceMemory));
+        return NativeObjectRegistry.GetOrCreate(() => new DeviceMemory(handle), handle);
+    }
+
+    public static IPipelineStateCache CreatePipelineStateCache(IntPtr handle)
+    {
+        ThrowIfNullPointer(handle, nameof(IDeviceMemory));
+        return NativeObjectRegistry.GetOrCreate(() => new PipelineStateCache(handle), handle);
     }
 }

@@ -27,7 +27,7 @@ public interface IRenderDevice : IDiligentObject
      ITopLevelAS CreateTLAS(TopLevelASDesc desc);
      IShaderBindingTable CreateSBT(ShaderBindingTableDesc desc);
      IPipelineResourceSignature CreatePipelineResourceSignature(PipelineResourceSignatureDesc desc);
-     IDeviceMemory CreateDeviceMemory(DeviceMemoryDesc createInfo);
+     IDeviceMemory CreateDeviceMemory(DeviceMemoryCreateInfo createInfo);
      IPipelineStateCache CreatePipelineStateCache(PipelineStateCacheCreateInfo createInfo);
      TextureFormatInfo GetTextureFormatInfo(TextureFormat format);
      TextureFormatInfoExt GetTextureFormatInfoExt(TextureFormat format);

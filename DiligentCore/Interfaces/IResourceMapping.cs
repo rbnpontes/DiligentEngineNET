@@ -1,6 +1,6 @@
 namespace Diligent;
 
-public interface IResourceMapping : IDeviceObject
+public interface IResourceMapping : IDiligentObject
 {
     
 }

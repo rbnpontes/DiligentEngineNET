@@ -1,6 +1,6 @@
 namespace Diligent;
 
-public interface IThreadPool : IDeviceObject
+public interface IThreadPool : IDiligentObject
 {
     
 }
