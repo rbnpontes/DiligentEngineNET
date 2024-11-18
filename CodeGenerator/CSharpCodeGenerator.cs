@@ -337,8 +337,11 @@ public class CSharpCodeGenerator(string diligentCorePath, string outputBaseDir, 
 
     private void BuildClassProperties(CppClass @class, CSharpBuilder builder)
     {
+        var props2Skip = new HashSet<string>(ExclusionList.PropertiesToSkip);
         foreach (var field in @class.Fields)
         {
+            if(props2Skip.Contains(field.Name))
+                continue;
             if (CSharpUtils.RequiresSpecialSetStructMethod(field))
                 continue;
             if (AstUtils.IsFixedStringType(field.Type))
@@ -363,8 +366,8 @@ public class CSharpCodeGenerator(string diligentCorePath, string outputBaseDir, 
                 continue;
             }
 
-            // Array members has pField and NumField
-            if (field.Name.StartsWith("Num"))
+            // Array members has pField and NumField or can be FieldCount
+            if (field.Name.StartsWith("Num") || field.Name.EndsWith("Count"))
             {
                 if(BuildArrayProperty(field))
                     continue;
@@ -473,19 +476,26 @@ public class CSharpCodeGenerator(string diligentCorePath, string outputBaseDir, 
 
         bool BuildArrayProperty(CppField field)
         {
-            var targetField = @class.Fields.FirstOrDefault(x => x.Name == field.Name.Replace("Num", "p"));
+            var propName = field.Name
+                .Replace("Num", string.Empty)
+                .Replace("Count", string.Empty);
+            var propNamePlural = CodeUtils.ToPlural(propName);
+            var targetField = @class.Fields.FirstOrDefault(x => x.Name == propName 
+                                                                || x.Name == ('p' + propName) 
+                                                                || x.Name == ('p' + propNamePlural));
             // Sometimes, when the 'Num' prefix exists but the field is not found,
             // it indicates that the field doesn't represents an array. 
-            if (targetField is null)
+            if (targetField is null || !AstUtils.IsClassPointer(targetField.Type))
                 return false;
-            
-            var propName = field.Name.Replace("Num", string.Empty);
-            var privatePropName = "_"+CodeUtils.ToCamelCase(propName);
+
+            var isPlural = targetField.Name == 'p' + propNamePlural;
+            var finalPropName = isPlural ? propNamePlural : propName;
+            var privatePropName = "_"+CodeUtils.ToCamelCase(finalPropName);
             var classType = AstUtils.ResolveClassPointer(targetField.Type);
 
             builder
                 .Line($"private {classType.Name}[] {privatePropName} = [];")
-                .Line($"public {classType.Name}[] {propName}")
+                .Line($"public {classType.Name}[] {finalPropName}")
                 .Closure(propBodyBuilder =>
                 {
                     propBodyBuilder

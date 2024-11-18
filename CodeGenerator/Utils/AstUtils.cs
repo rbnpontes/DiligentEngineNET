@@ -85,7 +85,10 @@ public static class AstUtils
         if (type.TypeKind != CppTypeKind.Pointer)
             return false;
         var pointerType = (CppPointerType)type;
-        return pointerType.ElementType.TypeKind == CppTypeKind.StructOrClass;
+        var targetType = pointerType.ElementType;
+        if (pointerType.ElementType is CppQualifiedType qualifiedType)
+            targetType = qualifiedType.ElementType;
+        return targetType.TypeKind == CppTypeKind.StructOrClass;
     }
     
     public static bool InheritsDiligentObject(CppClass type)

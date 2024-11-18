@@ -22,4 +22,14 @@ public static class ExclusionList
         "MacOSNativeWindow",
         "AndroidNativeWindow"
     ];
+
+    public static string[] PropertiesToSkip =
+    [
+        "ResourceSignaturesCount",
+        "ppResourceSignatures",
+        "pInternalData",
+        "GeneralShaderCount",
+        "TriangleHitShaderCount",
+        "ProceduralHitShaderCount",
+    ];
 }

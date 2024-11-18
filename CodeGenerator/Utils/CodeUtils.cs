@@ -1,5 +1,6 @@
 using System.Text;
 using CodeGenerator.CodeBuilders;
+using Humanizer;
 
 namespace CodeGenerator;
 
@@ -35,6 +36,11 @@ public class CodeUtils
         }
 
         return output.ToString();
+    }
+
+    public static string ToPlural(string input)
+    {
+        return input.Pluralize();
     }
 
     public static string ConvertScreamingToPascalCase(string input)
