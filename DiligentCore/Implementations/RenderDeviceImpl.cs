@@ -166,9 +166,11 @@ internal unsafe partial class RenderDevice : IRenderDevice
 
     public ISampler CreateSampler(SamplerDesc samplerDesc)
     {
+        using var strAlloc = new StringAllocator();
         var samplerDescData = SamplerDesc.GetInternalStruct(samplerDesc);
+        samplerDescData.Name = strAlloc.Acquire(samplerDesc.Name);
+        
         var samplerPtr = IntPtr.Zero;
-
         Interop.render_device_create_sampler(Handle, new IntPtr(&samplerDescData), new IntPtr(&samplerPtr));
         return DiligentObjectsFactory.CreateSampler(samplerPtr);
     }

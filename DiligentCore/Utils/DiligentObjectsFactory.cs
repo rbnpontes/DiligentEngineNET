@@ -94,6 +94,12 @@ internal static class DiligentObjectsFactory
         return NativeObjectRegistry.GetOrCreate(() => new Texture(handle), handle);
     }
 
+    public static ITextureView CreateTextureView(IntPtr handle)
+    {
+        ThrowIfNullPointer(handle, nameof(ITextureView));
+        return NativeObjectRegistry.GetOrCreate(() => new TextureView(handle), handle);
+    }
+
     public static ISampler CreateSampler(IntPtr handle)
     {
         ThrowIfNullPointer(handle, nameof(ISampler));
@@ -170,5 +176,29 @@ internal static class DiligentObjectsFactory
     {
         ThrowIfNullPointer(handle, nameof(IDeviceMemory));
         return NativeObjectRegistry.GetOrCreate(() => new PipelineStateCache(handle), handle);
+    }
+
+    public static ReferenceCounters CreateReferenceCounters(IntPtr handle, INativeObject owner)
+    {
+        ThrowIfNullPointer(handle, nameof(ReferenceCounters));
+        return NativeObjectRegistry.GetOrCreate(() => new ReferenceCounters(handle, owner), handle);
+    }
+
+    public static IDiligentObject? TryGetOrCreateObject(IntPtr handle)
+    {
+        if (handle == IntPtr.Zero)
+            return null;
+            
+        NativeObjectRegistry.TryGetObject<IDiligentObject>(handle, out var result);
+        return result ?? new UnknownObject(handle);
+    }
+
+    public static IDeviceObject? TryGetOrCreateDeviceObject(IntPtr handle)
+    {
+        if (handle == IntPtr.Zero)
+            return null;
+
+        NativeObjectRegistry.TryGetObject<IDeviceObject>(handle, out var result);
+        return result ?? new UnknownDeviceObject(handle);
     }
 }

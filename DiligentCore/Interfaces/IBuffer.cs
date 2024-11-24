@@ -1,10 +1,8 @@
 namespace Diligent;
 
-public interface IBuffer : IDeviceObject
+public interface IBuffer : IDeviceObject, IDeviceObjectState, IDeviceObjectNativeHandle
 {
     new BufferDesc Desc { get; }
-    ulong NativeHandle { get; }
-    ResourceState State { get; set; }
     MemoryProperties MemoryProperties { get; }
     SparseBufferProperties SparseProperties { get; }
     IBufferView CreateView(BufferViewDesc viewDesc);

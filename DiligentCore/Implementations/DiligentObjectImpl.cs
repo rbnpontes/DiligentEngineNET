@@ -1,17 +1,21 @@
+using Diligent.Utils;
+
 namespace Diligent;
 
 internal partial class DiligentObject : NativeObject, IDiligentObject
 {
     public bool IsDisposed { get; private set; }
 
-    public IReferenceCounters ReferenceCounters => GetReferenceCounters();
+    public IReferenceCounters ReferenceCounters => DiligentObjectsFactory.CreateReferenceCounters(
+        Interop.object_get_reference_counters(Handle),
+        this);
 
-    public DiligentObject() : base(IntPtr.Zero)
+    protected DiligentObject() : base(IntPtr.Zero)
     {
         throw new NotSupportedException("Constructor without parameters isn't supported.");
     }
-    
-    public DiligentObject(IntPtr handle) : base(handle)
+
+    protected DiligentObject(IntPtr handle) : base(handle)
     {
         NativeObjectRegistry.AddToRegister(handle, this);
     }
@@ -33,14 +37,6 @@ internal partial class DiligentObject : NativeObject, IDiligentObject
             throw new ObjectDisposedException("Object already disposed");
     }
     
-    private ReferenceCounters GetReferenceCounters()
-    {
-        var pointer = Interop.object_get_reference_counters(Handle);
-        if (NativeObjectRegistry.TryGetObject(pointer, out var output))
-            return output as ReferenceCounters ?? throw new InvalidOperationException();
-        return new ReferenceCounters(pointer, this);
-    }
-    
     public void Dispose()
     {
         if(IsDisposed)
@@ -58,7 +54,6 @@ internal partial class DiligentObject : NativeObject, IDiligentObject
         AssertDispose();
         return Interop.object_add_ref(Handle);
     }
-
     
     protected virtual void Release()
     {
@@ -67,4 +62,32 @@ internal partial class DiligentObject : NativeObject, IDiligentObject
         
         Interop.object_release(Handle);
     }
+}
+
+public class UnknownObject : NativeObject, IDiligentObject
+{
+     public bool IsDisposed { get; private set; }
+     public IReferenceCounters ReferenceCounters => DiligentObjectsFactory.CreateReferenceCounters(
+         DiligentObject.Interop.object_get_reference_counters(Handle),
+         this);
+
+     internal UnknownObject(IntPtr handle) : base(handle)
+     {
+     }
+
+     ~UnknownObject()
+     {
+         Dispose();    
+     }
+     
+     public void Dispose()
+     {
+         if (IsDisposed)
+             return;
+         
+         GC.SuppressFinalize(this);
+         SetCurrentHandle(IntPtr.Zero);
+         IsDisposed = true;
+     }
+
 }
