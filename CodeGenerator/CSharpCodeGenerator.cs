@@ -37,7 +37,7 @@ public class CSharpCodeGenerator(string diligentCorePath, string outputBaseDir, 
         var builder = new CSharpBuilder();
         builder.Namespace("Diligent").Line();
 
-        if (@enum.Name.EndsWith("FLAGS"))
+        if (AstUtils.IsEnumFlag(@enum))
             builder.Line("[Flags]");
         builder
             .Line($"public enum {CSharpUtils.GetFixedEnumName(@enum)} : {CSharpUtils.GetEnumTypeSize(@enum)}")

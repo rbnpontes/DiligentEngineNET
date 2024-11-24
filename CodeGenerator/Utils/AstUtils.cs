@@ -79,6 +79,13 @@ public static class AstUtils
         return type is CppEnum;
     }
 
+    public static bool IsEnumFlag(CppEnum @enum)
+    {
+        if (@enum.Name.EndsWith("FLAGS"))
+            return true;
+        return Remapper.Enums2Flags.Contains(@enum.Name);
+    }
+    
     public static bool IsClassPointer(CppType type)
     {
         type = Resolve(type);

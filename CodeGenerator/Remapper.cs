@@ -5,4 +5,9 @@ public static class Remapper
         { "CreateShaderSourceInputStreamFlagSilent", "Silent" },
         { "BlendFactorBlendFactor", "BlendFactor" }
     };
+
+    public static readonly HashSet<string> Enums2Flags = new()
+    {
+        "SHADER_TYPE"
+    };
 }
