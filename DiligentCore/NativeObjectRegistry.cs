@@ -5,26 +5,24 @@ namespace Diligent;
 
 internal static class NativeObjectRegistry
 {
-    private static Dictionary<IntPtr, WeakReference<INativeObject>> Registry = new();
+    private static readonly Dictionary<IntPtr, WeakReference<INativeObject>> sRegistry = new();
     public static void AddToRegister(IntPtr nativePointer, INativeObject obj)
     {
-        Registry.TryAdd(nativePointer, new WeakReference<INativeObject>(obj));
+        sRegistry.TryAdd(nativePointer, new WeakReference<INativeObject>(obj));
     }
 
     public static void RemoveObject(IntPtr handle)
     {
-        Registry.Remove(handle);
+        sRegistry.Remove(handle);
     }
     
     public static bool TryGetObject(IntPtr nativePointer, out INativeObject? output)
     {
-        if (!Registry.TryGetValue(nativePointer, out var obj))
-        {
-            output = null;
-            return false;
-        }
+        if (sRegistry.TryGetValue(nativePointer, out var obj)) 
+            return obj.TryGetTarget(out output);
+        output = null;
+        return false;
 
-        return obj.TryGetTarget(out output);
     }
 
     public static bool TryGetObject<T>(IntPtr nativePointer, out T? output) where T : INativeObject
@@ -36,14 +34,14 @@ internal static class NativeObjectRegistry
 
     public static T GetOrCreate<T>(Func<T> creationCall, IntPtr handle) where T : INativeObject
     {
-        if (!TryGetObject(handle, out var output))
+        if (TryGetObject(handle, out var output))
         {
-            var result = creationCall();
-            AddToRegister(handle, result);
-            return result;
+            var target = (T?)output;
+            return target ?? throw new InvalidCastException($"Failed cast to type '{typeof(T).Name}'");
         }
 
-        var target = (T?)output;
-        return target ?? throw new InvalidCastException($"Failed cast to type '{typeof(T).Name}'");
+        var result = creationCall();
+        AddToRegister(handle, result);
+        return result;
     }
 }
