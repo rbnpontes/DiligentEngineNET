@@ -83,7 +83,15 @@ public static unsafe class DiligentDescFactory
     {
         var data = (FenceDesc.__Internal*)Fence.Interop.fence_get_desc(handle);
         var result = FenceDesc.FromInternalStruct(*data);
-        result.Name = Marshal.PtrToStringAnsi(data->Name);
+        result.Name = Marshal.PtrToStringAnsi(data->Name) ?? string.Empty;
+        return result;
+    }
+
+    public static QueryDesc GetQueryDesc(IntPtr handle)
+    {
+        var data = (QueryDesc.__Internal*)Query.Interop.query_get_desc(handle);
+        var result = QueryDesc.FromInternalStruct(*data);
+        result.Name = Marshal.PtrToStringAnsi(data->Name) ?? string.Empty;
         return result;
     }
 }
