@@ -184,6 +184,17 @@ internal static class DiligentObjectsFactory
         return NativeObjectRegistry.GetOrCreate(() => new ReferenceCounters(handle, owner), handle);
     }
 
+    public static IShaderResourceVariable CreateShaderResourceVariable(IntPtr handle)
+    {
+        ThrowIfNullPointer(handle, nameof(IShaderResourceVariable));
+        return NativeObjectRegistry.GetOrCreate(() => new ShaderResourceVariable(handle), handle);
+    }
+
+    public static IShaderResourceBinding CreateShaderResourceBinding(IntPtr handle)
+    {
+        ThrowIfNullPointer(handle, nameof(IShaderResourceBinding));
+        return NativeObjectRegistry.GetOrCreate(() => new ShaderResourceBinding(handle), handle);
+    }
     public static IDiligentObject? TryGetOrCreateObject(IntPtr handle)
     {
         if (handle == IntPtr.Zero)
