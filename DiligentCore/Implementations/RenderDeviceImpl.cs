@@ -488,6 +488,7 @@ internal unsafe partial class RenderDevice : IRenderDevice
     public IRenderPass CreateRenderPass(RenderPassDesc desc)
     {
         using var strAlloc = new StringAllocator();
+        
         var descData = RenderPassDesc.GetInternalStruct(desc);
         var attachments = desc.Attachments
             .Select(RenderPassAttachmentDesc.GetInternalStruct)
@@ -574,7 +575,7 @@ internal unsafe partial class RenderDevice : IRenderDevice
             .ToArray()
             .AsSpan();
 
-        var bottomLevelASPtr = IntPtr.Zero;
+        var bottomLevelAsPtr = IntPtr.Zero;
         descData.Name = strAlloc.Acquire(desc.Name);
 
         fixed (void* trianglesPtr = triangles)
@@ -588,10 +589,10 @@ internal unsafe partial class RenderDevice : IRenderDevice
             
             Interop.render_device_create_blas(Handle,
                 new IntPtr(&descData),
-                new IntPtr(&bottomLevelASPtr));
+                new IntPtr(&bottomLevelAsPtr));
         }
 
-        return DiligentObjectsFactory.CreateBLAS(bottomLevelASPtr);
+        return DiligentObjectsFactory.CreateBLAS(bottomLevelAsPtr);
     }
 
     public ITopLevelAS CreateTLAS(TopLevelASDesc desc)

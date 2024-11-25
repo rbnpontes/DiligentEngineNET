@@ -1,6 +1,10 @@
+using Diligent.Utils;
+
 namespace Diligent;
 
-internal partial class RenderPass : IRenderPass
+internal partial class RenderPass(IntPtr handle) : DeviceObject(handle), IRenderPass
 {
-    public RenderPass(IntPtr handle) : base(handle){}
+    public new RenderPassDesc Desc => DiligentDescFactory.GetRenderPassDesc(
+        Interop.render_pass_get_desc(Handle)    
+    );
 }

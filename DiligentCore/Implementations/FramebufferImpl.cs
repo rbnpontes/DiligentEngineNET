@@ -1,6 +1,10 @@
+using Diligent.Utils;
+
 namespace Diligent;
 
-internal partial class Framebuffer : IFramebuffer
+internal partial class Framebuffer(IntPtr handle) : DeviceObject(handle), IFramebuffer
 {
-    public Framebuffer(IntPtr handle) : base(handle){}
+    public new FramebufferDesc Desc => DiligentDescFactory.GetFramebufferDesc(
+        Interop.framebuffer_get_desc(Handle)
+    );
 }
