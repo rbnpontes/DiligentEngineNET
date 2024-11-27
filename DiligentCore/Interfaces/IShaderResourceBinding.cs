@@ -2,7 +2,7 @@ namespace Diligent;
 
 public interface IShaderResourceBinding : IDiligentObject
 {
-    IPipelineResourceSignature PipelineResourceSignature { get; }
+    IPipelineResourceSignature? PipelineResourceSignature { get; }
     bool IsStaticResourcesInitialized { get; }
 
     void BindResources(ShaderType shaderStageFlags, IResourceMapping resMapping, BindShaderResourcesFlags flags);

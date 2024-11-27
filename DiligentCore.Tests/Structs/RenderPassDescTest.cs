@@ -120,7 +120,7 @@ public class RenderPassDescTest
         var data = DiligentDescFactory.GetRenderPassDescBytes(desc);
         RenderPassDesc serializedDesc;
 
-        fixed (void* dataPtr = data.AsSpan())
+        fixed (void* dataPtr = data)
             serializedDesc = DiligentDescFactory.GetRenderPassDesc(new IntPtr(dataPtr));
 
         Assert.Multiple(() =>

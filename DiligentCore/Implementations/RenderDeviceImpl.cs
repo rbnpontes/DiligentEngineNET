@@ -487,42 +487,13 @@ internal unsafe partial class RenderDevice : IRenderDevice
 
     public IRenderPass CreateRenderPass(RenderPassDesc desc)
     {
-        using var strAlloc = new StringAllocator();
-        
-        var descData = RenderPassDesc.GetInternalStruct(desc);
-        var attachments = desc.Attachments
-            .Select(RenderPassAttachmentDesc.GetInternalStruct)
-            .ToArray()
-            .AsSpan();
-        var subPasses = desc.Subpasses
-            .Select(SubpassDesc.GetInternalStruct)
-            .ToArray()
-            .AsSpan();
-        var dependencies = desc.Dependencies
-            .Select(SubpassDependencyDesc.GetInternalStruct)
-            .ToArray()
-            .AsSpan();
-
+        var descData = DiligentDescFactory.GetRenderPassDescBytes(desc);
         var renderPassPtr = IntPtr.Zero;
-        descData.Name = strAlloc.Acquire(desc.Name);
-
-        fixed (void* attachmentsPtr = attachments)
-        fixed (void* subPassesPtr = subPasses)
-        fixed (void* dependenciesPtr = dependencies)
-        {
-            descData.pAttachments = new IntPtr(attachmentsPtr);
-            descData.DependencyCount = (uint)desc.Dependencies.Length;
-
-            descData.pSubpasses = new IntPtr(subPassesPtr);
-            descData.SubpassCount = (uint)desc.Subpasses.Length;
-
-            descData.pDependencies = new IntPtr(dependenciesPtr);
-            descData.DependencyCount = (uint)desc.Dependencies.Length;
-
+        
+        fixed(void* descPtr = descData)
             Interop.render_device_create_render_pass(Handle,
-                new IntPtr(&descData),
+                new IntPtr(descPtr),
                 new IntPtr(&renderPassPtr));
-        }
 
         return DiligentObjectsFactory.CreateRenderPass(renderPassPtr);
     }
@@ -639,6 +610,7 @@ internal unsafe partial class RenderDevice : IRenderDevice
             {
                 var result = ImmutableSamplerDesc.GetInternalStruct(x);
                 result.SamplerOrTextureName = strAlloc.Acquire(x.SamplerOrTextureName);
+                result.Desc.Name = strAlloc.Acquire(x.Desc.Name);
                 return result;
             })
             .ToArray()
@@ -718,35 +690,27 @@ internal unsafe partial class RenderDevice : IRenderDevice
 
     public TextureFormatInfo GetTextureFormatInfo(TextureFormat format)
     {
-        using var strAlloc = new StringAllocator();
-        var texFormatInfo = (TextureFormatInfo.__Internal*)Interop.render_device_get_texture_format_info(Handle, format)
-            .ToPointer();
-        var result = TextureFormatInfo.FromInternalStruct(*texFormatInfo);
-        result.Name = Marshal.PtrToStringAnsi(texFormatInfo->Name) ?? string.Empty;
-        return result;
+        return DiligentDescFactory.GetTextureFormatInfo(
+            Interop.render_device_get_texture_format_info(Handle, format)
+        );
     }
 
     public TextureFormatInfoExt GetTextureFormatInfoExt(TextureFormat format)
     {
-        using var strAlloc = new StringAllocator();
-        var texFormatInfoExt =
-            (TextureFormatInfoExt.__Internal*)Interop.render_device_get_texture_format_info_ext(Handle, format)
-                .ToPointer();
-        var result = TextureFormatInfoExt.FromInternalStruct(*texFormatInfoExt);
-        result.Name = Marshal.PtrToStringAnsi(texFormatInfoExt->Name) ?? string.Empty;
-        return result;
+        return DiligentDescFactory.GetTextureFormatInfoExt(
+            Interop.render_device_get_texture_format_info_ext(Handle, format)
+        );
     }
 
     public SparseTextureFormatInfo GetSparseTextureFormatInfo(TextureFormat format, ResourceDimension dimension,
         uint sampleCount)
     {
-        using var strAlloc = new StringAllocator();
-        var sparseTextureFormatInfo =
-            (SparseTextureFormatInfo.__Internal*)Interop.render_device_get_sparse_texture_format_info(Handle, 
+        return DiligentDescFactory.GetSparseTextureFormatInfo(
+            Interop.render_device_get_sparse_texture_format_info(Handle,
                 format,
-                dimension, 
-                sampleCount);
-        return SparseTextureFormatInfo.FromInternalStruct(*sparseTextureFormatInfo);
+                dimension,
+                sampleCount)
+        );
     }
 
     public void ReleaseStaleResources(bool forceRelease = false)

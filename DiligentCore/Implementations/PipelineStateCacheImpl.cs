@@ -1,6 +1,13 @@
+using Diligent.Utils;
+
 namespace Diligent;
 
-internal partial class PipelineStateCache : IPipelineStateCache
+internal unsafe partial class PipelineStateCache(IntPtr handle) : DeviceObject(handle), IPipelineStateCache
 {
-    public PipelineStateCache(IntPtr handle) : base(handle) {}
+    public IDataBlob GetData()
+    {
+        var blobPtr = IntPtr.Zero;
+        Interop.pipeline_state_cache_get_data(Handle, new IntPtr(&blobPtr));
+        return DiligentObjectsFactory.CreateDataBlob(blobPtr);
+    }
 }

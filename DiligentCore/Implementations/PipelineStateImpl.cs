@@ -10,15 +10,21 @@ internal unsafe partial class PipelineState(IntPtr handle) : DeviceObject(handle
 
     public GraphicsPipelineDesc? GraphicsPipelineDesc => Desc.PipelineType != PipelineType.Graphics 
         ? null 
-        : DiligentDescFactory.GetGraphicsPipelineDesc(Handle);
+        : DiligentDescFactory.GetGraphicsPipelineDesc(
+            Interop.pipeline_state_get_graphics_pipeline_desc(Handle)    
+        );
 
     public RayTracingPipelineDesc? RayTracingPipelineDesc => Desc.PipelineType != PipelineType.RayTracing
         ? null
-        : DiligentDescFactory.GetRayTracingPipelineDesc(Handle);
+        : DiligentDescFactory.GetRayTracingPipelineDesc(
+            Interop.pipeline_state_get_ray_tracing_pipeline_desc(Handle)    
+        );
 
     public TilePipelineDesc? TilePipelineDesc => Desc.PipelineType != PipelineType.Tile
         ? null
-        : DiligentDescFactory.GetTilePipelineDesc(Handle);
+        : DiligentDescFactory.GetTilePipelineDesc(
+            Interop.pipeline_state_get_tile_pipeline_desc(Handle)
+        );
 
     public uint ResourceSignatureCount => Interop.pipeline_state_get_resource_signature_count(Handle);
     

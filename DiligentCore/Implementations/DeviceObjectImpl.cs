@@ -5,7 +5,9 @@ namespace Diligent;
 
 internal partial class DeviceObject(IntPtr handle) : DiligentObject(handle), IDeviceObject
 {
-    public DeviceObjectAttribs Desc => DiligentDescFactory.GetDeviceObjectAttribs(Handle);
+    public DeviceObjectAttribs Desc => DiligentDescFactory.GetDeviceObjectAttribs(
+        Interop.device_object_get_desc(Handle)
+    );
 
     public int UniqueId => Interop.device_object_get_unique_id(Handle);
 
@@ -18,18 +20,11 @@ internal partial class DeviceObject(IntPtr handle) : DiligentObject(handle), IDe
     }
 }
 
-public sealed unsafe class UnknownDeviceObject : UnknownObject, IDeviceObject
+public sealed class UnknownDeviceObject : UnknownObject, IDeviceObject
 {
-    public DeviceObjectAttribs Desc
-    {
-        get
-        {
-            var data = (DeviceObjectAttribs.__Internal*)DeviceObject.Interop.device_object_get_desc(Handle);
-            var result = DeviceObjectAttribs.FromInternalStruct(*data);
-            result.Name = Marshal.PtrToStringAnsi(data->Name) ?? string.Empty;
-            return result;
-        }
-    }
+    public DeviceObjectAttribs Desc => DiligentDescFactory.GetDeviceObjectAttribs(
+        DeviceObject.Interop.device_object_get_desc(Handle)
+    );
 
     public int UniqueId => DeviceObject.Interop.device_object_get_unique_id(Handle);
 

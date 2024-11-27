@@ -33,8 +33,7 @@ internal unsafe partial class ShaderBindingTable(IntPtr handle) : DeviceObject(h
 
     public void BindRayGenShader(string shaderGroupName, byte[] data)
     {
-        var span = data.AsSpan();
-        fixed(void* dataPtr = span)
+        fixed(void* dataPtr = data)
             BindRayGenShader(shaderGroupName, new IntPtr(dataPtr), (uint)data.Length);
     }
 
@@ -50,8 +49,7 @@ internal unsafe partial class ShaderBindingTable(IntPtr handle) : DeviceObject(h
 
     public void BindMissShader(string shaderGroupName, uint missIndex, byte[] data)
     {
-        var span = data.AsSpan();
-        fixed (void* dataPtr = span)
+        fixed (void* dataPtr = data)
             BindMissShader(shaderGroupName, missIndex, new IntPtr(dataPtr), (uint)data.Length);
     }
 
@@ -72,8 +70,7 @@ internal unsafe partial class ShaderBindingTable(IntPtr handle) : DeviceObject(h
     public void BindHitGroupForGeometry(ITopLevelAS tlas, string instanceName, string geometryName, uint rayOffsetInHitGroupIndex,
         string shaderGroupName, byte[] data)
     {
-        var span = data.AsSpan();
-        fixed(void* dataPtr = span)
+        fixed(void* dataPtr = data)
             BindHitGroupForGeometry(tlas, 
                 instanceName,
                 geometryName, 
@@ -95,8 +92,7 @@ internal unsafe partial class ShaderBindingTable(IntPtr handle) : DeviceObject(h
 
     public void BindHitGroupByIndex(uint bindingIndex, string shaderGroupName, byte[] data)
     {
-        var span = data.AsSpan();
-        fixed(void* dataPtr = span)
+        fixed(void* dataPtr = data)
             BindHitGroupByIndex(bindingIndex, shaderGroupName, new IntPtr(dataPtr), (uint)data.Length);
     }
 
@@ -116,8 +112,7 @@ internal unsafe partial class ShaderBindingTable(IntPtr handle) : DeviceObject(h
     public void BindHitGroupForInstance(ITopLevelAS tlas, string instanceName, uint rayOffsetInHitGroupIndex,
         string shaderGroupName, byte[] data)
     {
-        var span = data.AsSpan();
-        fixed (void* dataPtr = span)
+        fixed (void* dataPtr = data)
             BindHitGroupForInstance(tlas, instanceName, rayOffsetInHitGroupIndex, shaderGroupName, new IntPtr(dataPtr), (uint)data.Length);
     }
 
@@ -135,8 +130,7 @@ internal unsafe partial class ShaderBindingTable(IntPtr handle) : DeviceObject(h
 
     public void BindHitGroupForTLAS(ITopLevelAS tlas, uint rayOffsetInHitGroupIndex, string shaderGroupName, byte[] data)
     {
-        var span = data.AsSpan();
-        fixed (void* dataPtr = span)
+        fixed (void* dataPtr = data)
             BindHitGroupForTLAS(tlas, rayOffsetInHitGroupIndex, shaderGroupName, new IntPtr(dataPtr), (uint)data.Length);
     }
 
@@ -152,8 +146,7 @@ internal unsafe partial class ShaderBindingTable(IntPtr handle) : DeviceObject(h
 
     public void BindCallableShader(string name, uint callableIndex, byte[] data)
     {
-        var span = data.AsSpan();
-        fixed (void* dataPtr = span)
+        fixed (void* dataPtr = data)
             BindCallableShader(name, callableIndex, new IntPtr(dataPtr), (uint)data.Length);
     }
 }

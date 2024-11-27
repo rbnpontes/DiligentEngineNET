@@ -8,7 +8,7 @@ public static unsafe class DiligentDescFactory
 {
     public static DeviceObjectAttribs GetDeviceObjectAttribs(IntPtr handle)
     {
-        var desc = (DeviceObjectAttribs.__Internal*)DeviceObject.Interop.device_object_get_desc(handle);
+        var desc = (DeviceObjectAttribs.__Internal*)handle;
         var result = DeviceObjectAttribs.FromInternalStruct(*desc);
         result.Name = Marshal.PtrToStringAnsi(handle) ?? string.Empty;
         return result;
@@ -16,7 +16,7 @@ public static unsafe class DiligentDescFactory
 
     public static PipelineStateDesc GetPipelineStateDesc(IntPtr handle)
     {
-        var desc = (PipelineStateDesc.__Internal*)PipelineState.Interop.pipeline_state_get_desc(handle);
+        var desc = (PipelineStateDesc.__Internal*)handle;
         var result = PipelineStateDesc.FromInternalStruct(*desc);
         result.Name = Marshal.PtrToStringAnsi(handle) ?? string.Empty;
 
@@ -49,8 +49,7 @@ public static unsafe class DiligentDescFactory
 
     public static GraphicsPipelineDesc GetGraphicsPipelineDesc(IntPtr handle)
     {
-        var data =
-            (GraphicsPipelineDesc.__Internal*)PipelineState.Interop.pipeline_state_get_graphics_pipeline_desc(handle);
+        var data = (GraphicsPipelineDesc.__Internal*)handle;
         var desc = GraphicsPipelineDesc.FromInternalStruct(*data);
 
         var layoutElements = new ReadOnlySpan<LayoutElement.__Internal>(data->InputLayout.LayoutElements.ToPointer(),
@@ -72,14 +71,13 @@ public static unsafe class DiligentDescFactory
 
     public static RayTracingPipelineDesc GetRayTracingPipelineDesc(IntPtr handle)
     {
-        var data = (RayTracingPipelineDesc.__Internal*)PipelineState.Interop
-            .pipeline_state_get_ray_tracing_pipeline_desc(handle);
+        var data = (RayTracingPipelineDesc.__Internal*)handle;
         return RayTracingPipelineDesc.FromInternalStruct(*data);
     }
 
     public static TilePipelineDesc GetTilePipelineDesc(IntPtr handle)
     {
-        var data = (TilePipelineDesc.__Internal*)PipelineState.Interop.pipeline_state_get_tile_pipeline_desc(handle);
+        var data = (TilePipelineDesc.__Internal*)handle;
         return TilePipelineDesc.FromInternalStruct(*data);
     }
 
@@ -98,7 +96,7 @@ public static unsafe class DiligentDescFactory
         result.Name = Marshal.PtrToStringAnsi(data->Name) ?? string.Empty;
         return result;
     }
-
+    
     public static int GetRenderPassDescSize(RenderPassDesc desc)
     {
         var size = Unsafe.SizeOf<RenderPassDesc.__Internal>()
@@ -153,7 +151,8 @@ public static unsafe class DiligentDescFactory
 
         IntPtr CollectAttachments(IntPtr ptr, RenderPassDesc renderPassDesc)
         {
-            var renderPassDescPtr = (RenderPassDesc.__Internal*)IntPtr.Subtract(ptr, Unsafe.SizeOf<RenderPassDesc.__Internal>());
+            var renderPassDescPtr =
+                (RenderPassDesc.__Internal*)IntPtr.Subtract(ptr, Unsafe.SizeOf<RenderPassDesc.__Internal>());
             renderPassDescPtr->pAttachments = ptr;
             renderPassDescPtr->AttachmentCount = (uint)renderPassDesc.Attachments.Length;
 
@@ -176,7 +175,8 @@ public static unsafe class DiligentDescFactory
             var totalOfDepthStencilAttachments =
                 renderPassDesc.Subpasses.Sum(x => x.DepthStencilAttachment is null ? 0 : 1);
 
-            var inputAttachmentsPtr = IntPtr.Add(ptr, renderPassDesc.Subpasses.Length * Unsafe.SizeOf<SubpassDesc.__Internal>());
+            var inputAttachmentsPtr =
+                IntPtr.Add(ptr, renderPassDesc.Subpasses.Length * Unsafe.SizeOf<SubpassDesc.__Internal>());
             var renderTargetAttachmentsPtr = IntPtr.Add(inputAttachmentsPtr,
                 totalOfInputAttachments * Unsafe.SizeOf<AttachmentReference.__Internal>());
             var resolveAttachmentsPtr = IntPtr.Add(renderTargetAttachmentsPtr,
@@ -260,7 +260,8 @@ public static unsafe class DiligentDescFactory
             return shadingRateAttachmentsPtr;
         }
 
-        void CollectSubPassDependencies(IntPtr ptr, RenderPassDesc.__Internal* renderPassDescPtr, RenderPassDesc renderPassDesc)
+        void CollectSubPassDependencies(IntPtr ptr, RenderPassDesc.__Internal* renderPassDescPtr,
+            RenderPassDesc renderPassDesc)
         {
             renderPassDescPtr->pDependencies = ptr;
             renderPassDescPtr->DependencyCount = (uint)renderPassDesc.Dependencies.Length;
@@ -288,7 +289,7 @@ public static unsafe class DiligentDescFactory
         var subDependenciesData =
             new ReadOnlySpan<SubpassDependencyDesc.__Internal>(data->pDependencies.ToPointer(),
                 (int)data->DependencyCount);
-        
+
         result.Attachments = attachmentsData.ToArray()
             .Select(RenderPassAttachmentDesc.FromInternalStruct)
             .ToArray();
@@ -318,10 +319,13 @@ public static unsafe class DiligentDescFactory
 
                 if (subPassData.pDepthStencilAttachment != IntPtr.Zero)
                     subPass.DepthStencilAttachment =
-                        AttachmentReference.FromInternalStruct(*(AttachmentReference.__Internal*)subPassData.pDepthStencilAttachment);
-                if(subPassData.pShadingRateAttachment != IntPtr.Zero)
-                    subPass.ShadingRateAttachment = ShadingRateAttachment.FromInternalStruct(*(ShadingRateAttachment.__Internal*)subPassData.pShadingRateAttachment);
-                
+                        AttachmentReference.FromInternalStruct(
+                            *(AttachmentReference.__Internal*)subPassData.pDepthStencilAttachment);
+                if (subPassData.pShadingRateAttachment != IntPtr.Zero)
+                    subPass.ShadingRateAttachment =
+                        ShadingRateAttachment.FromInternalStruct(
+                            *(ShadingRateAttachment.__Internal*)subPassData.pShadingRateAttachment);
+
                 return subPass;
             })
             .ToArray();
@@ -336,7 +340,7 @@ public static unsafe class DiligentDescFactory
         var data = (FramebufferDesc.__Internal*)handle;
         var result = FramebufferDesc.FromInternalStruct(*data);
         var attachments = new ReadOnlySpan<IntPtr>(data->ppAttachments.ToPointer(), (int)data->AttachmentCount);
-        
+
         result.Name = Marshal.PtrToStringAnsi(data->Name) ?? string.Empty;
         result.Attachments = attachments.ToArray().Select(x =>
         {
@@ -350,13 +354,13 @@ public static unsafe class DiligentDescFactory
         var data = (ScratchBufferSizes.__Internal*)handle;
         return ScratchBufferSizes.FromInternalStruct(*data);
     }
-    
+
     public static BottomLevelASDesc GetBottomLevelASDesc(IntPtr handle)
     {
         var data = (BottomLevelASDesc.__Internal*)handle;
         var result = BottomLevelASDesc.FromInternalStruct(*data);
 
-        var triangles = new ReadOnlySpan<BLASTriangleDesc.__Internal>(data->pTriangles.ToPointer(), 
+        var triangles = new ReadOnlySpan<BLASTriangleDesc.__Internal>(data->pTriangles.ToPointer(),
             (int)data->TriangleCount);
         var boxes = new ReadOnlySpan<BLASBoundingBoxDesc.__Internal>(data->pBoxes.ToPointer(),
             (int)data->BoxCount);
@@ -394,7 +398,7 @@ public static unsafe class DiligentDescFactory
         var data = (TLASInstanceDesc.__Internal*)handle;
         return TLASInstanceDesc.FromInternalStruct(*data);
     }
-    
+
     public static TLASBuildInfo GetTLASBuildInfo(IntPtr handle)
     {
         var data = (TLASBuildInfo.__Internal*)handle;
@@ -407,5 +411,78 @@ public static unsafe class DiligentDescFactory
         var result = ShaderBindingTableDesc.FromInternalStruct(*data);
         result.Name = Marshal.PtrToStringAnsi(data->Name) ?? string.Empty;
         return result;
+    }
+
+    public static PipelineResourceSignatureDesc GetPipelineResourceSignatureDesc(IntPtr handle)
+    {
+        var data = (PipelineResourceSignatureDesc.__Internal*)handle;
+        var result = PipelineResourceSignatureDesc.FromInternalStruct(*data);
+
+        var resources =
+            new ReadOnlySpan<PipelineResourceDesc.__Internal>(data->Resources.ToPointer(), (int)data->NumResources);
+        var immutableSamplers = new ReadOnlySpan<ImmutableSamplerDesc.__Internal>(data->ImmutableSamplers.ToPointer(),
+            (int)data->NumImmutableSamplers);
+
+        var combinedSamplerSuffix = Marshal.PtrToStringAnsi(data->CombinedSamplerSuffix);
+        result.Name = Marshal.PtrToStringAnsi(data->Name) ?? string.Empty;
+        result.CombinedSamplerSuffix = combinedSamplerSuffix ?? result.CombinedSamplerSuffix;
+        result.Resources = resources.ToArray()
+            .Select(resource =>
+            {
+                var res = PipelineResourceDesc.FromInternalStruct(resource);
+                res.Name = Marshal.PtrToStringAnsi(resource.Name) ?? string.Empty;
+                return res;
+            }).ToArray();
+        result.ImmutableSamplers = immutableSamplers.ToArray()
+            .Select(smpl =>
+            {
+                var immutableSampler = ImmutableSamplerDesc.FromInternalStruct(smpl);
+                immutableSampler.SamplerOrTextureName =
+                    Marshal.PtrToStringAnsi(smpl.SamplerOrTextureName) ?? string.Empty;
+                var sampler = immutableSampler.Desc;
+                sampler.Name = Marshal.PtrToStringAnsi(smpl.Desc.Name) ?? string.Empty;
+                immutableSampler.Desc = sampler;
+                return immutableSampler;
+            }).ToArray();
+        return result;
+    }
+
+    public static ShaderResourceDesc GetShaderResourceDesc(IntPtr handle)
+    {
+        var data = (ShaderResourceDesc.__Internal*)handle;
+        var result = ShaderResourceDesc.FromInternalStruct(*data);
+
+        result.Name = Marshal.PtrToStringAnsi(data->Name) ?? string.Empty;
+        return result;
+    }
+
+    public static DeviceMemoryDesc GetDeviceMemoryDesc(IntPtr handle)
+    {
+        var data = (DeviceMemoryDesc.__Internal*)handle;
+        var result = DeviceMemoryDesc.FromInternalStruct(*data);
+        result.Name = Marshal.PtrToStringAnsi(data->Name) ?? string.Empty;
+        return result;
+    }
+
+    public static TextureFormatInfo GetTextureFormatInfo(IntPtr handle)
+    {
+        var data = (TextureFormatInfo.__Internal*)handle;
+        var result = TextureFormatInfo.FromInternalStruct(*data);
+        result.Name = Marshal.PtrToStringAnsi(data->Name) ?? string.Empty;
+        return result;
+    }
+
+    public static TextureFormatInfoExt GetTextureFormatInfoExt(IntPtr handle)
+    {
+        var data = (TextureFormatInfoExt.__Internal*)handle;
+        var result = TextureFormatInfoExt.FromInternalStruct(*data);
+        result.Name = Marshal.PtrToStringAnsi(data->Name) ?? string.Empty;
+        return result;
+    }
+
+    public static SparseTextureFormatInfo GetSparseTextureFormatInfo(IntPtr handle)
+    {
+        var data = (SparseTextureFormatInfo.__Internal*)handle;
+        return SparseTextureFormatInfo.FromInternalStruct(*data);
     }
 }
