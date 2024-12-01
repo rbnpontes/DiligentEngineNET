@@ -96,7 +96,7 @@ public static unsafe class DiligentDescFactory
         result.Name = Marshal.PtrToStringAnsi(data->Name) ?? string.Empty;
         return result;
     }
-    
+
     public static int GetRenderPassDescSize(RenderPassDesc desc)
     {
         var size = Unsafe.SizeOf<RenderPassDesc.__Internal>()
@@ -498,5 +498,191 @@ public static unsafe class DiligentDescFactory
     {
         var data = (DeviceContextStats.__Internal*)handle;
         return DeviceContextStats.FromInternalStruct(*data);
+    }
+
+    public static int GetBindSparseResourceMemoryAttribsSize(BindSparseResourceMemoryAttribs value)
+    {
+        return Unsafe.SizeOf<BindSparseResourceMemoryAttribs.__Internal>()
+               + Unsafe.SizeOf<IntPtr>() * value.WaitFences.Length
+               + Unsafe.SizeOf<IntPtr>() * value.SignalFences.Length
+               + Unsafe.SizeOf<ulong>() * value.WaitFences.Length
+               + Unsafe.SizeOf<ulong>() * value.SignalFences.Length
+               + Unsafe.SizeOf<SparseBufferMemoryBindInfo.__Internal>() * value.BufferBinds.Length
+               + Unsafe.SizeOf<SparseTextureMemoryBindInfo.__Internal>() * value.TextureBinds.Length
+               + value.BufferBinds.Sum(bufferBind =>
+                   Unsafe.SizeOf<SparseBufferMemoryBindRange.__Internal>() * bufferBind.Ranges.Length)
+               + value.TextureBinds.Sum(textureBind =>
+                   Unsafe.SizeOf<SparseTextureMemoryBindRange.__Internal>() * textureBind.Ranges.Length);
+    }
+
+    public static byte[] GetBindSparseResourceMemoryAttribsBytes(BindSparseResourceMemoryAttribs value)
+    {
+        var result = new byte[GetBindSparseResourceMemoryAttribsSize(value)];
+        fixed (byte* buffer = result)
+        {
+            var attribs = (BindSparseResourceMemoryAttribs.__Internal*)buffer;
+            *attribs = BindSparseResourceMemoryAttribs.GetInternalStruct(value);
+
+            var bufferBindsPtr = buffer + Unsafe.SizeOf<BindSparseResourceMemoryAttribs.__Internal>();
+            var textureBindsPtr = bufferBindsPtr +
+                                  Unsafe.SizeOf<SparseBufferMemoryBindInfo.__Internal>() * value.BufferBinds.Length;
+            var bufferRangesPtr = textureBindsPtr +
+                                  Unsafe.SizeOf<SparseTextureMemoryBindInfo.__Internal>() * value.TextureBinds.Length;
+            var textureRangesPtr = bufferRangesPtr + 
+                                   value.BufferBinds.Sum(x => x.Ranges.Length) * Unsafe.SizeOf<SparseBufferMemoryBindRange.__Internal>();
+            var waitFenceValuesPtr = textureRangesPtr +
+                                     value.TextureBinds.Sum(x => x.Ranges.Length) *
+                                     Unsafe.SizeOf<SparseTextureMemoryBindRange.__Internal>();
+            var fencesPtr = waitFenceValuesPtr 
+                            + (Unsafe.SizeOf<ulong>() * value.WaitFenceValues.Length)
+                            + (Unsafe.SizeOf<ulong>() * value.SignalFenceValues.Length);
+            
+            attribs->pBufferBinds = new IntPtr(bufferBindsPtr);
+            attribs->pTextureBinds = new IntPtr(textureBindsPtr);
+            
+            CollectBufferBinds(bufferBindsPtr, bufferRangesPtr);
+            CollectTextureBinds(textureBindsPtr, textureRangesPtr);
+            CollectWaitFenceValues(attribs, waitFenceValuesPtr);
+            CollectFencesPtr(attribs, fencesPtr);
+        }
+        
+        return result;
+
+        void CollectBufferBinds(byte* bufferBindsPtr, byte* bufferRangesPtr)
+        {
+            foreach (var bufferBind in value.BufferBinds)
+            {
+                var bindPtr = (SparseBufferMemoryBindInfo.__Internal*)bufferBindsPtr;
+                *bindPtr = SparseBufferMemoryBindInfo.GetInternalStruct(bufferBind);
+
+                bindPtr->pRanges = new IntPtr(bufferRangesPtr);
+                foreach (var range in bufferBind.Ranges)
+                {
+                    var rangePtr = (SparseBufferMemoryBindRange.__Internal*)bufferRangesPtr;
+                    *rangePtr = SparseBufferMemoryBindRange.GetInternalStruct(range);
+
+                    bufferRangesPtr += Unsafe.SizeOf<SparseBufferMemoryBindRange.__Internal>();
+                }
+
+                bufferBindsPtr += Unsafe.SizeOf<SparseBufferMemoryBindInfo.__Internal>();
+            }
+        }
+
+        void CollectTextureBinds(byte* textureBindsPtr, byte* textureRangesPtr)
+        {
+            foreach (var textureBind in value.TextureBinds)
+            {
+                var bindPtr = (SparseTextureMemoryBindInfo.__Internal*)textureBindsPtr;
+                *bindPtr = SparseTextureMemoryBindInfo.GetInternalStruct(textureBind);
+
+                bindPtr->pRanges = new IntPtr(textureRangesPtr);
+                foreach (var range in textureBind.Ranges)
+                {
+                    var rangePtr = (SparseTextureMemoryBindRange.__Internal*)textureRangesPtr;
+                    *rangePtr = SparseTextureMemoryBindRange.GetInternalStruct(range);
+
+                    textureRangesPtr += Unsafe.SizeOf<SparseTextureMemoryBindRange.__Internal>();
+                }
+
+                textureBindsPtr += Unsafe.SizeOf<SparseTextureMemoryBindInfo.__Internal>();
+            }
+        }
+
+        void CollectWaitFenceValues(BindSparseResourceMemoryAttribs.__Internal* attribs, byte* fenceValuesPtr)
+        {
+            attribs->pWaitFenceValues = new IntPtr(fenceValuesPtr);
+            for (var i = 0; i < attribs->NumWaitFences; ++i)
+            {
+                var val = i >= value.WaitFenceValues.Length ? 0 : value.WaitFenceValues[i];
+                *((ulong*)fenceValuesPtr) = val;
+
+                fenceValuesPtr += Unsafe.SizeOf<ulong>();
+            }
+            
+            attribs->pSignalFenceValues = new IntPtr(fenceValuesPtr);
+            for (var i = 0; i < attribs->NumSignalFences; ++i)
+            {
+                var val = i >= value.SignalFenceValues.Length ? 0 : value.SignalFenceValues[i];
+                *((ulong*)fenceValuesPtr) = val;
+
+                fenceValuesPtr += Unsafe.SizeOf<ulong>();
+            }
+        }
+        
+        void CollectFencesPtr(BindSparseResourceMemoryAttribs.__Internal* attribs, byte* fencesPtr)
+        {
+            attribs->ppWaitFences = new IntPtr(fencesPtr);
+            foreach (var fence in value.WaitFences)
+            {
+                var fenceDstPtr = (nint*)fencesPtr;
+                *fenceDstPtr = fence.Handle;
+
+                fencesPtr += Unsafe.SizeOf<IntPtr>();
+            }
+
+            attribs->ppSignalFences = new IntPtr(fencesPtr);
+            foreach (var fence in value.SignalFences)
+            {
+                var fenceDstPtr = (nint*)fencesPtr;
+                *fenceDstPtr = fence.Handle;
+
+                fencesPtr += Unsafe.SizeOf<IntPtr>();
+            }
+        }
+    }
+
+    public static BindSparseResourceMemoryAttribs GetBindSparseResourceMemoryAttribs(IntPtr handle)
+    {
+        var data = (BindSparseResourceMemoryAttribs.__Internal*)handle;
+        var result = BindSparseResourceMemoryAttribs.FromInternalStruct(*data);
+
+        var bufferBinds =
+            new ReadOnlySpan<SparseBufferMemoryBindInfo.__Internal>(data->pBufferBinds.ToPointer(),
+                    (int)data->NumBufferBinds)
+                .ToArray()
+                .Select(x =>
+                {
+                    var bufferBind = SparseBufferMemoryBindInfo.FromInternalStruct(x);
+                    var ranges = new ReadOnlySpan<SparseBufferMemoryBindRange.__Internal>(x.pRanges.ToPointer(), (int)x.NumRanges)
+                        .ToArray()
+                        .Select(SparseBufferMemoryBindRange.FromInternalStruct)
+                        .ToArray();
+                    bufferBind.Ranges = ranges;
+                    return bufferBind;
+                })
+                .ToArray();
+        var textureBinds =
+            new ReadOnlySpan<SparseTextureMemoryBindInfo.__Internal>(data->pTextureBinds.ToPointer(),
+                    (int)data->NumTextureBinds)
+                .ToArray()
+                .Select(x =>
+                {
+                    var textureBind = SparseTextureMemoryBindInfo.FromInternalStruct(x);
+                    var ranges =
+                        new ReadOnlySpan<SparseTextureMemoryBindRange.__Internal>(x.pRanges.ToPointer(),
+                                (int)x.NumRanges)
+                            .ToArray()
+                            .Select(SparseTextureMemoryBindRange.FromInternalStruct)
+                            .ToArray();
+                    textureBind.Ranges = ranges;
+                    return textureBind;
+                })
+                .ToArray();
+        var waitFences = new ReadOnlySpan<IntPtr>(data->ppWaitFences.ToPointer(), (int)data->NumWaitFences)
+            .ToArray()
+            .Select(DiligentObjectsFactory.CreateFence)
+            .ToArray();
+        var waitFenceValues = new ReadOnlySpan<ulong>(data->pWaitFenceValues.ToPointer(), (int)data->NumWaitFences);
+        var signalFences = new ReadOnlySpan<IntPtr>(data->ppSignalFences.ToPointer(), (int)data->NumSignalFences)
+            .ToArray()
+            .Select(DiligentObjectsFactory.CreateFence)
+            .ToArray();
+
+        result.BufferBinds = bufferBinds;
+        result.TextureBinds = textureBinds;
+        result.SignalFences = signalFences;
+        result.WaitFences = waitFences;
+        result.WaitFenceValues = waitFenceValues.ToArray();
+        return result;
     }
 }

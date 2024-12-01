@@ -327,21 +327,22 @@ internal unsafe partial class DeviceContext(IntPtr handle) : DiligentObject(hand
             new IntPtr(rgba),
             stateTransitionMode);
     }
+
     public void ClearRenderTarget(ITextureView view, float[] rgba, ResourceStateTransitionMode stateTransitionMode)
     {
-        fixed(void* rgbaPtr = rgba)
+        fixed (void* rgbaPtr = rgba)
             ClearRenderTarget(view, rgbaPtr, stateTransitionMode);
     }
 
     public void ClearRenderTarget(ITextureView view, uint[] rgba, ResourceStateTransitionMode stateTransitionMode)
     {
-        fixed(void* rgbaPtr = rgba)
+        fixed (void* rgbaPtr = rgba)
             ClearRenderTarget(view, rgbaPtr, stateTransitionMode);
     }
 
     public void ClearRenderTarget(ITextureView view, int[] rgba, ResourceStateTransitionMode stateTransitionMode)
     {
-        fixed(void* rgbaPtr = rgba)
+        fixed (void* rgbaPtr = rgba)
             ClearRenderTarget(view, rgbaPtr, stateTransitionMode);
     }
 
@@ -357,8 +358,8 @@ internal unsafe partial class DeviceContext(IntPtr handle) : DiligentObject(hand
     {
         if (commandLists.Length > _tmpPointersBuffer.Length)
             _tmpPointersBuffer = new IntPtr[commandLists.Length];
-        
-        fixed(nint* commandListsPtr = _tmpPointersBuffer)
+
+        fixed (nint* commandListsPtr = _tmpPointersBuffer)
             Interop.device_context_finish_command_list(Handle, new IntPtr(commandListsPtr));
 
         foreach (var commandList in commandLists)
@@ -401,7 +402,7 @@ internal unsafe partial class DeviceContext(IntPtr handle) : DiligentObject(hand
     public void CopyBuffer(IBuffer srcBuffer, ulong srcOffset, ResourceStateTransitionMode srcBufferTransitionMode,
         IBuffer dstBuffer, ulong dstOffset, ulong size, ResourceStateTransitionMode dstBufferTransitionMode)
     {
-        Interop.device_context_copy_buffer(Handle, 
+        Interop.device_context_copy_buffer(Handle,
             srcBuffer.Handle,
             srcOffset,
             srcBufferTransitionMode,
@@ -428,8 +429,8 @@ internal unsafe partial class DeviceContext(IntPtr handle) : DiligentObject(hand
     {
         var boxData = Box.GetInternalStruct(dstBox);
         var subRes = TextureSubResData.GetInternalStruct(subResData);
-        
-        Interop.device_context_update_texture(Handle, 
+
+        Interop.device_context_update_texture(Handle,
             texture.Handle,
             mipLevel,
             slice,
@@ -444,7 +445,7 @@ internal unsafe partial class DeviceContext(IntPtr handle) : DiligentObject(hand
         var srcBoxData = Box.GetInternalStruct(copyAttribs.SrcBox ?? new Box());
         var copyAttribsData = CopyTextureAttribs.GetInternalStruct(copyAttribs);
         copyAttribsData.pSrcBox = copyAttribs.SrcBox is null ? IntPtr.Zero : new IntPtr(&srcBoxData);
-        
+
         Interop.device_context_copy_texture(Handle, new IntPtr(&copyAttribsData));
     }
 
@@ -454,7 +455,7 @@ internal unsafe partial class DeviceContext(IntPtr handle) : DiligentObject(hand
     {
         var mapRegionData = Box.GetInternalStruct(mapRegion ?? new Box());
         var mappedTexSubRes = MappedTextureSubresource.GetInternalStruct(mappedData);
-        
+
         Interop.device_context_map_texture_subresource(Handle,
             texture.Handle,
             mipLevel,
@@ -476,6 +477,7 @@ internal unsafe partial class DeviceContext(IntPtr handle) : DiligentObject(hand
     }
 
     private StateTransitionDesc.__Internal[] _tmpResourceBarriers = [];
+
     public void TransitionResourceStates(StateTransitionDesc[] resourceBarriers)
     {
         if (resourceBarriers.Length > _tmpResourceBarriers.Length)
@@ -485,8 +487,8 @@ internal unsafe partial class DeviceContext(IntPtr handle) : DiligentObject(hand
         {
             for (var i = 0; i < resourceBarriers.Length; ++i)
                 resourceBarriersPtr[i] = StateTransitionDesc.GetInternalStruct(resourceBarriers[i]);
-            
-            Interop.device_context_transition_resource_states(Handle, 
+
+            Interop.device_context_transition_resource_states(Handle,
                 (uint)resourceBarriers.Length,
                 new IntPtr(resourceBarriersPtr));
         }
@@ -528,103 +530,138 @@ internal unsafe partial class DeviceContext(IntPtr handle) : DiligentObject(hand
     {
         using var strAlloc = new StringAllocator();
         var data = BuildTLASAttribs.GetInternalStruct(attribs);
-        
-        throw new NotImplementedException();
+        var instances = attribs.Instances
+            .Select(x =>
+            {
+                var result = TLASBuildInstanceData.GetInternalStruct(x);
+                result.InstanceName = strAlloc.Acquire(x.InstanceName);
+                return result;
+            })
+            .ToArray();
+
+        fixed (void* instancesPtr = instances)
+        {
+            data.pInstances = new IntPtr(instancesPtr);
+            Interop.device_context_build_tlas(Handle, new IntPtr(&data));
+        }
     }
 
     public void CopyBLAS(CopyBLASAttribs attribs)
     {
-        throw new NotImplementedException();
+        var data = CopyBLASAttribs.GetInternalStruct(attribs);
+        Interop.device_context_copy_blas(Handle,
+            new IntPtr(&data));
     }
 
     public void CopyTLAS(CopyTLASAttribs attribs)
     {
-        throw new NotImplementedException();
+        var data = CopyTLASAttribs.GetInternalStruct(attribs);
+        Interop.device_context_copy_tlas(Handle, new IntPtr(&data));
     }
 
     public void WriteBLASCompactedSize(WriteBLASCompactedSizeAttribs attribs)
     {
-        throw new NotImplementedException();
+        var data = WriteBLASCompactedSizeAttribs.GetInternalStruct(attribs);
+        Interop.device_context_write_blascompacted_size(Handle,
+            new IntPtr(&data));
     }
 
     public void WriteTLASCompactedSize(WriteTLASCompactedSizeAttribs attribs)
     {
-        throw new NotImplementedException();
+        var data = WriteTLASCompactedSizeAttribs.GetInternalStruct(attribs);
+        Interop.device_context_write_tlascompacted_size(Handle, new IntPtr(&data));
     }
 
     public void TraceRays(TraceRaysAttribs attribs)
     {
-        throw new NotImplementedException();
+        var data = TraceRaysAttribs.GetInternalStruct(attribs);
+        Interop.device_context_trace_rays(Handle, new IntPtr(&data));
     }
 
     public void TraceRaysIndirect(TraceRaysIndirectAttribs attribs)
     {
-        throw new NotImplementedException();
+        var data = TraceRaysIndirectAttribs.GetInternalStruct(attribs);
+        Interop.device_context_trace_rays_indirect(Handle, new IntPtr(&data));
     }
 
     public void UpdateSBT(IShaderBindingTable sbt, UpdateIndirectRTBufferAttribs attribs)
     {
-        throw new NotImplementedException();
+        var data = UpdateIndirectRTBufferAttribs.GetInternalStruct(attribs);
+        Interop.device_context_update_sbt(Handle, sbt.Handle, new IntPtr(&data));
     }
 
     public void BeginDebugGroup(string name)
     {
-        throw new NotImplementedException();
+        BeginDebugGroup(name, [0, 0, 0, 1.0f]);
     }
 
     public unsafe void BeginDebugGroup(string name, float* color)
     {
-        throw new NotImplementedException();
+        using var strAlloc = new StringAllocator();
+        Interop.device_context_begin_debug_group(Handle,
+            strAlloc.Acquire(name),
+            new IntPtr(color));
     }
 
     public void BeginDebugGroup(string name, float[] color)
     {
-        throw new NotImplementedException();
+        fixed(float* colorPtr = color)
+            BeginDebugGroup(name, colorPtr);
     }
 
     public void EndDebugGroup()
     {
-        throw new NotImplementedException();
+        Interop.device_context_end_debug_group(Handle);
     }
 
     public void InsertDebugLabel(string label)
     {
-        throw new NotImplementedException();
+        InsertDebugLabel(label, [0, 0, 0, 1.0f]);
     }
 
     public unsafe void InsertDebugLabel(string label, float* color)
     {
-        throw new NotImplementedException();
+        using var strAlloc = new StringAllocator();
+        Interop.device_context_insert_debug_label(Handle,
+            strAlloc.Acquire(label),
+            new IntPtr(color));
     }
 
     public void InsertDebugLabel(string label, float[] color)
     {
-        throw new NotImplementedException();
+        fixed(float* colorPtr = color)
+            InsertDebugLabel(label, colorPtr);
     }
 
     public ICommandQueue LockCommandQueue()
     {
-        throw new NotImplementedException();
+        var ptr = Interop.device_context_lock_command_queue(Handle);
+        return DiligentObjectsFactory.CreateCommandQueue(ptr);
     }
 
     public void UnlockCommandQueue()
     {
-        throw new NotImplementedException();
+        Interop.device_context_unlock_command_queue(Handle);
     }
 
     public void SetShadingRate(ShadingRate baseRate, ShadingRateCombiner primitiveCombiner,
         ShadingRateCombiner textureCombiner)
     {
-        throw new NotImplementedException();
+        Interop.device_context_set_shading_rate(Handle,
+            baseRate,
+            primitiveCombiner,
+            textureCombiner);
     }
 
     public void BindSparseResourceMemory(BindSparseResourceMemoryAttribs attribs)
     {
-        throw new NotImplementedException();
+        var data = DiligentDescFactory.GetBindSparseResourceMemoryAttribsBytes(attribs);
+        fixed(void* dataPtr = data)
+            Interop.device_context_bind_sparse_resource_memory(Handle, new IntPtr(&dataPtr));
     }
 
     public void ClearStats()
     {
-        throw new NotImplementedException();
+        Interop.device_context_clear_stats(Handle);
     }
 }

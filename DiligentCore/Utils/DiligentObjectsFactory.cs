@@ -1,6 +1,6 @@
 namespace Diligent.Utils;
 
-internal static class DiligentObjectsFactory
+public static class DiligentObjectsFactory
 {
     private static void ThrowIfNullPointer(IntPtr handle, string typeName)
     {
@@ -178,7 +178,7 @@ internal static class DiligentObjectsFactory
         return NativeObjectRegistry.GetOrCreate(() => new PipelineStateCache(handle), handle);
     }
 
-    public static ReferenceCounters CreateReferenceCounters(IntPtr handle, INativeObject owner)
+    public static IReferenceCounters CreateReferenceCounters(IntPtr handle, INativeObject owner)
     {
         ThrowIfNullPointer(handle, nameof(ReferenceCounters));
         return NativeObjectRegistry.GetOrCreate(() => new ReferenceCounters(handle, owner), handle);
@@ -200,6 +200,12 @@ internal static class DiligentObjectsFactory
     {
         ThrowIfNullPointer(handle, nameof(ICommandList));
         return NativeObjectRegistry.GetOrCreate<ICommandList>(() => new CommandList(handle), handle);
+    }
+
+    public static ICommandQueue CreateCommandQueue(IntPtr handle)
+    {
+        ThrowIfNullPointer(handle, nameof(ICommandQueue));
+        return NativeObjectRegistry.GetOrCreate<ICommandQueue>(() => new CommandQueue(handle), handle);
     }
     
     public static IDiligentObject? TryGetOrCreateObject(IntPtr handle)
