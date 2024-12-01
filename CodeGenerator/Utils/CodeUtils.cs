@@ -43,6 +43,11 @@ public class CodeUtils
         return input.Pluralize();
     }
 
+    public static string ToSingular(string input)
+    {
+        return input.Singularize();
+    }
+
     public static string ConvertScreamingToPascalCase(string input)
     {
         var parts = input.Split('_');

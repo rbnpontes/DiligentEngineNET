@@ -358,7 +358,7 @@ internal unsafe partial class RenderDevice : IRenderDevice
             })
             .ToArray()
             .AsSpan();
-        var proceduralHitShaders = createInfo.ProceduralHitShaderGroup
+        var proceduralHitShaders = createInfo.ProceduralHitShaders
             .Select(x =>
             {
                 var result = RayTracingProceduralHitShaderGroup.GetInternalStruct(x);
@@ -398,7 +398,7 @@ internal unsafe partial class RenderDevice : IRenderDevice
             createInfoData.TriangleHitShaderCount = (uint)createInfo.TriangleHitShaders.Length;
 
             createInfoData.pProceduralHitShaders = new IntPtr(proceduralHitShadersPtr);
-            createInfoData.ProceduralHitShaderCount = (uint)createInfo.ProceduralHitShaderGroup.Length;
+            createInfoData.ProceduralHitShaderCount = (uint)createInfo.ProceduralHitShaders.Length;
 
             Interop.render_device_create_ray_tracing_pipeline_state(Handle,
                 new IntPtr(&createInfoData),

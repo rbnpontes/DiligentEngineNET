@@ -31,5 +31,11 @@ public static class ExclusionList
         "GeneralShaderCount",
         "TriangleHitShaderCount",
         "ProceduralHitShaderCount",
+        "MultiDrawIndexedAttribs::pDrawItems",
+        "InputLayoutDesc::LayoutElements",
+        "SubpassDesc::pResolveAttachments",
+        "SubpassDesc::pDepthStencilAttachment",
+        "SubpassDesc::pShadingRateAttachment",
+        "MultiDrawAttribs::pDrawItems"
     ];
 }

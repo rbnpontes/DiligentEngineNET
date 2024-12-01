@@ -45,6 +45,7 @@ public unsafe interface IDeviceContext : IDiligentObject
     void DrawIndexedIndirect(DrawIndexedIndirectAttribs attribs);
     void DrawMesh(DrawMeshAttribs attribs);
     void DrawMeshIndirect(DrawMeshIndirectAttribs attribs);
+    void MultiDraw(MultiDrawAttribs attribs);
     void MultiDrawIndexed(MultiDrawIndexedAttribs attribs);
     void DispatchCompute(DispatchComputeAttribs attribs);
     void DispatchComputeIndirect(DispatchComputeIndirectAttribs attribs);

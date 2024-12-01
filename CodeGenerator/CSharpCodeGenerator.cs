@@ -340,7 +340,8 @@ public class CSharpCodeGenerator(string diligentCorePath, string outputBaseDir, 
         var props2Skip = new HashSet<string>(ExclusionList.PropertiesToSkip);
         foreach (var field in @class.Fields)
         {
-            if(props2Skip.Contains(field.Name))
+            var fieldWithClass = @class.Name + "::" + field.Name;
+            if(props2Skip.Contains(fieldWithClass))
                 continue;
             if(field.Name.StartsWith("pp"))
                 continue;
@@ -357,10 +358,11 @@ public class CSharpCodeGenerator(string diligentCorePath, string outputBaseDir, 
             {
                 var classType = AstUtils.ResolveClassPointer(field.Type);
                 if (AstUtils.InheritsDiligentObject(classType))
-                {
                     BuildDiligentObjectProperty(field, classType);
-                    continue;
-                }
+                else
+                    BuildObjectProperty(field, classType);
+                
+                continue;
             }
 
             if (AstUtils.IsArrayType(field.Type) && !AstUtils.IsMultiDimensionalArray(field.Type))
@@ -438,6 +440,28 @@ public class CSharpCodeGenerator(string diligentCorePath, string outputBaseDir, 
                 });
         }
 
+        void BuildObjectProperty(CppField field, CppClass fieldClass)
+        {
+            var fieldName = field.Name;
+            if (fieldName.StartsWith('p'))
+                fieldName = fieldName.Substring(1);
+
+            var fieldNameSingular = CodeUtils.ToSingular(fieldName);
+            var countField = @class.Fields.FirstOrDefault(x =>
+            {
+                var name = x.Name.ToLower();
+                return name == (fieldName + "Count").ToLower()
+                    || name == (fieldNameSingular + "Count").ToLower()
+                    || name == ("Num" + fieldName).ToLower()
+                    || name == ("Num" + fieldNameSingular).ToLower();
+            });
+            // skip this field is an array
+            if (countField is not null)
+                return;
+            
+            builder.Line($"public {fieldClass.Name}? {fieldName} {{ get; set; }}");
+        }
+        
         void BuildFixedArrayProperty(CppField field)
         {
             var arrayType = (CppArrayType)field.Type;

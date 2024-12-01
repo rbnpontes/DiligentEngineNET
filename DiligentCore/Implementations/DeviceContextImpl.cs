@@ -179,205 +179,356 @@ internal unsafe partial class DeviceContext(IntPtr handle) : DiligentObject(hand
         {
             for (var i = 0; i < attribs.RenderTargets.Length; ++i)
                 _tmpPointersBuffer[i] = attribs.RenderTargets[i].Handle;
-            
+
             data.ppRenderTargets = new IntPtr(renderTargetsPtr);
             Interop.device_context_set_render_targets_ext(Handle, new IntPtr(&data));
         }
     }
 
+    private OptimizedClearValue.__Internal[] _clearValues = [];
+
     public void BeginRenderPass(BeginRenderPassAttribs attribs)
     {
-        throw new NotImplementedException();
+        if (attribs.ClearValues.Length > 0)
+            _clearValues = new OptimizedClearValue.__Internal[attribs.ClearValues.Length];
+
+        var data = BeginRenderPassAttribs.GetInternalStruct(attribs);
+        fixed (OptimizedClearValue.__Internal* clearValuesPtr = _clearValues)
+        {
+            for (var i = 0; i < attribs.ClearValues.Length; ++i)
+                clearValuesPtr[i] = OptimizedClearValue.GetInternalStruct(attribs.ClearValues[i]);
+            data.pClearValues = new IntPtr(clearValuesPtr);
+            Interop.device_context_begin_render_pass(Handle, new IntPtr(&data));
+        }
     }
 
     public void NextSubpass()
     {
-        throw new NotImplementedException();
+        Interop.device_context_next_subpass(Handle);
     }
 
     public void EndRenderPass()
     {
-        throw new NotImplementedException();
+        Interop.device_context_end_render_pass(Handle);
     }
 
     public void Draw(DrawAttribs attribs)
     {
-        throw new NotImplementedException();
+        var data = DrawAttribs.GetInternalStruct(attribs);
+        Interop.device_context_draw(Handle, new IntPtr(&data));
     }
 
     public void DrawIndexed(DrawIndexedAttribs attribs)
     {
-        throw new NotImplementedException();
+        var data = DrawIndexedAttribs.GetInternalStruct(attribs);
+        Interop.device_context_draw_indexed(Handle, new IntPtr(&data));
     }
 
     public void DrawIndirect(DrawIndirectAttribs attribs)
     {
-        throw new NotImplementedException();
+        var data = DrawIndirectAttribs.GetInternalStruct(attribs);
+        Interop.device_context_draw_indirect(Handle, new IntPtr(&data));
     }
 
     public void DrawIndexedIndirect(DrawIndexedIndirectAttribs attribs)
     {
-        throw new NotImplementedException();
+        var data = DrawIndexedIndirectAttribs.GetInternalStruct(attribs);
+        Interop.device_context_draw_indexed_indirect(Handle, new IntPtr(&data));
     }
 
     public void DrawMesh(DrawMeshAttribs attribs)
     {
-        throw new NotImplementedException();
+        var data = DrawMeshAttribs.GetInternalStruct(attribs);
+        Interop.device_context_draw_mesh(Handle, new IntPtr(&data));
     }
 
     public void DrawMeshIndirect(DrawMeshIndirectAttribs attribs)
     {
-        throw new NotImplementedException();
+        var data = DrawMeshIndirectAttribs.GetInternalStruct(attribs);
+        Interop.device_context_draw_mesh_indirect(Handle, new IntPtr(&data));
     }
+
+    private MultiDrawItem.__Internal[] _tmpMultiDrawItems = [];
+
+    public void MultiDraw(MultiDrawAttribs attribs)
+    {
+        var data = MultiDrawAttribs.GetInternalStruct(attribs);
+        if (attribs.DrawItems.Length > _tmpMultiDrawItems.Length)
+            _tmpMultiDrawItems = new MultiDrawItem.__Internal[attribs.DrawItems.Length];
+
+        fixed (MultiDrawItem.__Internal* drawItemsPtr = _tmpMultiDrawItems)
+        {
+            for (var i = 0; i < attribs.DrawItems.Length; ++i)
+                drawItemsPtr[i] = MultiDrawItem.GetInternalStruct(attribs.DrawItems[i]);
+            data.pDrawItems = new IntPtr(drawItemsPtr);
+
+            Interop.device_context_multi_draw(Handle, new IntPtr(&data));
+        }
+    }
+
+    private MultiDrawIndexedItem.__Internal[] _tmpMultiDrawIndexedItems = [];
 
     public void MultiDrawIndexed(MultiDrawIndexedAttribs attribs)
     {
-        throw new NotImplementedException();
+        var data = MultiDrawIndexedAttribs.GetInternalStruct(attribs);
+        if (attribs.DrawItems.Length > _tmpMultiDrawIndexedItems.Length)
+            _tmpMultiDrawIndexedItems = new MultiDrawIndexedItem.__Internal[attribs.DrawItems.Length];
+
+        fixed (MultiDrawIndexedItem.__Internal* drawItemsPtr = _tmpMultiDrawIndexedItems)
+        {
+            for (var i = 0; i < attribs.DrawItems.Length; ++i)
+                drawItemsPtr[i] = MultiDrawIndexedItem.GetInternalStruct(attribs.DrawItems[i]);
+            data.pDrawItems = new IntPtr(drawItemsPtr);
+
+            Interop.device_context_multi_draw_indexed(Handle, new IntPtr(&data));
+        }
     }
 
     public void DispatchCompute(DispatchComputeAttribs attribs)
     {
-        throw new NotImplementedException();
+        var data = DispatchComputeAttribs.GetInternalStruct(attribs);
+        Interop.device_context_dispatch_compute(Handle, new IntPtr(&data));
     }
 
     public void DispatchComputeIndirect(DispatchComputeIndirectAttribs attribs)
     {
-        throw new NotImplementedException();
+        var data = DispatchComputeIndirectAttribs.GetInternalStruct(attribs);
+        Interop.device_context_dispatch_compute_indirect(Handle, new IntPtr(&data));
     }
 
     public void DispatchTile(DispatchTileAttribs attribs)
     {
-        throw new NotImplementedException();
+        var data = DispatchTileAttribs.GetInternalStruct(attribs);
+        Interop.device_context_dispatch_tile(Handle, new IntPtr(&data));
     }
 
     public void GetTileSize(ref uint tileSizeX, ref uint tileSizeY)
     {
-        throw new NotImplementedException();
+        fixed (uint* tileSizeXPtr = &tileSizeX)
+        fixed (uint* tileSizeYPtr = &tileSizeY)
+            Interop.device_context_get_tile_size(Handle, new IntPtr(tileSizeXPtr), new IntPtr(tileSizeYPtr));
     }
 
     public void ClearDepthStencil(ITextureView view, ClearDepthStencilFlags clearFlags, float depth, byte stencil,
         ResourceStateTransitionMode stateTransitionMode)
     {
-        throw new NotImplementedException();
+        Interop.device_context_clear_depth_stencil(Handle,
+            view.Handle,
+            clearFlags,
+            depth,
+            stencil,
+            stateTransitionMode);
     }
 
+    private void ClearRenderTarget(ITextureView view, void* rgba, ResourceStateTransitionMode stateTransitionMode)
+    {
+        Interop.device_context_clear_render_target(Handle,
+            view.Handle,
+            new IntPtr(rgba),
+            stateTransitionMode);
+    }
     public void ClearRenderTarget(ITextureView view, float[] rgba, ResourceStateTransitionMode stateTransitionMode)
     {
-        throw new NotImplementedException();
+        fixed(void* rgbaPtr = rgba)
+            ClearRenderTarget(view, rgbaPtr, stateTransitionMode);
     }
 
     public void ClearRenderTarget(ITextureView view, uint[] rgba, ResourceStateTransitionMode stateTransitionMode)
     {
-        throw new NotImplementedException();
+        fixed(void* rgbaPtr = rgba)
+            ClearRenderTarget(view, rgbaPtr, stateTransitionMode);
     }
 
     public void ClearRenderTarget(ITextureView view, int[] rgba, ResourceStateTransitionMode stateTransitionMode)
     {
-        throw new NotImplementedException();
+        fixed(void* rgbaPtr = rgba)
+            ClearRenderTarget(view, rgbaPtr, stateTransitionMode);
     }
 
     public ICommandList FinishCommandList()
     {
-        throw new NotImplementedException();
+        var commandListPtr = IntPtr.Zero;
+        Interop.device_context_finish_command_list(Handle, new IntPtr(&commandListPtr));
+
+        return DiligentObjectsFactory.CreateCommandList(commandListPtr);
     }
 
     public void ExecuteCommandLists(ICommandList[] commandLists)
     {
-        throw new NotImplementedException();
+        if (commandLists.Length > _tmpPointersBuffer.Length)
+            _tmpPointersBuffer = new IntPtr[commandLists.Length];
+        
+        fixed(nint* commandListsPtr = _tmpPointersBuffer)
+            Interop.device_context_finish_command_list(Handle, new IntPtr(commandListsPtr));
+
+        foreach (var commandList in commandLists)
+        {
+            NativeObjectRegistry.RemoveObject(commandList.Handle);
+            commandList.Dispose();
+        }
     }
 
     public void EnqueueSignal(IFence fence, ulong value)
     {
-        throw new NotImplementedException();
+        Interop.device_context_enqueue_signal(Handle, fence.Handle, value);
     }
 
     public void DeviceWaitForFence(IFence fence, ulong value)
     {
-        throw new NotImplementedException();
+        Interop.device_context_device_wait_for_fence(Handle, fence.Handle, value);
     }
 
     public void WaitForIdle()
     {
-        throw new NotImplementedException();
+        Interop.device_context_wait_for_idle(Handle);
     }
 
     public void BeginQuery(IQuery query)
     {
-        throw new NotImplementedException();
+        Interop.device_context_begin_query(Handle, query.Handle);
     }
 
     public void EndQuery(IQuery query)
     {
-        throw new NotImplementedException();
+        Interop.device_context_end_query(Handle, query.Handle);
     }
 
     public void Flush()
     {
-        throw new NotImplementedException();
+        Interop.device_context_flush(Handle);
     }
 
     public void CopyBuffer(IBuffer srcBuffer, ulong srcOffset, ResourceStateTransitionMode srcBufferTransitionMode,
         IBuffer dstBuffer, ulong dstOffset, ulong size, ResourceStateTransitionMode dstBufferTransitionMode)
     {
-        throw new NotImplementedException();
+        Interop.device_context_copy_buffer(Handle, 
+            srcBuffer.Handle,
+            srcOffset,
+            srcBufferTransitionMode,
+            dstBuffer.Handle,
+            dstOffset,
+            size,
+            dstBufferTransitionMode);
     }
 
     public IntPtr MapBuffer(IBuffer buffer, MapType mapType, MapFlags mapFlags)
     {
-        throw new NotImplementedException();
+        var ptr = IntPtr.Zero;
+        Interop.device_context_map_buffer(Handle, buffer.Handle, mapType, mapFlags, new IntPtr(&ptr));
+        return ptr;
     }
 
     public void UnmapBuffer(IBuffer buffer, MapType mapType)
     {
-        throw new NotImplementedException();
+        Interop.device_context_unmap_buffer(Handle, buffer.Handle, mapType);
     }
 
     public void UpdateTexture(ITexture texture, uint mipLevel, uint slice, Box dstBox, TextureSubResData subResData,
         ResourceStateTransitionMode srcBufferTransitionMode, ResourceStateTransitionMode textureTransitionMode)
     {
-        throw new NotImplementedException();
+        var boxData = Box.GetInternalStruct(dstBox);
+        var subRes = TextureSubResData.GetInternalStruct(subResData);
+        
+        Interop.device_context_update_texture(Handle, 
+            texture.Handle,
+            mipLevel,
+            slice,
+            new IntPtr(&boxData),
+            new IntPtr(&subRes),
+            srcBufferTransitionMode,
+            textureTransitionMode);
     }
 
     public void CopyTexture(CopyTextureAttribs copyAttribs)
     {
-        throw new NotImplementedException();
+        var srcBoxData = Box.GetInternalStruct(copyAttribs.SrcBox ?? new Box());
+        var copyAttribsData = CopyTextureAttribs.GetInternalStruct(copyAttribs);
+        copyAttribsData.pSrcBox = copyAttribs.SrcBox is null ? IntPtr.Zero : new IntPtr(&srcBoxData);
+        
+        Interop.device_context_copy_texture(Handle, new IntPtr(&copyAttribsData));
     }
 
     public void MapTextureSubresource(ITexture texture, uint mipLevel, uint arraySlice, MapType mapType,
         MapFlags mapFlags,
         Box? mapRegion, MappedTextureSubresource mappedData)
     {
-        throw new NotImplementedException();
+        var mapRegionData = Box.GetInternalStruct(mapRegion ?? new Box());
+        var mappedTexSubRes = MappedTextureSubresource.GetInternalStruct(mappedData);
+        
+        Interop.device_context_map_texture_subresource(Handle,
+            texture.Handle,
+            mipLevel,
+            arraySlice,
+            mapType,
+            mapFlags,
+            new IntPtr(&mapRegionData),
+            new IntPtr(&mappedTexSubRes));
     }
 
     public void GenerateMips(ITextureView textureView)
     {
-        throw new NotImplementedException();
+        Interop.device_context_generate_mips(Handle, textureView.Handle);
     }
 
     public void FinishFrame()
     {
-        throw new NotImplementedException();
+        Interop.device_context_finish_frame(Handle);
     }
 
+    private StateTransitionDesc.__Internal[] _tmpResourceBarriers = [];
     public void TransitionResourceStates(StateTransitionDesc[] resourceBarriers)
     {
-        throw new NotImplementedException();
+        if (resourceBarriers.Length > _tmpResourceBarriers.Length)
+            _tmpResourceBarriers = new StateTransitionDesc.__Internal[resourceBarriers.Length];
+
+        fixed (StateTransitionDesc.__Internal* resourceBarriersPtr = _tmpResourceBarriers)
+        {
+            for (var i = 0; i < resourceBarriers.Length; ++i)
+                resourceBarriersPtr[i] = StateTransitionDesc.GetInternalStruct(resourceBarriers[i]);
+            
+            Interop.device_context_transition_resource_states(Handle, 
+                (uint)resourceBarriers.Length,
+                new IntPtr(resourceBarriersPtr));
+        }
     }
 
     public void ResolveTextureSubresource(ITexture srcTexture, ITexture dstTexture,
         ResolveTextureSubresourceAttribs resolveAttribs)
     {
-        throw new NotImplementedException();
+        var data = ResolveTextureSubresourceAttribs.GetInternalStruct(resolveAttribs);
+        Interop.device_context_resolve_texture_subresource(Handle,
+            srcTexture.Handle,
+            dstTexture.Handle,
+            new IntPtr(&data));
     }
 
     public void BuildBLAS(BuildBLASAttribs attribs)
     {
-        throw new NotImplementedException();
+        using var strAlloc = new StringAllocator();
+        var data = BuildBLASAttribs.GetInternalStruct(attribs);
+        var triangleData = attribs.TriangleData
+            .Select(x =>
+            {
+                var result = BLASBuildTriangleData.GetInternalStruct(x);
+                result.GeometryName = strAlloc.Acquire(x.GeometryName);
+                return result;
+            }).ToArray();
+        var boxData = attribs.BoxData
+            .Select(x =>
+            {
+                var result = BLASBuildBoundingBoxData.GetInternalStruct(x);
+                result.GeometryName = strAlloc.Acquire(x.GeometryName);
+                return result;
+            }).ToArray();
+        Interop.device_context_build_blas(Handle,
+            new IntPtr(&data));
     }
 
     public void BuildTLAS(BuildTLASAttribs attribs)
     {
+        using var strAlloc = new StringAllocator();
+        var data = BuildTLASAttribs.GetInternalStruct(attribs);
+        
         throw new NotImplementedException();
     }
 

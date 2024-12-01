@@ -195,6 +195,13 @@ internal static class DiligentObjectsFactory
         ThrowIfNullPointer(handle, nameof(IShaderResourceBinding));
         return NativeObjectRegistry.GetOrCreate(() => new ShaderResourceBinding(handle), handle);
     }
+
+    public static ICommandList CreateCommandList(IntPtr handle)
+    {
+        ThrowIfNullPointer(handle, nameof(ICommandList));
+        return NativeObjectRegistry.GetOrCreate<ICommandList>(() => new CommandList(handle), handle);
+    }
+    
     public static IDiligentObject? TryGetOrCreateObject(IntPtr handle)
     {
         if (handle == IntPtr.Zero)
