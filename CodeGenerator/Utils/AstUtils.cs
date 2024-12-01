@@ -24,9 +24,13 @@ public static class AstUtils
         type = Resolve(type);
         var pointerType = (CppPointerType)type;
         var finalType = pointerType.ElementType;
-        // Sometimes type contains 'const' qualifier
-        if (finalType.TypeKind == CppTypeKind.Qualified)
-            finalType = ((CppQualifiedType)finalType).ElementType;
+        finalType = finalType.TypeKind switch
+        {
+            // Sometimes type contains 'const' qualifier
+            CppTypeKind.Qualified => ((CppQualifiedType)finalType).ElementType,
+            CppTypeKind.Pointer => ((CppPointerType)finalType).ElementType,
+            _ => finalType
+        };
         return (CppClass)finalType;
     }
 
@@ -92,9 +96,12 @@ public static class AstUtils
         if (type.TypeKind != CppTypeKind.Pointer)
             return false;
         var pointerType = (CppPointerType)type;
-        var targetType = pointerType.ElementType;
-        if (pointerType.ElementType is CppQualifiedType qualifiedType)
-            targetType = qualifiedType.ElementType;
+        var targetType = pointerType.ElementType switch
+        {
+            CppQualifiedType qualifiedType => qualifiedType.ElementType,
+            CppPointerType childPointerType => childPointerType.ElementType,
+            _ => pointerType.ElementType
+        };
         return targetType.TypeKind == CppTypeKind.StructOrClass;
     }
     

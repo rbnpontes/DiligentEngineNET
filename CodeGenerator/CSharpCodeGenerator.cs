@@ -342,6 +342,9 @@ public class CSharpCodeGenerator(string diligentCorePath, string outputBaseDir, 
         {
             if(props2Skip.Contains(field.Name))
                 continue;
+            if(field.Name.StartsWith("pp"))
+                continue;
+            
             if (CSharpUtils.RequiresSpecialSetStructMethod(field))
                 continue;
             if (AstUtils.IsFixedStringType(field.Type))
@@ -365,7 +368,7 @@ public class CSharpCodeGenerator(string diligentCorePath, string outputBaseDir, 
                 BuildFixedArrayProperty(field);
                 continue;
             }
-
+            
             // Array members has pField and NumField or can be FieldCount
             if (field.Name.StartsWith("Num") || field.Name.EndsWith("Count"))
             {
@@ -482,9 +485,10 @@ public class CSharpCodeGenerator(string diligentCorePath, string outputBaseDir, 
             var propNamePlural = CodeUtils.ToPlural(propName);
             var targetField = @class.Fields.FirstOrDefault(x => x.Name == propName 
                                                                 || x.Name == ('p' + propName) 
-                                                                || x.Name == ('p' + propNamePlural));
+                                                                || x.Name == ('p' + propNamePlural)
+                                                                || x.Name == "pp" + propName);
             // Sometimes, when the 'Num' prefix exists but the field is not found,
-            // it indicates that the field doesn't represents an array. 
+            // it indicates that the field doesn't represent an array. 
             if (targetField is null || !AstUtils.IsClassPointer(targetField.Type))
                 return false;
 

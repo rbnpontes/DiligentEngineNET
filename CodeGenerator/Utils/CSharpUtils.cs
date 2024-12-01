@@ -86,6 +86,17 @@ public static class CSharpUtils
         return result;
     }
 
+    public static string FixPropertyName(string propName)
+    {
+        if (string.IsNullOrWhiteSpace(propName))
+            return propName;
+
+        var firstChar = propName.First();
+        if (!char.IsLower(firstChar))
+            return propName;
+        return char.ToUpper(firstChar) + propName.Substring(1);
+    }
+
     public static string GetPropertyField(CppType type, string propName)
     {
         var result = new StringBuilder();
@@ -96,7 +107,7 @@ public static class CSharpUtils
             result.Append("public ");
             result.Append(GetPropertyType(type));
             result.Append(' ');
-            result.Append(propName);
+            result.Append(FixPropertyName(propName));
             result.Append(" { get => _data.");
             result.Append(propName);
             result.Append("; set => _data.");
@@ -109,7 +120,7 @@ public static class CSharpUtils
             result.Append("public ");
             result.Append(className);
             result.Append(' ');
-            result.Append(propName);
+            result.Append(FixPropertyName(propName));
             result.Append(" { get => ");
             result.Append(className);
             result.Append(".FromInternalStruct(_data.");
