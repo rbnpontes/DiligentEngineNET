@@ -485,4 +485,18 @@ public static unsafe class DiligentDescFactory
         var data = (SparseTextureFormatInfo.__Internal*)handle;
         return SparseTextureFormatInfo.FromInternalStruct(*data);
     }
+
+    public static DeviceContextDesc GetDeviceContextDesc(IntPtr handle)
+    {
+        var data = (DeviceContextDesc.__Internal*)handle;
+        var result = DeviceContextDesc.FromInternalStruct(*data);
+        result.Name = Marshal.PtrToStringAnsi(data->Name) ?? string.Empty;
+        return result;
+    }
+
+    public static DeviceContextStats GetDeviceContextStats(IntPtr handle)
+    {
+        var data = (DeviceContextStats.__Internal*)handle;
+        return DeviceContextStats.FromInternalStruct(*data);
+    }
 }

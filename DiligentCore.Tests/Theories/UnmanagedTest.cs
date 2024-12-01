@@ -1,6 +1,8 @@
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
+using IntPtr = System.IntPtr;
 
 namespace Diligent.Tests.Theories;
 
@@ -19,7 +21,7 @@ public unsafe class UnmanagedTest
         public int Y;
         public IntPtr Text;
     }
-    
+
     [Theory]
     public void CouldWriteStructIntoByteArray()
     {
@@ -56,8 +58,8 @@ public unsafe class UnmanagedTest
 
         var byteArray = new byte[Unsafe.SizeOf<TestStruct2>() + str.Length + 2];
         var span = byteArray.AsSpan();
-        fixed(void* ptr = span)
-        fixed(void* strPtr = strBytes)
+        fixed (void* ptr = span)
+        fixed (void* strPtr = strBytes)
         {
             Unsafe.CopyBlockUnaligned(ptr, strPtr, (uint)strBytes.Length);
             var structPtr = IntPtr.Add(new IntPtr(ptr), strBytes.Length + 1);
@@ -69,12 +71,12 @@ public unsafe class UnmanagedTest
             var structPtr = (TestStruct2*)IntPtr.Add(new IntPtr(ptr), strBytes.Length + 1);
             var targetStr = Marshal.PtrToStringAnsi(structPtr->Text);
             var targetStruct = CreateStruct(IntPtr.Zero);
-            
+
             Assert.That(structPtr->X, Is.EqualTo(targetStruct.X));
             Assert.That(structPtr->Y, Is.EqualTo(targetStruct.Y));
             Assert.That(targetStr, Is.EqualTo(str));
         }
-        
+
         TestStruct2 CreateStruct(IntPtr strAddr)
         {
             var result = new TestStruct2();
