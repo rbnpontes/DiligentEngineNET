@@ -11,7 +11,7 @@ public class BaseRenderTest
         if (OperatingSystem.IsWindows())
         {
             var d3dFactory = DiligentCore.GetEngineFactoryD3D11() ?? throw new NullReferenceException();
-            (var device, var contexts) = d3dFactory.CreateDeviceAndContexts(new EngineD3D11CreateInfo());
+            var (device, contexts) = d3dFactory.CreateDeviceAndContexts(new EngineD3D11CreateInfo());
             Factory = d3dFactory;
             Device = device;
             Context = contexts.First();
@@ -19,7 +19,7 @@ public class BaseRenderTest
         else
         {
             var vkFactory = DiligentCore.GetEngineFactoryVk() ?? throw new NullReferenceException();
-            (var device, var contexts) = vkFactory.CreateDeviceAndContexts(new EngineVkCreateInfo());
+            var (device, contexts) = vkFactory.CreateDeviceAndContexts(new EngineVkCreateInfo());
             Factory = vkFactory;
             Device = device;
             Context = contexts.First();
