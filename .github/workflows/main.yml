@@ -6,12 +6,12 @@ on:
       - main
 jobs:
   generate-bindings:
-    uses: ./.github/workflows/generate.yml
+    uses: ./.github/workflows/_generate.yml
   build-windows:
-    uses: ./.github/workflows/build-native.yml
+    uses: ./.github/workflows/_build-native.yml
     with:
       target_so: 'windows'
   build-linux:
-    uses: ./.github/workflows/build-native.yml
+    uses: ./.github/workflows/_build-native.yml
     with:
       target_so: 'linux'
