@@ -34,7 +34,7 @@ jobs:
         run: npm run ci:code_artifact
         
       - name: Upload artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: CodeArtifacts
           path: code-artifact.zip
