@@ -30,11 +30,11 @@ jobs:
       - name: Downloading Artifacts
         uses: actions/download-artifact@v4
         with:
-          name: CodeArtifacts
+          name: code-artifact.zip
           merge-multiple: true
 
       - name: Extract Code Artifacts
-        run: 7z x CodeArtifact.zip
+        run: 7z x code-artifact.zip
 
       - name: Install dependencies
         run: npm i

@@ -36,5 +36,5 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: CodeArtifacts
+          name: code-artifact.zip
           path: code-artifact.zip
