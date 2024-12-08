@@ -8,6 +8,7 @@ on:
         required: true
         type: string
 jobs:
+  ${{ inputs.target_so }}-build_job:
     runs-on: ${{ inputs.runs_on }}
     steps:
       - name: Checkout code
