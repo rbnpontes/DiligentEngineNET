@@ -12,11 +12,13 @@ jobs:
       runs_on: 'windows-latest'
   build-windows:
     uses: ./.github/workflows/_build-native.yml
+    needs: generate-bindings
     with:
       target_so: 'windows'
       runs_on: 'windows-latest'
   build-linux:
     uses: ./.github/workflows/_build-native.yml
+    needs: generate-bindings
     with:
       target_so: 'linux'
       runs_on: 'ubuntu-latest'
