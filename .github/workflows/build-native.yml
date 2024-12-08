@@ -37,4 +37,4 @@ jobs:
           uses: actions/upload-artifact@v3
           with:
             name: Lib${{ inputs.target_so }}Artifacts
-            path: *-lib-artifacts.zip
+            path: "*-lib-artifacts.zip"
