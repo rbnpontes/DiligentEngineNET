@@ -30,8 +30,7 @@ jobs:
       - name: Downloading Artifacts
         uses: actions/download-artifact@v4
         with:
-          path: ${{ github.workspace }}
-          name: CodeArtifact
+          name: CodeArtifacts
           merge-multiple: true
 
       - name: Extract Code Artifacts
