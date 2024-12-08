@@ -6,7 +6,7 @@ const fs = require('fs');
 const g_source_dir = path.resolve(__dirname, '..');
 async function generateBindings() {
     const codegen_path = path.join(g_source_dir, 'net-build', 'CodeGenerator', 'net8.0', 'win-x64');
-    const diligent_core_dir = path.join(g_source_dir, '_deps', 'DiligentCore');
+    const diligent_core_dir = path.join(g_source_dir, 'glue-build', '_deps', 'DiligentCore');
     const code_out_dir = path.join(g_source_dir, 'code');
     const glue_dir = path.join(g_source_dir, "DiligentCoreGlue");
 
