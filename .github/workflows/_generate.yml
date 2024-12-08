@@ -1,7 +1,12 @@
 on:
+  workflow_call:
+    inputs:
+      runs_on:
+        required: true
+        type: string
 jobs:
   generate_job:
-    runs-on: 'windows-latest'
+    runs-on: ${{ inputs.runs_on }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
