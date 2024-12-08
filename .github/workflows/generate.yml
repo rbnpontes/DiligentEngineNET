@@ -1,0 +1,34 @@
+jobs:
+  generate_job:
+    runs-on: 'windows-latest'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.0'
+      - name: Setup NodeJS
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'latest'
+      - name: Install dependencies
+        run: npm i
+        
+      - name: Fetch DiligentCore and Setup Project
+        run: npm run generate:native
+
+      - name: Build CodeGen
+        run: npm run build:codegen
+
+      - name: Generate Bindings
+        run: npm run generate:bindings
+
+      - name: Generating Code Artifact
+        run: npm run ci:code_artifact
+        
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: CodeArtifacts
+          path: code-artifact.zip

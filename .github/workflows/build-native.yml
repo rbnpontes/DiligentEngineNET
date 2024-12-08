@@ -1,0 +1,40 @@
+on:
+  workflow_call:
+    inputs:
+      target_so:
+        required: true
+        type: string
+jobs:
+  ${{ inputs.target_so }}_build_job:
+    - if: inputs.target_so == 'windows'
+      runs-on: 'windows-latest'
+    - if: inputs.target_so == 'linux'
+      runs-on: 'ubuntu-latest'
+      steps:
+        - name: Checkout code
+          uses: actions/checkout@v4
+        - name: Setup NodeJS
+          uses: actions/setup-node@v4
+          with:
+            node-version: 'latest'
+        - name: Downloading Artifacts
+          uses: actions/download-artifact@v4
+          with:
+            path: ${{ github.workspace }}
+            pattern: 'code-artifact.zip'
+            merge-multiple: true
+        - name: Extract Code Artifacts
+          run: 7z x code-artifact.zip
+        - name: Install dependencies
+          run: npm i
+        - name: Setup Native Project
+          run: npm run generate:native
+        - name: Build Native Project
+          run: npm run build:native
+        - name: Generate Binary Artifact
+          run: npm run ci:bin_artifact
+        - name: Upload artifacts
+          uses: actions/upload-artifact@v3
+          with:
+            name: Lib${{ inputs.target_so }}Artifacts
+            path: *-lib-artifacts.zip

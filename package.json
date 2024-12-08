@@ -13,6 +13,7 @@
     "pack:create": "jake pack:create",
     "pack:publish": "jake pack:publish",
     "ci:code_artifact": "jake ci:code_artifact",
+    "ci:bin_artifact": "jake ci:bin_artifact",
     "ci:win_artifact": "jake ci:win_artifact",
     "ci:linux_artifact": "jake ci:linux_artifact",
     "ci:tag": "jake ci:tag"

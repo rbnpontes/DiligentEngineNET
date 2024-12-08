@@ -33,6 +33,9 @@ namespace('ci', ()=> {
     task('code_artifact', async ()=> {
         await ciTasks.generateCodeArtifact();
     });
+    task('bin_artifact', async ()=> {
+        await ciTasks.generateBinaryArtifact();
+    });
     task('win_artifact', async ()=> {
         await ciTasks.generateWindowsArtifact();
     });
