@@ -1,6 +1,7 @@
 const buildTasks = require('./BuildScripts/BuildTasks');
 const generateTasks = require('./BuildScripts/GenerateTasks');
 const testTasks = require('./BuildScripts/TestsTask');
+const packTasks = require('./BuildScripts/PackTasks');
 
 namespace('build', ()=>{
     task('codegen', async () => {
@@ -25,4 +26,13 @@ namespace('generate', ()=> {
 
 task('test', async ()=> {
     await testTasks.runTests();
+});
+
+namespace('pack', ()=> {
+    task('create', async ()=> {
+        await packTasks.runPack();
+    });
+    task('publish', async ()=> {
+        await packTasks.runPublish();
+    });
 });

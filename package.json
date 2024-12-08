@@ -9,7 +9,9 @@
     "build:native" : "jake build:native",
     "build:bindings" : "jake build:bindings",
     "generate:native" : "jake generate:native",
-    "generate:bindings" : "jake generate:bindings"
+    "generate:bindings" : "jake generate:bindings",
+    "pack:create" : "jake pack:create",
+    "pack:publish": "jake pack:publish"
   },
   "keywords": [],
   "author": "",

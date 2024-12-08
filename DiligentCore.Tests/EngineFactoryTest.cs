@@ -1,4 +1,6 @@
+using System.Reflection;
 using System.Runtime.InteropServices;
+using Diligent.Utils;
 
 namespace Diligent.Tests;
 
@@ -9,6 +11,18 @@ public class EngineFactoryTest : BaseFactoryTest
     {
         public int A;
         public IntPtr B;
+    }
+
+    public EngineFactoryTest()
+    {
+        try
+        {
+            NativeLibrary.SetDllImportResolver(Assembly.GetExecutingAssembly(), DiligentLibraryResolver.Resolver);
+        }
+        catch
+        {
+            // ignored
+        }
     }
 
     [Test]
@@ -35,11 +49,14 @@ public class EngineFactoryTest : BaseFactoryTest
         using var engineFactory = GetFactory();
         DebugMessageCallbackDelegate callback = (severity, message, function, file, line) =>
         {
-            Assert.That(severity, Is.EqualTo(DebugMessageSeverity.Info));
-            Assert.That(message, Is.EqualTo("Test Message"));
-            Assert.That(function, Is.EqualTo(nameof(MustSetMessageCallback)));
-            Assert.That(file, Is.EqualTo("EngineFactoryTest.cs"));
-            Assert.That(line, Is.EqualTo(1234));
+            Assert.Multiple(() =>
+            {
+                Assert.That(severity, Is.EqualTo(DebugMessageSeverity.Info));
+                Assert.That(message, Is.EqualTo("Test Message"));
+                Assert.That(function, Is.EqualTo(nameof(MustSetMessageCallback)));
+                Assert.That(file, Is.EqualTo("EngineFactoryTest.cs"));
+                Assert.That(line, Is.EqualTo(1234));
+            });
             passed = true;
         };
         engineFactory.SetMessageCallback(callback);

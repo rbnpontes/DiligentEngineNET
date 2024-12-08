@@ -150,7 +150,7 @@ public class CppTypeUtils
         }
 
         if (AstUtils.IsFunctionPointer(funcParamType))
-            result = $"static_cast<{funcParamType.GetDisplayName()}>({result})";
+            result = $"reinterpret_cast<{funcParamType.GetDisplayName()}>({result})";
         
         return result;
     }

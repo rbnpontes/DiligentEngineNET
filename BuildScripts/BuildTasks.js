@@ -1,5 +1,6 @@
-const { execAsync } = require('./ProcessUtils');
 const path = require('path');
+const os = require('os');
+const { execAsync } = require('./ProcessUtils');
 
 const g_source_dir = path.resolve(__dirname, '..');
 async function buildCodeGen() {
@@ -14,7 +15,7 @@ async function buildCodeGen() {
 
 async function buildNative() {
     process.chdir(g_source_dir);
-    
+    const build_path = path.join(g_source_dir, 'glue-build', os.platform());
     let error = null;
     // due to diligent dependencies, we must build 
     // at least two times to guarantee success
@@ -22,7 +23,7 @@ async function buildNative() {
     for(let i = 0; i < 2; ++i) {
         try {
             await execAsync([
-                'cmake', '--build', './glue-build', 
+                'cmake', '--build', build_path, 
                 '--config', 'Release'
             ].join(' '));
             error = null;
@@ -52,6 +53,14 @@ async function buildBindings() {
     await execAsync([
         'dotnet', 'build',
         '"DiligentCore.Tests/DiligentCore.Tests.csproj"',
+        '-c', 'Release',
+        solution_dir_prop
+    ].join(' '));
+
+    console.log('-- Building Test Runner');
+    await execAsync([
+        'dotnet', 'build',
+        '"DiligentCore.TestRunner/DiligentCore.TestRunner.csproj"',
         '-c', 'Release',
         solution_dir_prop
     ].join(' '));

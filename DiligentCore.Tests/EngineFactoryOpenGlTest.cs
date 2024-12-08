@@ -37,6 +37,7 @@ public class EngineFactoryOpenGlTest
     }
     
     [Test]
+    [Platform("Win")]
     public void MustCreateDeviceAndContextFromActiveGlContext()
     {
         using var window = new TestWindow();

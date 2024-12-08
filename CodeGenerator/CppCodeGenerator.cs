@@ -33,77 +33,95 @@ public class CppCodeGenerator(string diligentCorePath, string baseOutputDir, Cpp
     private void BuildClassHeader(CppClass @class)
     {
         var classFileName = Path.GetFileName(@class.SourceFile);
-        var builder = new CppBuilder();
-        builder.SetPragmaOnce();
-        builder.IncludeLiteral("Api.h");
-        builder.Include($"<{classFileName}>");
-        builder.Line("using namespace Diligent;").Line();
+        var cppBuilder = new CppBuilder();
+        cppBuilder.SetPragmaOnce();
+        cppBuilder.IncludeLiteral("Api.h");
 
-        // Functions can have multiple declarations, but we can only export
-        // a single declaration, in this case we will add a index at the end of decl.
-        var functionGroups = @class.Functions
-            .Where(AstUtils.IsAllowedFunction)
-            .GroupBy(x => x.Name)
-            .ToArray();
-        for (var grpIdx = 0; grpIdx < functionGroups.Count(); ++grpIdx)
+        if (ExclusionList.PlatformSpecificClasses.TryGetValue(@class.Name, out var macros))
+            cppBuilder.IfDef(GenerateClassHeader, macros);
+        else
+            GenerateClassHeader(cppBuilder);
+        
+        CodeUtils.WriteCode(Path.Combine(_outputDir, CppTypeUtils.GetBaseClassFileName(@class)+".h"), cppBuilder);
+        return;
+
+        void GenerateClassHeader(CppBuilder builder)
         {
-            var grp = functionGroups[grpIdx];
-            var isVariantCall = grp.Count() > 1;
+            builder.Include($"<{classFileName}>");
+            builder.Line("using namespace Diligent;").Line();
 
-            for (var funcIdx = 0; funcIdx < grp.Count(); ++funcIdx)
+            // Functions can have multiple declarations, but we can only export
+            // a single declaration, in this case we will add a index at the end of decl.
+            var functionGroups = @class.Functions
+                .Where(AstUtils.IsAllowedFunction)
+                .GroupBy(x => x.Name)
+                .ToArray();
+            for (var grpIdx = 0; grpIdx < functionGroups.Count(); ++grpIdx)
             {
-                var func = grp.ElementAt(funcIdx);
-                if(AstUtils.IsOperatorFunction(func))
-                    continue;
-                var methodName = isVariantCall 
-                    ? CppTypeUtils.GetFunctionVariantDeclName(@class, func, funcIdx) 
-                    : CppTypeUtils.GetFunctionDeclName(@class, func);
-                var returnType = CppTypeUtils.GetFunctionReturnType(func);
+                var grp = functionGroups[grpIdx];
+                var isVariantCall = grp.Count() > 1;
 
-                builder.Line("EXPORT " + returnType + " " + methodName + ";");
+                for (var funcIdx = 0; funcIdx < grp.Count(); ++funcIdx)
+                {
+                    var func = grp.ElementAt(funcIdx);
+                    if(AstUtils.IsOperatorFunction(func))
+                        continue;
+                    var methodName = isVariantCall 
+                        ? CppTypeUtils.GetFunctionVariantDeclName(@class, func, funcIdx) 
+                        : CppTypeUtils.GetFunctionDeclName(@class, func);
+                    var returnType = CppTypeUtils.GetFunctionReturnType(func);
+
+                    builder.Line("EXPORT " + returnType + " " + methodName + ";");
+                }
             }
         }
-        
-        CodeUtils.WriteCode(Path.Combine(_outputDir, CppTypeUtils.GetBaseClassFileName(@class)+".h"), builder);
     }
 
     private void BuildClassSource(CppClass @class)
     {
         var classHeaderFile = CppTypeUtils.GetBaseClassFileName(@class) + ".h";
-        var builder = new CppBuilder();
-        builder
+        var cppBuilder = new CppBuilder();
+        cppBuilder
             .IncludeLiteral($"./{classHeaderFile}")
             .Line();
 
-        // Functions can have multiple declarations, but we can only export
-        // a single declaration, in this case we will add a index at the end of decl.
-        var functionGroups = @class.Functions
-            .Where(AstUtils.IsAllowedFunction)
-            .GroupBy(x => x.Name)
-            .ToArray();
-        for (var grpIdx = 0; grpIdx < functionGroups.Length; ++grpIdx)
+        if (ExclusionList.PlatformSpecificClasses.TryGetValue(@class.Name, out var macros))
+            cppBuilder.IfDef(GenerateClassSource, macros);
+        else
+            GenerateClassSource(cppBuilder);
+        
+        CodeUtils.WriteCode(Path.Combine(_outputDir, CppTypeUtils.GetBaseClassFileName(@class)+".cpp"), cppBuilder);
+        return;
+
+        void GenerateClassSource(CppBuilder builder)
         {
-            var grp = functionGroups[grpIdx];
-            var isVariantCall = grp.Count() > 1;
-            for (var funcIdx = 0; funcIdx < grp.Count(); ++funcIdx)
+            // Functions can have multiple declarations, but we can only export
+            // a single declaration, in this case we will add a index at the end of decl.
+            var functionGroups = @class.Functions
+                .Where(AstUtils.IsAllowedFunction)
+                .GroupBy(x => x.Name)
+                .ToArray();
+            foreach (var grp in functionGroups)
             {
-                var func = grp.ElementAt(funcIdx);
-                if(AstUtils.IsOperatorFunction(func))
-                    continue;
-                
-                var methodName = isVariantCall 
-                    ? CppTypeUtils.GetFunctionVariantDeclName(@class, func, funcIdx)
-                    : CppTypeUtils.GetFunctionDeclName(@class, func);
-                var returnType = CppTypeUtils.GetFunctionReturnType(func);
-                builder.Line(returnType + " " + methodName);
-                builder.Closure(builder =>
+                var isVariantCall = grp.Count() > 1;
+                for (var funcIdx = 0; funcIdx < grp.Count(); ++funcIdx)
                 {
-                    var line = CppTypeUtils.HandleFunctionReturn(@class, func);
-                    builder.Line(line);
-                });
+                    var func = grp.ElementAt(funcIdx);
+                    if(AstUtils.IsOperatorFunction(func))
+                        continue;
+                
+                    var methodName = isVariantCall 
+                        ? CppTypeUtils.GetFunctionVariantDeclName(@class, func, funcIdx)
+                        : CppTypeUtils.GetFunctionDeclName(@class, func);
+                    var returnType = CppTypeUtils.GetFunctionReturnType(func);
+                    builder.Line(returnType + " " + methodName);
+                    builder.Closure(builder =>
+                    {
+                        var line = CppTypeUtils.HandleFunctionReturn(@class, func);
+                        builder.Line(line);
+                    });
+                }
             }
         }
-        
-        CodeUtils.WriteCode(Path.Combine(_outputDir, CppTypeUtils.GetBaseClassFileName(@class)+".cpp"), builder);
     }
 }

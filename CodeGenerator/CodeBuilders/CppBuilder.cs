@@ -12,7 +12,7 @@ public class FunctionDesc
 public class CppBuilder(int indentation = 0)
 {
     private CodeBlockChunk _chunk = new(indentation);
-    private List<string> _headers = new();
+    //private List<string> _headers = new();
     private string _topComment = string.Empty;
     private bool _pragmaOnce;
 
@@ -30,8 +30,7 @@ public class CppBuilder(int indentation = 0)
 
     public CppBuilder Include(string includeName)
     {
-        _headers.Add(includeName);
-        return this;
+        return Line($"#include {includeName}");
     }
 
     public CppBuilder IncludeLiteral(string includeName)
@@ -121,6 +120,24 @@ public class CppBuilder(int indentation = 0)
         return this;
     }
 
+    public CppBuilder IfDef(Action<CppBuilder> closureBody, string[] macros)
+    {
+        var macrosDef = new StringBuilder();
+        for (var i = 0; i < macros.Length; ++i)
+        {
+            macrosDef.Append("defined(");
+            macrosDef.Append(macros[i]);
+            macrosDef.Append(')');
+            if (i < macros.Length - 1)
+                macrosDef.Append(" || ");
+        }
+
+        Line($"#if {macrosDef}");
+        closureBody(this);
+        Line("#endif");
+        return this;
+    }
+
     public CppBuilder Var(string varType, string varName)
     {
         _chunk.Add($"{varType} {varName};");
@@ -157,8 +174,6 @@ public class CppBuilder(int indentation = 0)
 
         if (_pragmaOnce)
             sb.AppendLine("#pragma once");
-
-        _headers.ForEach(x => sb.AppendLine($"#include {x}"));
         sb.AppendLine();
 
         sb.AppendLine(_chunk.GetString());
@@ -168,7 +183,6 @@ public class CppBuilder(int indentation = 0)
     protected static void Assign(CppBuilder from, CppBuilder to)
     {
         to._chunk = from._chunk;
-        to._headers = from._headers;
         to._topComment = from._topComment;
         to._pragmaOnce = from._pragmaOnce;
     }

@@ -38,4 +38,10 @@ public static class ExclusionList
         "SubpassDesc::pShadingRateAttachment",
         "MultiDrawAttribs::pDrawItems"
     ];
+
+    public static Dictionary<string, string[]> PlatformSpecificClasses = new()
+    {
+        { "IEngineFactoryD3D11", ["PLATFORM_WIN32", "PLATFORM_UNIVERSAL_PLATFORM"] },
+        { "IEngineFactoryD3D12", ["PLATFORM_WIN32", "PLATFORM_UNIVERSAL_PLATFORM"] },
+    };
 }

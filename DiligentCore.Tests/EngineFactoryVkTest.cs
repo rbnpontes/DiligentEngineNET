@@ -49,8 +49,15 @@ public class EngineFactoryVkTest
     }
 
     [Test]
+    [Platform("Win")]
     public void MustCreateSwapChain()
     {
+        if (SystemUtils.IsRunningAsHeadless())
+        {
+            Assert.Pass();
+            return;
+        }
+        
         using var window = new TestWindow();
         using var factory = GetFactory();
         (var device, var contexts) = factory.CreateDeviceAndContexts(new EngineVkCreateInfo());
