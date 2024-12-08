@@ -5,18 +5,23 @@
   "main": "index.js",
   "scripts": {
     "test": "jake test",
-    "build:codegen" : "jake build:codegen",
-    "build:native" : "jake build:native",
-    "build:bindings" : "jake build:bindings",
-    "generate:native" : "jake generate:native",
-    "generate:bindings" : "jake generate:bindings",
-    "pack:create" : "jake pack:create",
-    "pack:publish": "jake pack:publish"
+    "build:codegen": "jake build:codegen",
+    "build:native": "jake build:native",
+    "build:bindings": "jake build:bindings",
+    "generate:native": "jake generate:native",
+    "generate:bindings": "jake generate:bindings",
+    "pack:create": "jake pack:create",
+    "pack:publish": "jake pack:publish",
+    "ci:code_artifact": "jake ci:code_artifact",
+    "ci:win_artifact": "jake ci:win_artifact",
+    "ci:linux_artifact": "jake ci:linux_artifact",
+    "ci:tag": "jake ci:tag"
   },
   "keywords": [],
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "archiver": "^7.0.1",
     "jake": "^10.9.2"
   }
 }

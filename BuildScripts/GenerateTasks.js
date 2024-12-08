@@ -22,7 +22,6 @@ async function generateNativeProject() {
     const glue_path = path.join(g_source_dir, 'DiligentCoreGlue');
     const build_path = path.join(g_source_dir, 'glue-build', os.platform());
 
-
     process.chdir(glue_path);
     await execAsync([
         'cmake',

@@ -2,6 +2,7 @@ const buildTasks = require('./BuildScripts/BuildTasks');
 const generateTasks = require('./BuildScripts/GenerateTasks');
 const testTasks = require('./BuildScripts/TestsTask');
 const packTasks = require('./BuildScripts/PackTasks');
+const ciTasks = require('./BuildScripts/CiTasks');
 
 namespace('build', ()=>{
     task('codegen', async () => {
@@ -26,6 +27,21 @@ namespace('generate', ()=> {
 
 task('test', async ()=> {
     await testTasks.runTests();
+});
+
+namespace('ci', ()=> {
+    task('code_artifact', async ()=> {
+        await ciTasks.generateCodeArtifact();
+    });
+    task('win_artifact', async ()=> {
+        await ciTasks.generateWindowsArtifact();
+    });
+    task('linux_artifact', async ()=> {
+        await ciTasks.generateLinuxArtifact();
+    });
+    task('tag', async ()=> {
+
+    });
 });
 
 namespace('pack', ()=> {
