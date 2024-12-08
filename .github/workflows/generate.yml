@@ -1,3 +1,4 @@
+on:
 jobs:
   generate_job:
     runs-on: 'windows-latest'

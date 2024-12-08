@@ -1,13 +1,9 @@
-name: Build
+name: Deploy
 
 on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
-
 jobs:
   generate-bindings:
     uses: ./.github/workflows/generate.yml
