@@ -37,6 +37,6 @@ jobs:
     if: startsWith(github.ref_name, 'release/')
     uses: ./.github/workflows/_publish.yml
     needs: build-bindings
-    with:
+    secrets:
       nuget_api_key: ${{ secrets.NUGET_API_KEY }}
 

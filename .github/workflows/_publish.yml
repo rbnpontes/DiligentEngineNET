@@ -1,8 +1,7 @@
 on:
   workflow_call:
-    inputs:
+    secrets:
       nuget_api_key:
-        type: string
         required: true
 jobs:
   publish:
