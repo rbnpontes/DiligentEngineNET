@@ -1,7 +1,7 @@
 on:
   workflow_call:
     inputs:
-      publish:
+      is_release:
         type: boolean
         default: false
 jobs:
@@ -14,6 +14,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 'latest'
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.0'
       - name: Downloading Artifacts
         uses: actions/download-artifact@v4
         with:
@@ -21,7 +25,7 @@ jobs:
           merge-multiple: true
       - name: Extract Code Artifacts
         run: 7z x code-artifact.zip
-      # Put it back builded libraries
+      # Put it back built libraries
       - name: Extract Window Libraries
         run: 7z x windows-lib-artifact.zip -o./glue-build/win32
       - name: Extract Linux Libraries
@@ -30,21 +34,25 @@ jobs:
       - name: Install dependencies
         run: npm i
 
+      - if: inputs.is_release
+        name: Update Library Version
+        run: npm run ci:tag -- RELEASE_TAG=${{ github.ref_name }}
+
       - name: Build DiligentCore.NET
         run: npm run build:bindings
       
       - name: Run DiligentCore Tests
         run: npm run test
       
-      - if: inputs.publish
+      - if: inputs.is_release
         name: Generate Nuget Package
         run: npm run pack:create
 
-      - if: inputs.publish
-        name: Publish Nuget Package
-        env:
-          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
-        run: npm run pack:publish
-      # TODO: add release task
+      - if: inputs.is_release
+        name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: diligent-core.nupkg
+          path: './net-build/Lib/*.nupkg'
 
       

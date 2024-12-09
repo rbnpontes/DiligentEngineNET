@@ -36,12 +36,26 @@ async function generateLinuxArtifact() {
 
 async function generateBinaryArtifact() {
     const platform = os.platform();
-    if(platform == 'win32')
+    if (platform == 'win32')
         await generateWindowsArtifact();
-    else if(platform == 'linux')
+    else if (platform == 'linux')
         await generateLinuxArtifact();
     else
         throw new Error('Not implemented platform');
 }
 
-module.exports = { generateCodeArtifact, generateWindowsArtifact, generateLinuxArtifact, generateBinaryArtifact };
+async function updateLibVersion(lib_version) {
+    console.log('- Updating Library Version');
+    const csproj_path = path.join(g_source_dir, 'DiligentCore', 'DiligentCore.csproj');
+    const file = fs.readFileSync(csproj_path).toString()
+        .replace('<Version>1.0.0</Version>', `<Version>${lib_version}</Version>`);
+    fs.writeFileSync(csproj_path, file);
+}
+
+module.exports = {
+    generateCodeArtifact,
+    generateWindowsArtifact,
+    generateLinuxArtifact,
+    generateBinaryArtifact,
+    updateLibVersion
+};

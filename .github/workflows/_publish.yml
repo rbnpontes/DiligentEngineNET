@@ -1,0 +1,22 @@
+on:
+  workflow_call:
+    inputs:
+      nuget_api_key:
+        type: string
+        default: '${{ secrets.NUGET_API_KEY }}'
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.0'
+      - name: Downloading DiligentCore Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: 'diligent-core.nupkg'
+          merge-multiple: true
+      - name: Publish DiligentCore.NET
+        run: dotnet nuget push diligent-core.nupkg --api-key ${{ inputs.nuget_api_key }} --source https://api.nuget.org/v3/index.json
+      # TODO: create release action

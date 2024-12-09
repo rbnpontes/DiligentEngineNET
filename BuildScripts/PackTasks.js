@@ -15,7 +15,7 @@ async function runPack() {
     ].join(' '));
 }
 
-async function runPublish(params) {
+async function runPublish() {
     const output_dir = path.join(g_source_dir, 'net-build/Lib');
     process.chdir(output_dir);
 
