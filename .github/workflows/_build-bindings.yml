@@ -27,9 +27,9 @@ jobs:
         run: 7z x code-artifact.zip
       # Put it back built libraries
       - name: Extract Window Libraries
-        run: 7z x windows-lib-artifact.zip -o./glue-build/win32
+        run: 7z x windows-lib-artifact.zip "-o./glue-build/win32"
       - name: Extract Linux Libraries
-        run: 7z x linux-lib-artifact.zip -o./glue-build/linux
+        run: 7z x linux-lib-artifact.zip "-o./glue-build/linux"
       
       - name: Install dependencies
         run: npm i
