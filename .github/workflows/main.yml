@@ -10,7 +10,7 @@ jobs:
     uses: ./.github/workflows/_generate.yml
     with:
       runs_on: 'windows-latest'
-      
+
   build-windows:
     uses: ./.github/workflows/_build-native.yml
     needs: generate-bindings
@@ -26,7 +26,7 @@ jobs:
       runs_on: 'ubuntu-latest'
   
   build-bindings:
-    uses: ./.github/workflows/_build-native.yml
+    uses: ./.github/workflows/_build-bindings.yml
     needs:
       - build-windows
       - build-linux
