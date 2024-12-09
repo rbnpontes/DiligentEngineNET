@@ -33,12 +33,12 @@ jobs:
           name: code-artifact.zip
           merge-multiple: true
 
-      - if: inputst.target_so == 'linux'
+      - if: inputs.target_so == 'linux'
         name: Install Additional Linux Dependencies
         run: |
           sudo apt-get update
           sudo apt-get -y install libgtk-3-dev libgl1-mesa-dev libglu1-mesa-dev
-          
+
       - name: Extract Code Artifacts
         run: 7z x code-artifact.zip
 
