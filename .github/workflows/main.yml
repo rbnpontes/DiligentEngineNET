@@ -34,7 +34,7 @@ jobs:
       is_release: ${{ startsWith(github.ref_name, 'release/') }}
   
   if: startsWith(github.ref_name, 'release/')
-  publish-bindings:
-    uses: ./.github/workflows/_publish.yml
-    needs: build-bindings
+    publish-bindings:
+      uses: ./.github/workflows/_publish.yml
+      needs: build-bindings
 
