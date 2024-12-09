@@ -3,7 +3,7 @@ on:
     inputs:
       nuget_api_key:
         type: string
-        default: '${{ secrets.NUGET_API_KEY }}'
+        required: true
 jobs:
   publish:
     runs-on: ubuntu-latest
