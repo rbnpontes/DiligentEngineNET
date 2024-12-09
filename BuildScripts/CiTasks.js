@@ -15,7 +15,7 @@ async function generateCodeArtifact() {
 }
 
 async function generateWindowsArtifact() {
-    const artifact = fs.createWriteStream(path.join(g_source_dir, 'win-lib-artifacts.zip'));
+    const artifact = fs.createWriteStream(path.join(g_source_dir, 'windows-lib-artifact.zip'));
     const archive = archiver('zip', {
         zlib: { level: 9 }
     });
@@ -25,7 +25,7 @@ async function generateWindowsArtifact() {
 }
 
 async function generateLinuxArtifact() {
-    const artifact = fs.createWriteStream(path.join(g_source_dir, 'linux-lib-artifacts.zip'));
+    const artifact = fs.createWriteStream(path.join(g_source_dir, 'linux-lib-artifact.zip'));
     const archive = archiver('zip', {
         zlib: { level: 9 }
     });

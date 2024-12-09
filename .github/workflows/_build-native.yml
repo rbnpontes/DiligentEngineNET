@@ -55,7 +55,7 @@ jobs:
         run: npm run ci:bin_artifact
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: Lib${{ inputs.target_so }}Artifacts
-          path: "*-lib-artifacts.zip"
+          name: ${{ inputs.target_so }}-lib-artifact.zip
+          path: "${{ inputs.target_so }}-lib-artifact.zip"

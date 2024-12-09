@@ -1,0 +1,50 @@
+on:
+  workflow_call:
+    inputs:
+      publish:
+        type: boolean
+        default: false
+jobs:
+  build_net:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup NodeJS
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'latest'
+      - name: Downloading Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: '*.zip'
+          merge-multiple: true
+      - name: Extract Code Artifacts
+        run: 7z x code-artifact.zip
+      # Put it back builded libraries
+      - name: Extract Window Libraries
+        run: 7z x windows-lib-artifact.zip -o./glue-build/win32
+      - name: Extract Linux Libraries
+        run: 7z x linux-lib-artifact.zip -o./glue-build/linux
+      
+      - name: Install dependencies
+        run: npm i
+
+      - name: Build DiligentCore.NET
+        run: npm run build:bindings
+      
+      - name: Run DiligentCore Tests
+        run: npm run test
+      
+      - if: inputs.publish
+        name: Generate Nuget Package
+        run: npm run pack:create
+
+      - if: inputs.publish
+        name: Publish Nuget Package
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: npm run pack:publish
+      # TODO: add release task
+
+      
