@@ -44,7 +44,7 @@ jobs:
       - name: Run DiligentCore Tests
         run: npm run test
         env:
-          - CI: '1'
+          CI: '1'
       
       - if: inputs.is_release
         name: Generate Nuget Package
