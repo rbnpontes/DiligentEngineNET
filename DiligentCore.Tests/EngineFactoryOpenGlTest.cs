@@ -16,6 +16,12 @@ public class EngineFactoryOpenGlTest
     [Platform("Win")]
     public void MustCreateDeviceContextAndSwapChain()
     {
+        if (SystemUtils.IsRunningAsHeadless())
+        {
+            Assert.Pass();
+            return;
+        }
+        
         using var window = new TestWindow();
         using var factory = GetFactory();
         
@@ -40,6 +46,12 @@ public class EngineFactoryOpenGlTest
     [Platform("Win")]
     public void MustCreateDeviceAndContextFromActiveGlContext()
     {
+        if (SystemUtils.IsRunningAsHeadless())
+        {
+            Assert.Pass();
+            return;
+        }
+        
         using var window = new TestWindow();
         using var factory = GetFactory();
         
