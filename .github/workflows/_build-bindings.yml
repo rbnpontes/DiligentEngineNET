@@ -6,7 +6,7 @@ on:
         default: false
 jobs:
   build_net:
-    runs-on: windows-latest
+    runs-on: fedora-rmachine
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
