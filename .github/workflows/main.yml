@@ -34,11 +34,10 @@ jobs:
       - build-windows
       - build-linux
     with:
-      is_release: true
-      # is_release: ${{ startsWith(github.ref_name, 'release/') }}
+      is_release: ${{ startsWith(github.ref_name, 'release/') }}
   
   publish-bindings:
-    # if: startsWith(github.ref_name, 'release/')
+    if: startsWith(github.ref_name, 'release/')
     uses: ./.github/workflows/_publish.yml
     needs: build-bindings
     secrets:
