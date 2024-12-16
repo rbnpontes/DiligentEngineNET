@@ -17,5 +17,5 @@ jobs:
           name: 'diligent-core.nupkg'
           merge-multiple: true
       - name: Publish DiligentCore.NET
-        run: dotnet nuget push diligent-core.nupkg --api-key ${{ inputs.nuget_api_key }} --source https://api.nuget.org/v3/index.json
+        run: ls && dotnet nuget push diligent-core.nupkg --api-key ${{ inputs.nuget_api_key }} --source https://api.nuget.org/v3/index.json
       # TODO: create release action
