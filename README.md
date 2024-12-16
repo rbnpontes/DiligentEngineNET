@@ -10,7 +10,6 @@ The primary goal of **DiligentEngineNET** is to provide a robust and elegant .NE
 2. **Elegant .NET API**: The bindings are designed to provide a clean, idiomatic .NET interface while closely mirroring the original Diligent API.
    - All Diligent interfaces are implemented as C# interfaces to provide a familiar and structured development experience.
    - Getters and Setters will be .NET properties
-   - 
 
 ### Note on Performance:
 
@@ -23,7 +22,7 @@ If your project demands **high performance**, this binding may not be suitable. 
 | Platform | Status      |
 | -------- | ----------- |
 | Windows  | In Progress |
-| Linux    | Not Started |
+| Linux    | In Progress |
 | macOS    | Not Started |
 | Android  | Not Started |
 | Web      | Not Started |
