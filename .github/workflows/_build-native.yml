@@ -4,37 +4,58 @@ on:
       target_so:
         required: true
         type: string
+      runs_on:
+        required: true
+        type: string
+
 jobs:
-  ${{ inputs.target_so }}_build_job:
-    - if: inputs.target_so == 'windows'
-      runs-on: 'windows-latest'
-    - if: inputs.target_so == 'linux'
-      runs-on: 'ubuntu-latest'
-      steps:
-        - name: Checkout code
-          uses: actions/checkout@v4
-        - name: Setup NodeJS
-          uses: actions/setup-node@v4
-          with:
-            node-version: 'latest'
-        - name: Downloading Artifacts
-          uses: actions/download-artifact@v4
-          with:
-            path: ${{ github.workspace }}
-            pattern: 'code-artifact.zip'
-            merge-multiple: true
-        - name: Extract Code Artifacts
-          run: 7z x code-artifact.zip
-        - name: Install dependencies
-          run: npm i
-        - name: Setup Native Project
-          run: npm run generate:native
-        - name: Build Native Project
-          run: npm run build:native
-        - name: Generate Binary Artifact
-          run: npm run ci:bin_artifact
-        - name: Upload artifacts
-          uses: actions/upload-artifact@v3
-          with:
-            name: Lib${{ inputs.target_so }}Artifacts
-            path: "*-lib-artifacts.zip"
+  build_job:
+    runs-on: ${{ inputs.runs_on }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup NodeJS
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'latest'
+
+      - name: Install Vulkan SDK
+        uses: humbletim/setup-vulkan-sdk@v1.2.0
+        with:
+          vulkan-query-version: 1.3.204.0
+          vulkan-components: Vulkan-Headers, Vulkan-Loader
+          vulkan-use-cache: true
+
+      - name: Downloading Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: code-artifact.zip
+          merge-multiple: true
+
+      - if: inputs.target_so == 'linux'
+        name: Install Additional Linux Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get -y install libgtk-3-dev libgl1-mesa-dev libglu1-mesa-dev
+
+      - name: Extract Code Artifacts
+        run: 7z x code-artifact.zip
+
+      - name: Install dependencies
+        run: npm i
+
+      - name: Setup Native Project
+        run: npm run generate:native
+
+      - name: Build Native Project
+        run: npm run build:native
+
+      - name: Generate Binary Artifact
+        run: npm run ci:bin_artifact
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.target_so }}-lib-artifact.zip
+          path: "${{ inputs.target_so }}-lib-artifact.zip"

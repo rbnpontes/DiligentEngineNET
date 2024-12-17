@@ -13,6 +13,7 @@
         <Description>DiligentEngineNET is a .NET Core binding for DiligentCore, a powerful cross-platform rendering engine.</Description>
         <Product>DiligentEngineNET</Product>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <Version>1.0.0</Version>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
       <NoWarn>1701;1702;CS0108</NoWarn>

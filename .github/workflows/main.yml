@@ -4,16 +4,42 @@ on:
   push:
     branches:
       - main
+      - feature/*
+      - ci/*
+    tags:
+      - release/*
 jobs:
   generate-bindings:
     uses: ./.github/workflows/_generate.yml
     with:
       runs_on: 'windows-latest'
+
   build-windows:
     uses: ./.github/workflows/_build-native.yml
+    needs: generate-bindings
     with:
       target_so: 'windows'
+      runs_on: 'windows-latest'
+
   build-linux:
     uses: ./.github/workflows/_build-native.yml
+    needs: generate-bindings
     with:
       target_so: 'linux'
+      runs_on: 'ubuntu-latest'
+  
+  build-bindings:
+    uses: ./.github/workflows/_build-bindings.yml
+    needs:
+      - build-windows
+      - build-linux
+    with:
+      is_release: ${{ startsWith(github.ref_name, 'release/') }}
+  
+  publish-bindings:
+    if: startsWith(github.ref_name, 'release/')
+    uses: ./.github/workflows/_publish.yml
+    needs: build-bindings
+    secrets:
+      nuget_api_key: ${{ secrets.NUGET_API_KEY }}
+

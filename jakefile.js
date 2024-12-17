@@ -43,7 +43,7 @@ namespace('ci', ()=> {
         await ciTasks.generateLinuxArtifact();
     });
     task('tag', async ()=> {
-
+        await ciTasks.updateLibVersion(process.env.RELEASE_TAG.replace('release/', ''));
     });
 });
 
