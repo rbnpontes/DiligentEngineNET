@@ -141,6 +141,13 @@ internal unsafe partial class RenderDevice : IRenderDevice
         return DiligentObjectsFactory.CreateShader(shaderPtr);
     }
 
+    public IShader CreateShader(ShaderCreateInfo createInfo)
+    {
+        var result = CreateShader(createInfo, out var compilerOutput);
+        compilerOutput.Dispose();
+        return result;
+    }
+
     public ITexture CreateTexture(TextureDesc textureDesc)
     {
         using var strAlloc = new StringAllocator();
