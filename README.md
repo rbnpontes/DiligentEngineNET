@@ -1,4 +1,5 @@
 # DiligentEngineNET
+![Build Status](https://github.com/github/docs/actions/workflows/main.yml/badge.svg)
 
 **DiligentEngineNET** is a .NET Core binding for [DiligentCore](https://github.com/DiligentGraphics/DiligentCore), a powerful cross-platform rendering engine. While Diligent Engine offers C# bindings through its [NuGet package](https://www.nuget.org/packages/DiligentGraphics.DiligentEngine.Core), these bindings currently lack full cross-platform support for Linux, macOS, Android, and Web platforms.
 
