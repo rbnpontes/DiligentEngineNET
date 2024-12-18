@@ -106,7 +106,7 @@ internal unsafe partial class RenderDevice : IRenderDevice
                 });
     }
 
-    public IShader CreateShader(ShaderCreateInfo createInfo, out IDataBlob compilerOutput)
+    public IShader CreateShader(ShaderCreateInfo createInfo, out IDataBlob? compilerOutput)
     {
         using var strAlloc = new StringAllocator();
         var createInfoData = ShaderCreateInfo.GetInternalStruct(createInfo);
@@ -137,14 +137,16 @@ internal unsafe partial class RenderDevice : IRenderDevice
                 new IntPtr(&compilerOutputPtr));
         }
 
-        compilerOutput = DiligentObjectsFactory.CreateDataBlob(compilerOutputPtr);
+        compilerOutput = compilerOutputPtr != IntPtr.Zero 
+            ? DiligentObjectsFactory.CreateDataBlob(compilerOutputPtr)
+            : null;
         return DiligentObjectsFactory.CreateShader(shaderPtr);
     }
 
     public IShader CreateShader(ShaderCreateInfo createInfo)
     {
         var result = CreateShader(createInfo, out var compilerOutput);
-        compilerOutput.Dispose();
+        compilerOutput?.Dispose();
         return result;
     }
 

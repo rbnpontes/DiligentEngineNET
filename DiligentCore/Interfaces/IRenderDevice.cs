@@ -11,7 +11,7 @@ public interface IRenderDevice : IDiligentObject
      IBuffer CreateBuffer<T>(BufferDesc bufferDesc, T initialData) where T : unmanaged;
      IBuffer CreateBuffer<T>(BufferDesc bufferDesc, ReadOnlySpan<T> initialData) where T : unmanaged;
      IBuffer CreateBuffer<T>(BufferDesc bufferDesc, Span<T> initialData) where T : unmanaged;
-     IShader CreateShader(ShaderCreateInfo createInfo, out IDataBlob compilerOutput);
+     IShader CreateShader(ShaderCreateInfo createInfo, out IDataBlob? compilerOutput);
      IShader CreateShader(ShaderCreateInfo createInfo);
      ITexture CreateTexture(TextureDesc textureDesc);
      ITexture CreateTexture(TextureDesc textureDesc, TextureData textureData);
