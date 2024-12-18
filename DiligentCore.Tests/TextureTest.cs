@@ -90,4 +90,41 @@ public class TextureTest : BaseRenderTest
         
         Assert.That(view, Is.Not.Null);
     }
+
+    [Test]
+    public void MustGetNativeHandle()
+    {
+        var textureDesc = new TextureDesc()
+        {
+            Name = "Test Texture",
+            Width = 1024,
+            Height = 1024,
+            BindFlags = BindFlags.ShaderResource,
+            Usage = Usage.Dynamic,
+            Format = TextureFormat.Rgba8Unorm,
+            Type = ResourceDimension.Tex2d,
+            CPUAccessFlags = CpuAccessFlags.Write,
+        };
+        using var tex = Device.CreateTexture(textureDesc);
+        Assert.That(tex.NativeHandle, Is.Not.EqualTo(0));
+    }
+
+    [Test]
+    public void MustUpdateState()
+    {
+        var textureDesc = new TextureDesc()
+        {
+            Name = "Test Texture",
+            Width = 1024,
+            Height = 1024,
+            BindFlags = BindFlags.ShaderResource,
+            Usage = Usage.Dynamic,
+            Format = TextureFormat.Rgba8Unorm,
+            Type = ResourceDimension.Tex2d,
+            CPUAccessFlags = CpuAccessFlags.Write,
+        };
+        using var tex = Device.CreateTexture(textureDesc);
+        tex.State = ResourceState.Unknown;
+        Assert.That(tex.State, Is.EqualTo(ResourceState.Unknown));
+    }
 }
