@@ -5,6 +5,7 @@ public static class Remapper
         { "CreateShaderSourceInputStreamFlagSilent", "Silent" },
         { "TextureAddressMirror", "Mirror" },
         { "TextureAddressMirrorOnce", "MirrorOnce" },
+        { "ShaderCompileFlagSkipReflection", "SkipReflection" }
     };
 
     public static readonly HashSet<string> Enums2Flags = new()

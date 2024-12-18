@@ -377,6 +377,13 @@ public class CSharpCodeGenerator(string diligentCorePath, string outputBaseDir, 
                 if(BuildArrayProperty(field))
                     continue;
             }
+
+            var resolvedType = AstUtils.Resolve(field.Type);
+            if (resolvedType is CppClass)
+            {
+                BuildClassProperty(field, resolvedType);
+                continue;
+            }
             
             var propDef = CSharpUtils.GetPropertyField(field.Type, field.Name);
             if (string.IsNullOrEmpty(propDef))
@@ -538,6 +545,28 @@ public class CSharpCodeGenerator(string diligentCorePath, string outputBaseDir, 
                 });
 
             return true;
+        }
+
+        void BuildClassProperty(CppField field, CppType fieldType)
+        {
+            var classType = (CppClass)fieldType;
+            var className = CSharpUtils.GetFixedClassName(classType);
+            var propNameFixed = CSharpUtils.FixPropertyName(field.Name);
+            builder
+                .Line($"private {className} _{propNameFixed} = new {className}();")
+                .Line($"public {className} {propNameFixed}")
+                .Closure(propBuilder =>
+                {
+                    propBuilder
+                        .Line($"get => _{propNameFixed};")
+                        .Line($"set")
+                        .Closure(setBuilder =>
+                        {
+                            setBuilder
+                                .Line($"_{propNameFixed} = value;")
+                                .Line($"_data.{field.Name} = {className}.GetInternalStruct(value);");
+                        });
+                });
         }
     }
 
