@@ -113,6 +113,17 @@ public static class CSharpUtils
             result.Append("; set => _data.");
             result.Append(propName);
             result.Append(" = value; }");
+        } 
+        else if (type is CppClass classType)
+        {
+            var className = GetFixedClassName(classType);
+            result.Append("public ");
+            result.Append(className);
+            result.Append(' ');
+            result.Append(FixPropertyName(propName));
+            result.Append(" { get; set; } = new ");
+            result.Append(className);
+            result.Append("();");
         }
         else if (AstUtils.IsVoidPointer(type))
         {

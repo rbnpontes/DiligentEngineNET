@@ -378,12 +378,12 @@ public class CSharpCodeGenerator(string diligentCorePath, string outputBaseDir, 
                     continue;
             }
 
-            var resolvedType = AstUtils.Resolve(field.Type);
-            if (resolvedType is CppClass)
-            {
-                BuildClassProperty(field, resolvedType);
-                continue;
-            }
+            // var resolvedType = AstUtils.Resolve(field.Type);
+            // if (resolvedType is CppClass)
+            // {
+            //     BuildClassProperty(field, resolvedType);
+            //     continue;
+            // }
             
             var propDef = CSharpUtils.GetPropertyField(field.Type, field.Name);
             if (string.IsNullOrEmpty(propDef))
@@ -546,28 +546,6 @@ public class CSharpCodeGenerator(string diligentCorePath, string outputBaseDir, 
 
             return true;
         }
-
-        void BuildClassProperty(CppField field, CppType fieldType)
-        {
-            var classType = (CppClass)fieldType;
-            var className = CSharpUtils.GetFixedClassName(classType);
-            var propNameFixed = CSharpUtils.FixPropertyName(field.Name);
-            builder
-                .Line($"private {className} _{propNameFixed} = new {className}();")
-                .Line($"public {className} {propNameFixed}")
-                .Closure(propBuilder =>
-                {
-                    propBuilder
-                        .Line($"get => _{propNameFixed};")
-                        .Line($"set")
-                        .Closure(setBuilder =>
-                        {
-                            setBuilder
-                                .Line($"_{propNameFixed} = value;")
-                                .Line($"_data.{field.Name} = {className}.GetInternalStruct(value);");
-                        });
-                });
-        }
     }
 
     private void BuildFromInternalStructMethod(CppClass @class, CSharpBuilder builder)
@@ -581,6 +559,20 @@ public class CSharpCodeGenerator(string diligentCorePath, string outputBaseDir, 
 
     private void BuildGetInternalStructMethod(CppClass @class, CSharpBuilder builder)
     {
+        var fieldClassTypes = @class.Fields.Where(x => AstUtils.Resolve(x.Type) is CppClass).ToArray();
+        if (fieldClassTypes.Length != 0)
+            builder.Line("// update class properties");
+        
+        foreach (var field in fieldClassTypes)
+        {
+            var propNameFixed = CSharpUtils.FixPropertyName(field.Name);
+            var classType = (CppClass)AstUtils.Resolve(field.Type);
+            builder.Line($"obj._data.{field.Name} = {classType.Name}.GetInternalStruct(obj.{propNameFixed});");
+        }
+
+        if (fieldClassTypes.Length != 0)
+            builder.Line();
+        
         builder.Line("var result = obj._data;");
         if (AstUtils.HasBaseClass(@class))
         {
@@ -611,7 +603,7 @@ public class CSharpCodeGenerator(string diligentCorePath, string outputBaseDir, 
     private void BuildUpdateInternalStructMethod(CppClass @class, CSharpBuilder builder)
     {
         builder.Line("target._data = data;");
-
+        
         if (!AstUtils.HasBaseClass(@class))
             return;
         var parentClass = AstUtils.GetClassParent(@class);
