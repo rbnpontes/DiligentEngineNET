@@ -86,6 +86,10 @@ public class BasePipelineStateTest : BaseRenderTest
                     RasterizerDesc = new RasterizerStateDesc()
                     {
                          FillMode = FillMode.Solid,
+                    },
+                    DepthStencilDesc = new DepthStencilStateDesc()
+                    {
+                         DepthEnable = true
                     }
                },
           };
