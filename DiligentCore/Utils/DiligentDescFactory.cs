@@ -10,7 +10,7 @@ public static unsafe class DiligentDescFactory
     {
         var desc = (DeviceObjectAttribs.__Internal*)handle;
         var result = DeviceObjectAttribs.FromInternalStruct(*desc);
-        result.Name = Marshal.PtrToStringAnsi(handle) ?? string.Empty;
+        result.Name = Marshal.PtrToStringAnsi(desc->Name) ?? string.Empty;
         return result;
     }
 
@@ -18,7 +18,7 @@ public static unsafe class DiligentDescFactory
     {
         var desc = (PipelineStateDesc.__Internal*)handle;
         var result = PipelineStateDesc.FromInternalStruct(*desc);
-        result.Name = Marshal.PtrToStringAnsi(handle) ?? string.Empty;
+        result.Name = Marshal.PtrToStringAnsi(desc->Name) ?? string.Empty;
 
         var variables =
             new ReadOnlySpan<ShaderResourceVariableDesc.__Internal>(desc->ResourceLayout.Variables.ToPointer(),
