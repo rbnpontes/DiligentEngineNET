@@ -17,11 +17,7 @@ internal partial class ShaderResourceBinding(IntPtr handle) : DiligentObject(han
     }
 
     public bool IsStaticResourcesInitialized => Interop.shader_resource_binding_static_resources_initialized(Handle);
-
-    protected override void Release()
-    {
-    }
-
+    
     public void BindResources(ShaderType shaderStageFlags, IResourceMapping resMapping, BindShaderResourcesFlags flags)
     {
         Interop.shader_resource_binding_bind_resources(Handle, shaderStageFlags, resMapping.Handle, flags);

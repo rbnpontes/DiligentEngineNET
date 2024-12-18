@@ -1,6 +1,7 @@
 namespace Diligent.Tests;
 
 [TestFixture]
+[NonParallelizable]
 public class SamplerTest : BaseRenderTest
 {
     [Test]

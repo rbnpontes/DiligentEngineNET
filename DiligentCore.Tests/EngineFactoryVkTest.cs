@@ -26,8 +26,11 @@ public class EngineFactoryVkTest
         Assert.That(device, Is.Not.Null);
         Assert.That(contexts, Has.Length.GreaterThan(0));
 
+        contexts.First().Flush();
         foreach (var ctx in contexts)
             ctx.Dispose();
+        
+        Assert.That(device.ReferenceCounters.NumStrongRefs, Is.Not.GreaterThan(1));
         device.Dispose();
     }
 
@@ -43,8 +46,11 @@ public class EngineFactoryVkTest
         (var device, var contexts) = factory.CreateDeviceAndContexts(createInfo);
         Assert.That(contexts, Has.Length.EqualTo(4));
 
+		contexts.First().Flush();
         foreach (var ctx in contexts)
             ctx.Dispose();
+        
+		Assert.That(device.ReferenceCounters.NumStrongRefs, Is.Not.GreaterThan(1));
         device.Dispose();
     }
 
@@ -66,9 +72,12 @@ public class EngineFactoryVkTest
         var swapChain = factory.CreateSwapChain(device, immediateCtx, new SwapChainDesc(),
             WindowHandle.CreateWin32Window(window.Handle));
 
-        swapChain.Dispose();
+
+		swapChain.Dispose();
+        contexts.First().Flush();
         foreach (var ctx in contexts)
             ctx.Dispose();
+        Assert.That(device.ReferenceCounters.NumStrongRefs, Is.Not.GreaterThan(1));
         device.Dispose();
     }
 }

@@ -5,6 +5,7 @@ using Diligent.Utils;
 namespace Diligent.Tests;
 
 [TestFixture]
+[NonParallelizable]
 public class EngineFactoryTest : BaseFactoryTest
 {
     private struct TestStruct

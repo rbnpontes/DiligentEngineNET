@@ -22,7 +22,7 @@ public class GraphicsPipelineStateTest : BasePipelineStateTest
             Assert.That(srb, Is.Not.Null);
         });
     }
-
+    
     [Test]
     public void MustGetDesc()
     {
