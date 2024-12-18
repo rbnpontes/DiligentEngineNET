@@ -121,7 +121,7 @@ public static class DiligentObjectsFactory
     public static IFence CreateFence(IntPtr handle)
     {
         ThrowIfNullPointer(handle, nameof(IFence));
-        return NativeObjectRegistry.GetOrCreate(() => new Fence(handle), handle);
+        return NativeObjectRegistry.GetOrCreate<IFence>(() => new Fence(handle), handle);
     }
 
     public static IQuery CreateQuery(IntPtr handle)

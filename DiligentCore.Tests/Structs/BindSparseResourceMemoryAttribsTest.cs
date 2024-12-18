@@ -1,4 +1,5 @@
 using System.Runtime.CompilerServices;
+using Diligent.Null;
 using Diligent.Utils;
 
 namespace Diligent.Tests.Structs;
@@ -6,7 +7,7 @@ namespace Diligent.Tests.Structs;
 [TestFixture]
 public unsafe class BindSparseResourceMemoryAttribsTest
 {
-    private BindSparseResourceMemoryAttribs _testAttribs = new BindSparseResourceMemoryAttribs()
+    private readonly BindSparseResourceMemoryAttribs _testAttribs = new()
     {
         BufferBinds = [
             new SparseBufferMemoryBindInfo()
@@ -37,13 +38,13 @@ public unsafe class BindSparseResourceMemoryAttribsTest
             }
         ],
         WaitFences = [
-            DiligentObjectsFactory.CreateFence(0xBADF00D),
-            DiligentObjectsFactory.CreateFence(0xB00B)
+            new NullFence(0xBADF00D),
+            new NullFence(0xB00B)
         ],
         WaitFenceValues = [0x10, 0x20],
         SignalFences = [
-            DiligentObjectsFactory.CreateFence(0xFAFAFA),
-            DiligentObjectsFactory.CreateFence(0xBADBAD)
+            new NullFence(0xFAFAFA),
+            new NullFence(0xBADBAD)
         ],
         SignalFenceValues = [0x30, 0x40]
     };
