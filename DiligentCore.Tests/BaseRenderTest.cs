@@ -10,22 +10,6 @@ public class BaseRenderTest
     
     public BaseRenderTest()
     {
-        // if (OperatingSystem.IsWindows())
-        // {
-        //     var d3dFactory = DiligentCore.GetEngineFactoryD3D11() ?? throw new NullReferenceException();
-        //     var (device, contexts) = d3dFactory.CreateDeviceAndContexts(new EngineD3D11CreateInfo());
-        //     Factory = d3dFactory;
-        //     Device = device;
-        //     Context = contexts.First();
-        // }
-        // else
-        // {
-        //     var vkFactory = DiligentCore.GetEngineFactoryVk() ?? throw new NullReferenceException();
-        //     var (device, contexts) = vkFactory.CreateDeviceAndContexts(new EngineVkCreateInfo());
-        //     Factory = vkFactory;
-        //     Device = device;
-        //     Context = contexts.First();
-        // }
         var vkFactory = DiligentCore.GetEngineFactoryVk() ?? throw new NullReferenceException();
         var (device, contexts) = vkFactory.CreateDeviceAndContexts(new EngineVkCreateInfo() { EnableValidation = true });
         Factory = vkFactory;
