@@ -63,7 +63,7 @@ internal unsafe partial class RenderDevice : IRenderDevice
         using var strAlloc = new StringAllocator();
 
         var bufferDescData = BufferDesc.GetInternalStruct(bufferDesc);
-        var bufferDataStruct = BufferData.GetInternalStruct(new BufferData());
+        var bufferDataStruct = BufferData.GetInternalStruct(initialData);
         var bufferPtr = IntPtr.Zero;
 
         bufferDescData.Name = strAlloc.Acquire(bufferDesc.Name);
@@ -80,7 +80,8 @@ internal unsafe partial class RenderDevice : IRenderDevice
     {
         return CreateBuffer(bufferDesc, new BufferData()
         {
-            Data = new IntPtr(&initialData)
+            Data = new IntPtr(&initialData),
+            DataSize = (ulong)Unsafe.SizeOf<T>()
         });
     }
 
@@ -101,7 +102,7 @@ internal unsafe partial class RenderDevice : IRenderDevice
             return CreateBuffer(bufferDesc,
                 new BufferData()
                 {
-                    Data = new IntPtr(&initialDataPtr), 
+                    Data = new IntPtr(initialDataPtr), 
                     DataSize = (ulong)(initialData.Length * Unsafe.SizeOf<T>())
                 });
     }
