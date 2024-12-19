@@ -12,8 +12,8 @@ public class ShaderTest : BaseRenderTest
                                          "" +
                                          "struct VertexInput" +
                                          "{" +
-                                         "    float3 position : POSITION;" +
-                                         "    float3 normal : NORMAL;" +
+                                         "    float3 position : ATTRIB0;" +
+                                         "    float3 normal : ATTRIB1;" +
                                          "};" +
                                          "" +
                                          "struct PixelInput" +
