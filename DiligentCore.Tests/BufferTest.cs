@@ -20,6 +20,23 @@ public class BufferTest : BaseRenderTest
     }
 
     [Test]
+    public void MustCreateWithInitialData()
+    {
+        var data = new byte[1024];
+        Array.Fill<byte>(data, 0xFF);
+        
+        var bufferDesc = new BufferDesc()
+        {
+            Name = "Test Buffer",
+            Size = 1024,
+            BindFlags = BindFlags.VertexBuffer,
+            Usage = Usage.Immutable,
+        };
+        using var buffer = Device.CreateBuffer(bufferDesc, data.AsSpan());
+        Assert.Pass();
+    }
+    
+    [Test]
     public void MustThrowErrorIfBufferCreationFails()
     {
         var bufferDesc = new BufferDesc()
