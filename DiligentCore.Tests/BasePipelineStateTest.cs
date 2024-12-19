@@ -52,7 +52,7 @@ public class BasePipelineStateTest : BaseRenderTest
           return Device.CreateShader(shaderCi);
      }
      
-     public IPipelineState CreateGraphicsPipelineState()
+     public IPipelineState CreateGraphicsPipelineState(ShaderResourceVariableType defaultVariableType = ShaderResourceVariableType.Dynamic)
      {
           using var vertexShader = CreateVertexShader();
           using var pixelShader = CreatePixelShader();
@@ -65,7 +65,7 @@ public class BasePipelineStateTest : BaseRenderTest
                     PipelineType = PipelineType.Graphics,
                     ResourceLayout = new PipelineResourceLayoutDesc()
                     {
-                         DefaultVariableType = ShaderResourceVariableType.Dynamic
+                         DefaultVariableType = defaultVariableType
                     }
                },
                VS = vertexShader,

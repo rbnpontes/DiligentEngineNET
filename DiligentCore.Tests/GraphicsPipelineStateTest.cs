@@ -34,7 +34,7 @@ public class GraphicsPipelineStateTest : BasePipelineStateTest
     [Test]
     public void MustGetStaticVariableCount()
     {
-        using var pipeline = CreateGraphicsPipelineState();
+        using var pipeline = CreateGraphicsPipelineState(ShaderResourceVariableType.Static);
         Assert.Multiple(() =>
         {
             Assert.That(pipeline.GetStaticVariableCount(ShaderType.Vertex), Is.GreaterThan(0));
@@ -45,7 +45,7 @@ public class GraphicsPipelineStateTest : BasePipelineStateTest
     [Test]
     public void MustGetVariableByName()
     {
-        using var pipeline = CreateGraphicsPipelineState();
+        using var pipeline = CreateGraphicsPipelineState(ShaderResourceVariableType.Static);
         var vertexVar = pipeline.GetStaticVariableByName(ShaderType.Vertex, "GlobalConstants");
         var pixelVar = pipeline.GetStaticVariableByName(ShaderType.Pixel, "GlobalConstants");
         
@@ -59,7 +59,7 @@ public class GraphicsPipelineStateTest : BasePipelineStateTest
     [Test]
     public void MustGetStaticVariableByIndex()
     {
-        using var pipeline = CreateGraphicsPipelineState();
+        using var pipeline = CreateGraphicsPipelineState(ShaderResourceVariableType.Static);
         var vertexVar = pipeline.GetStaticVariableByIndex(ShaderType.Vertex, 0);
         var pixelVar = pipeline.GetStaticVariableByIndex(ShaderType.Pixel, 0);
         
