@@ -62,7 +62,11 @@ public class BasePipelineStateTest : BaseRenderTest
                PSODesc = new PipelineStateDesc()
                {
                     Name = "Graphics Pipeline",
-                    PipelineType = PipelineType.Graphics
+                    PipelineType = PipelineType.Graphics,
+                    ResourceLayout = new PipelineResourceLayoutDesc()
+                    {
+                         DefaultVariableType = ShaderResourceVariableType.Dynamic
+                    }
                },
                VS = vertexShader,
                PS = pixelShader,
