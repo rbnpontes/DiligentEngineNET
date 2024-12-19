@@ -33,7 +33,7 @@ internal partial class ShaderResourceBinding(IntPtr handle) : DiligentObject(han
     {
         using var strAlloc = new StringAllocator();
         var varPtr = Interop.shader_resource_binding_get_variable_by_name(Handle, shaderType, strAlloc.Acquire(name));
-        return varPtr == IntPtr.Zero ? null : DiligentObjectsFactory.CreateShaderResourceVariable(Handle);
+        return varPtr == IntPtr.Zero ? null : DiligentObjectsFactory.CreateShaderResourceVariable(varPtr);
     }
 
     public uint GetVariableCount(ShaderType shaderType)
