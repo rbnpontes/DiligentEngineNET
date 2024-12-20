@@ -5,7 +5,8 @@ project(DiligentCoreGlue CXX)
 include(FetchContent)
 FetchContent_Declare(
     DiligentCore
-    GIT_REPOSITORY https://github.com/DiligentGraphics/DiligentCore.git
+    # Custom DiligentCore version, required to make some stuffs work.
+    GIT_REPOSITORY https://github.com/rbnpontes/DiligentCore.git
     SOURCE_DIR ../_deps/DiligentCore
 )
 FetchContent_MakeAvailable(DiligentCore)
