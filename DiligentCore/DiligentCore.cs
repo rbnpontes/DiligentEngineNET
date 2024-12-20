@@ -25,6 +25,7 @@ public static partial class DiligentCore
         public static partial IntPtr diligent_core_get_opengl_factory();
     }
 
+    private static DiligentReleaseCalback sReleaseCalback;
     static DiligentCore()
     {
         try
@@ -40,7 +41,8 @@ public static partial class DiligentCore
         }
         
         // listen to diligent object destruction
-        var delegatePtr = Marshal.GetFunctionPointerForDelegate<DiligentReleaseCalback>(HandleDiligentRelease);
+        sReleaseCalback = HandleDiligentRelease;
+        var delegatePtr = Marshal.GetFunctionPointerForDelegate(sReleaseCalback);
         ApiExtensionsInterop.diligent_core_api_set_release_callback(delegatePtr);
     }
 
