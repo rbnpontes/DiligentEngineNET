@@ -27,24 +27,28 @@
             Condition="Exists('$(SolutionDir)\glue-build\win32\bin\$(Configuration)\DiligentCore.dll')">
             <Pack>true</Pack>
             <Link>runtimes/win-x64/native/DiligentCore.dll</Link>
+            <PackagePath>runtimes/win-x64/native/DiligentCore.dll</PackagePath>
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
         <Content Include="$(SolutionDir)\glue-build\win32\bin\$(Configuration)\D3Dcompiler_47.dll"
             Condition="Exists('$(SolutionDir)\glue-build\win32\bin\$(Configuration)\D3Dcompiler_47.dll')">
             <Pack>true</Pack>
             <Link>runtimes/win-x64/native/D3Dcompiler_47.dll</Link>
+            <PackagePath>runtimes/win-x64/native/D3Dcompiler_47.dll</PackagePath>
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
         <Content Include="$(SolutionDir)\glue-build\win32\bin\$(Configuration)\dxcompiler.dll"
             Condition="Exists('$(SolutionDir)\glue-build\win32\bin\$(Configuration)\dxcompiler.dll')">
             <Pack>true</Pack>
             <Link>runtimes/win-x64/native/dxcompiler.dll</Link>
+            <PackagePath>runtimes/win-x64/native/dxcompiler.dll</PackagePath>
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
         <Content Include="$(SolutionDir)\glue-build\win32\bin\$(Configuration)\dxil.dll"
             Condition="Exists('$(SolutionDir)\glue-build\win32\bin\$(Configuration)\dxil.dll')">
             <Pack>true</Pack>
             <Link>runtimes/win-x64/native/dxil.dll</Link>
+            <PackagePath>runtimes/win-x64/native/dxil.dll</PackagePath>
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
         <Content Include="$(SolutionDir)\glue-build\win32\bin\$(Configuration)\spv_dxcompiler.dll"
@@ -57,6 +61,7 @@
             Condition="Exists('$(SolutionDir)\glue-build\linux\libDiligentCore.so')">
             <Pack>true</Pack>
             <Link>runtimes/linux-x64/native/libDiligentCore.so</Link>
+            <PackagePath>runtimes/linux-x64/native/libDiligentCore.so</PackagePath>
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
     </ItemGroup>
