@@ -35,7 +35,11 @@ internal partial class EngineFactoryOpenGL : IEngineFactoryOpenGL
             windowData.window_handle_ = new IntPtr(&linuxWindowData);
 
         var createInfoData = EngineOpenGlCreateInfo.GetInternalStruct(createInfo);
+        var openXrAttribsData = OpenXRAttribs.GetInternalStruct(createInfo.XRAttribs ?? new OpenXRAttribs());
         createInfoData.Window = new IntPtr(&windowData);
+
+        if (createInfo.XRAttribs is not null)
+            createInfoData.pXRAttribs = new IntPtr(&openXrAttribsData);
 
         var swapChainData = SwapChainDesc.GetInternalStruct(swapChainDesc);
 

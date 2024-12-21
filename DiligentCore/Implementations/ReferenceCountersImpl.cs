@@ -39,6 +39,12 @@ internal partial class ReferenceCounters : NativeObject, IReferenceCounters
         GC.SuppressFinalize(this);
     }
 
+    internal void DisposeInternal()
+    {
+        GC.SuppressFinalize(this);
+        SetCurrentHandle(IntPtr.Zero);
+    }
+
     private void AssertAlive()
     {
         if (!_owner.TryGetTarget(out var _))

@@ -7,6 +7,7 @@ internal partial class Fence(IntPtr handle) : DeviceObject(handle), IFence
     public new FenceDesc Desc => DiligentDescFactory.GetFenceDesc(Handle);
 
     public ulong CompletedValue => Interop.fence_get_completed_value(Handle);
+    
     public void Signal(ulong value)
     {
         Interop.fence_signal(Handle, value);

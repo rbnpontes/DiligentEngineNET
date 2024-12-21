@@ -377,6 +377,13 @@ public class CSharpCodeGenerator(string diligentCorePath, string outputBaseDir, 
                 if(BuildArrayProperty(field))
                     continue;
             }
+
+            // var resolvedType = AstUtils.Resolve(field.Type);
+            // if (resolvedType is CppClass)
+            // {
+            //     BuildClassProperty(field, resolvedType);
+            //     continue;
+            // }
             
             var propDef = CSharpUtils.GetPropertyField(field.Type, field.Name);
             if (string.IsNullOrEmpty(propDef))
@@ -552,6 +559,20 @@ public class CSharpCodeGenerator(string diligentCorePath, string outputBaseDir, 
 
     private void BuildGetInternalStructMethod(CppClass @class, CSharpBuilder builder)
     {
+        var fieldClassTypes = @class.Fields.Where(x => AstUtils.Resolve(x.Type) is CppClass).ToArray();
+        if (fieldClassTypes.Length != 0)
+            builder.Line("// update class properties");
+        
+        foreach (var field in fieldClassTypes)
+        {
+            var propNameFixed = CSharpUtils.FixPropertyName(field.Name);
+            var classType = (CppClass)AstUtils.Resolve(field.Type);
+            builder.Line($"obj._data.{field.Name} = {classType.Name}.GetInternalStruct(obj.{propNameFixed});");
+        }
+
+        if (fieldClassTypes.Length != 0)
+            builder.Line();
+        
         builder.Line("var result = obj._data;");
         if (AstUtils.HasBaseClass(@class))
         {
@@ -581,8 +602,21 @@ public class CSharpCodeGenerator(string diligentCorePath, string outputBaseDir, 
 
     private void BuildUpdateInternalStructMethod(CppClass @class, CSharpBuilder builder)
     {
-        builder.Line("target._data = data;");
+        var fieldClassTypes = @class.Fields.Where(x => AstUtils.Resolve(x.Type) is CppClass).ToArray();
+        if (fieldClassTypes.Length != 0)
+            builder.Line("// update class objects");
+        foreach (var field in fieldClassTypes)
+        {
+            var propName = CSharpUtils.FixPropertyName(field.Name);
+            var classType = (CppClass)AstUtils.Resolve(field.Type);
+            builder.Line($"target.{propName} = {classType.Name}.FromInternalStruct(data.{field.Name});");
+        }
 
+        if (fieldClassTypes.Length != 0)
+            builder.Line();
+        
+        builder.Line("target._data = data;");
+        
         if (!AstUtils.HasBaseClass(@class))
             return;
         var parentClass = AstUtils.GetClassParent(@class);

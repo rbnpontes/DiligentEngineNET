@@ -19,12 +19,16 @@ internal partial class EngineFactoryVk : IEngineFactoryVk
     {
     }
 
-    public unsafe (IRenderDevice, IDeviceContext[]) CreateDeviceAndContexts(EngineVkCreateInfo createInfo)
+	public unsafe (IRenderDevice, IDeviceContext[]) CreateDeviceAndContexts(EngineVkCreateInfo createInfo)
     {
         var numDeferredContexts = GetNumDeferredContexts(createInfo);
         var createInfoData = EngineVkCreateInfo.GetInternalStruct(createInfo);
+        var openXrAttribsData = OpenXRAttribs.GetInternalStruct(createInfo.XRAttribs ?? new OpenXRAttribs());
         var renderDevicePtr = IntPtr.Zero;
         var deviceContexts = new IntPtr[numDeferredContexts];
+
+        if (createInfo.XRAttribs is not null)
+            createInfoData.pXRAttribs = new IntPtr(&openXrAttribsData);
         
         fixed(void* deviceContextsPtr = deviceContexts.AsSpan())
             Interop.engine_factory_vk_create_device_and_contexts_vk(

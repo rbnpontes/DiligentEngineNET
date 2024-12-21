@@ -4,6 +4,7 @@ namespace Diligent.Tests;
 
 [TestFixture]
 [Platform("Win")]
+[NonParallelizable]
 public class SwapChainTest
 {
     [Test]

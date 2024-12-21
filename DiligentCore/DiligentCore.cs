@@ -25,6 +25,7 @@ public static partial class DiligentCore
         public static partial IntPtr diligent_core_get_opengl_factory();
     }
 
+    private static DiligentReleaseCalback sReleaseCalback;
     static DiligentCore()
     {
         try
@@ -38,6 +39,25 @@ public static partial class DiligentCore
             // to register a self resolver.We must skip to prevent
             // issues at Assembly loading.
         }
+        
+        // listen to diligent object destruction
+        sReleaseCalback = HandleDiligentRelease;
+        var delegatePtr = Marshal.GetFunctionPointerForDelegate(sReleaseCalback);
+        ApiExtensionsInterop.diligent_core_api_set_release_callback(delegatePtr);
+    }
+
+    private static void HandleDiligentRelease(IntPtr objPtr, IntPtr refCountPtr)
+    {
+        var obj = NativeObjectRegistry.TryGetObject(objPtr);
+        var refCount = NativeObjectRegistry.TryGetObject(refCountPtr);
+        
+        if(obj is DiligentObject targetObj)
+            targetObj.DisposeInternal();
+        if(refCount is ReferenceCounters targetRefCount)
+           targetRefCount.DisposeInternal();
+        
+        NativeObjectRegistry.RemoveObject(objPtr);
+        NativeObjectRegistry.RemoveObject(refCountPtr);
     }
     
     public static IEngineFactoryD3D11? GetEngineFactoryD3D11()

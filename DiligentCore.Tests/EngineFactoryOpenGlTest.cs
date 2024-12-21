@@ -3,6 +3,7 @@ using Diligent.Tests.Utils;
 namespace Diligent.Tests;
 
 [TestFixture]
+[NonParallelizable]
 public class EngineFactoryOpenGlTest
 {
     private IEngineFactoryOpenGL GetFactory()

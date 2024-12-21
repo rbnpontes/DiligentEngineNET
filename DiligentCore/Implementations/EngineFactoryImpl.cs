@@ -9,9 +9,9 @@ internal delegate void NativeDebugMessageCallbackDelegate(DebugMessageSeverity s
     IntPtr file, int line);
 internal abstract partial class EngineFactory : IEngineFactory
 {
-    private DebugMessageCallbackDelegate? _callback;
-    private NativeDebugMessageCallbackDelegate _nativeDelegate;
-    private IntPtr _nativeDelegatePtr;
+    private static DebugMessageCallbackDelegate? sCallback;
+    private static NativeDebugMessageCallbackDelegate? sNativeDelegate;
+    private static IntPtr sNativeDelegatePtr;
 
     
     public unsafe APIInfo APIInfo
@@ -25,18 +25,13 @@ internal abstract partial class EngineFactory : IEngineFactory
 
     internal EngineFactory(IntPtr handle) : base(handle)
     {
-        _nativeDelegate = NativeMessageCallbackCall;
-        _nativeDelegatePtr = Marshal.GetFunctionPointerForDelegate(_nativeDelegate);
-        Interop.engine_factory_set_message_callback(handle, _nativeDelegatePtr);
+        sNativeDelegate ??= NativeMessageCallbackCall;
+        sNativeDelegatePtr = Marshal.GetFunctionPointerForDelegate(sNativeDelegate);
+        Interop.engine_factory_set_message_callback(handle, sNativeDelegatePtr);
     }
 
     protected override void Release()
     {
-        if (_nativeDelegatePtr == IntPtr.Zero)
-            return;
-        
-        _nativeDelegatePtr = IntPtr.Zero;
-        _callback = null;
     }
 
     protected override int AddRef()
@@ -72,7 +67,7 @@ internal abstract partial class EngineFactory : IEngineFactory
 
     public void SetMessageCallback(DebugMessageCallbackDelegate? messageCallback)
     {
-        _callback = messageCallback;
+        sCallback = messageCallback;
     }
 
     public void SetBreakOnError(bool breakOnError)
@@ -125,17 +120,17 @@ internal abstract partial class EngineFactory : IEngineFactory
         return DiligentObjectsFactory.CreateDearchiver(dearchiverPtr);
     }
 
-    private void NativeMessageCallbackCall(DebugMessageSeverity severity, IntPtr message, IntPtr function,
+    private static void NativeMessageCallbackCall(DebugMessageSeverity severity, IntPtr message, IntPtr function,
         IntPtr file, int line)
     {
-        if (_callback is null)
+        if (sCallback is null)
             return;
 
         var messageStr = Marshal.PtrToStringAnsi(message) ?? string.Empty;
         var funcStr = Marshal.PtrToStringAnsi(function) ?? string.Empty;
         var fileStr = Marshal.PtrToStringAnsi(file) ?? string.Empty;
 
-        _callback(severity, messageStr, funcStr, fileStr, line);
+        sCallback(severity, messageStr, funcStr, fileStr, line);
     }
 
     protected int GetNumDeferredContexts(EngineCreateInfo createInfo)

@@ -2,6 +2,8 @@ using System.Runtime.InteropServices;
 
 namespace Diligent.Tests;
 
+[TestFixture]
+[NonParallelizable]
 public unsafe class DataBlobTest : BaseFactoryTest
 {
     private struct TestStruct

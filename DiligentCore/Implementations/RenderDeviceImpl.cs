@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Diligent.Utils;
 
@@ -62,7 +63,7 @@ internal unsafe partial class RenderDevice : IRenderDevice
         using var strAlloc = new StringAllocator();
 
         var bufferDescData = BufferDesc.GetInternalStruct(bufferDesc);
-        var bufferDataStruct = BufferData.GetInternalStruct(new BufferData());
+        var bufferDataStruct = BufferData.GetInternalStruct(initialData);
         var bufferPtr = IntPtr.Zero;
 
         bufferDescData.Name = strAlloc.Acquire(bufferDesc.Name);
@@ -79,20 +80,34 @@ internal unsafe partial class RenderDevice : IRenderDevice
     {
         return CreateBuffer(bufferDesc, new BufferData()
         {
-            Data = new IntPtr(&initialData)
+            Data = new IntPtr(&initialData),
+            DataSize = (ulong)Unsafe.SizeOf<T>()
         });
     }
 
     public IBuffer CreateBuffer<T>(BufferDesc bufferDesc, ReadOnlySpan<T> initialData) where T : unmanaged
     {
         fixed (void* initialDataPtr = initialData)
-            return CreateBuffer(bufferDesc, new BufferData()
-            {
-                Data = new IntPtr(&initialDataPtr)
-            });
+            return CreateBuffer(bufferDesc,
+                new BufferData()
+                {
+                    Data = new IntPtr(&initialDataPtr), 
+                    DataSize = (ulong)(initialData.Length * Unsafe.SizeOf<T>())
+                });
     }
 
-    public IShader CreateShader(ShaderCreateInfo createInfo, out IDataBlob compilerOutput)
+    public IBuffer CreateBuffer<T>(BufferDesc bufferDesc, Span<T> initialData) where T : unmanaged
+    {
+        fixed (void* initialDataPtr = initialData)
+            return CreateBuffer(bufferDesc,
+                new BufferData()
+                {
+                    Data = new IntPtr(initialDataPtr), 
+                    DataSize = (ulong)(initialData.Length * Unsafe.SizeOf<T>())
+                });
+    }
+
+    public IShader CreateShader(ShaderCreateInfo createInfo, out IDataBlob? compilerOutput)
     {
         using var strAlloc = new StringAllocator();
         var createInfoData = ShaderCreateInfo.GetInternalStruct(createInfo);
@@ -123,8 +138,17 @@ internal unsafe partial class RenderDevice : IRenderDevice
                 new IntPtr(&compilerOutputPtr));
         }
 
-        compilerOutput = DiligentObjectsFactory.CreateDataBlob(compilerOutputPtr);
+        compilerOutput = compilerOutputPtr != IntPtr.Zero 
+            ? DiligentObjectsFactory.CreateDataBlob(compilerOutputPtr)
+            : null;
         return DiligentObjectsFactory.CreateShader(shaderPtr);
+    }
+
+    public IShader CreateShader(ShaderCreateInfo createInfo)
+    {
+        var result = CreateShader(createInfo, out var compilerOutput);
+        compilerOutput?.Dispose();
+        return result;
     }
 
     public ITexture CreateTexture(TextureDesc textureDesc)
@@ -169,7 +193,7 @@ internal unsafe partial class RenderDevice : IRenderDevice
         using var strAlloc = new StringAllocator();
         var samplerDescData = SamplerDesc.GetInternalStruct(samplerDesc);
         samplerDescData.Name = strAlloc.Acquire(samplerDesc.Name);
-        
+
         var samplerPtr = IntPtr.Zero;
         Interop.render_device_create_sampler(Handle, new IntPtr(&samplerDescData), new IntPtr(&samplerPtr));
         return DiligentObjectsFactory.CreateSampler(samplerPtr);
@@ -489,8 +513,8 @@ internal unsafe partial class RenderDevice : IRenderDevice
     {
         var descData = DiligentDescFactory.GetRenderPassDescBytes(desc);
         var renderPassPtr = IntPtr.Zero;
-        
-        fixed(void* descPtr = descData)
+
+        fixed (void* descPtr = descData)
             Interop.render_device_create_render_pass(Handle,
                 new IntPtr(descPtr),
                 new IntPtr(&renderPassPtr));
@@ -557,7 +581,7 @@ internal unsafe partial class RenderDevice : IRenderDevice
 
             descData.pBoxes = new IntPtr(boxesPtr);
             descData.BoxCount = (uint)desc.Boxes.Length;
-            
+
             Interop.render_device_create_blas(Handle,
                 new IntPtr(&descData),
                 new IntPtr(&bottomLevelAsPtr));
@@ -620,8 +644,8 @@ internal unsafe partial class RenderDevice : IRenderDevice
 
         descData.Name = strAlloc.Acquire(desc.Name);
         descData.CombinedSamplerSuffix = strAlloc.Acquire(desc.CombinedSamplerSuffix);
-        
-        fixed(void* resourcesPtr = resources)
+
+        fixed (void* resourcesPtr = resources)
         fixed (void* immutableSamplersPtr = immutableSamplers)
         {
             descData.Resources = new IntPtr(resourcesPtr);
@@ -629,7 +653,7 @@ internal unsafe partial class RenderDevice : IRenderDevice
 
             descData.ImmutableSamplers = new IntPtr(immutableSamplersPtr);
             descData.NumImmutableSamplers = (uint)desc.ImmutableSamplers.Length;
-            
+
             Interop.render_device_create_pipeline_resource_signature(Handle,
                 new IntPtr(&descData),
                 new IntPtr(&resourceSignaturePtr));
@@ -654,7 +678,7 @@ internal unsafe partial class RenderDevice : IRenderDevice
         {
             createInfoData.ppCompatibleResources = new IntPtr(compatibleResourcesPtr);
             createInfoData.NumResources = (uint)createInfo.CompatibleResources.Length;
-            
+
             Interop.render_device_create_device_memory(Handle,
                 new IntPtr(&createInfoData),
                 new IntPtr(&deviceMemoryPtr));
@@ -679,7 +703,7 @@ internal unsafe partial class RenderDevice : IRenderDevice
                 createInfoData.pCacheData = new IntPtr(cacheDataPtr);
                 createInfoData.CacheDataSize = (uint)createInfo.CacheDataBytes.Length;
             }
-            
+
             Interop.render_device_create_pipeline_state_cache(Handle,
                 new IntPtr(&createInfoData),
                 new IntPtr(&pipelineStateCachePtr));

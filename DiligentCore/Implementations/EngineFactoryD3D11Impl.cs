@@ -24,9 +24,13 @@ internal partial class EngineFactoryD3D11 : IEngineFactoryD3D11
     {
         var numDeferredContexts = GetNumDeferredContexts(createInfo);
         var createInfoData = EngineD3D11CreateInfo.GetInternalStruct(createInfo);
+        var openXrAttribsData = OpenXRAttribs.GetInternalStruct(createInfo.XRAttribs ?? new OpenXRAttribs());
         var createInfoPtr = &createInfoData;
         var renderDevicePtr = IntPtr.Zero;
 
+        if (createInfo.XRAttribs is not null)
+            createInfoData.pXRAttribs = new IntPtr(&openXrAttribsData);
+        
         var deviceContextsPointers = new IntPtr[numDeferredContexts];
         fixed(void* deviceContextsPtr = deviceContextsPointers.AsSpan())
             Interop.engine_factory_d3d11_create_device_and_contexts_d3d11(

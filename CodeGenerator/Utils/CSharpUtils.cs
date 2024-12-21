@@ -121,15 +121,9 @@ public static class CSharpUtils
             result.Append(className);
             result.Append(' ');
             result.Append(FixPropertyName(propName));
-            result.Append(" { get => ");
+            result.Append(" { get; set; } = new ");
             result.Append(className);
-            result.Append(".FromInternalStruct(_data.");
-            result.Append(propName);
-            result.Append("); set => _data.");
-            result.Append(propName);
-            result.Append(" = ");
-            result.Append(className);
-            result.Append(".GetInternalStruct(value); }");
+            result.Append("();");
         }
         else if (AstUtils.IsVoidPointer(type))
         {

@@ -31,11 +31,15 @@ internal partial class EngineFactoryD3D12 : IEngineFactoryD3D12
         var numDeferredContexts = GetNumDeferredContexts(createInfo);
 
         var createInfoData = EngineD3D12CreateInfo.GetInternalStruct(createInfo);
+        var openXrAttribsData = OpenXRAttribs.GetInternalStruct(createInfo.XRAttribs ?? new OpenXRAttribs());
         var renderDevicePtr = IntPtr.Zero;
         var deviceContexts = new IntPtr[numDeferredContexts];
 
         createInfoData.D3D12DllName = strAlloc.Acquire(createInfo.D3D12DllName);
         createInfoData.pDxCompilerPath = strAlloc.Acquire(createInfo.DxCompilerPath);
+        if (createInfo.XRAttribs is not null)
+            createInfoData.pXRAttribs = new IntPtr(&openXrAttribsData);
+        
         fixed (void* deviceContextsPtr = deviceContexts.AsSpan())
             Interop.engine_factory_d3d12_create_device_and_contexts_d3d12(Handle,
                 new IntPtr(&createInfoData),
@@ -60,6 +64,7 @@ internal partial class EngineFactoryD3D12 : IEngineFactoryD3D12
         var numDeferredContexts = GetNumDeferredContexts(createInfo);
         
         var createInfoData = EngineD3D12CreateInfo.GetInternalStruct(createInfo);
+        var openXrAttribsData = OpenXRAttribs.GetInternalStruct(createInfo.XRAttribs ?? new OpenXRAttribs());
         var renderDevicePtr = IntPtr.Zero;
         var deviceContexts = new IntPtr[numDeferredContexts];
         var commandQueuesPointers = commandQueues
@@ -68,6 +73,9 @@ internal partial class EngineFactoryD3D12 : IEngineFactoryD3D12
         
         createInfoData.D3D12DllName = strAlloc.Acquire(createInfo.D3D12DllName);
         createInfoData.pDxCompilerPath = strAlloc.Acquire(createInfo.DxCompilerPath);
+        if (createInfo.XRAttribs is not null)
+            createInfoData.pXRAttribs = new IntPtr(&openXrAttribsData);
+
         fixed (void* deviceContextsPtr = deviceContexts.AsSpan())
         {
             fixed (void* commandQueuesPtr = commandQueuesPointers.AsSpan())

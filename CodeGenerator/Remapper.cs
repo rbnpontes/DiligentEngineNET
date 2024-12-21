@@ -3,7 +3,9 @@ public static class Remapper
     public static readonly Dictionary<string, string> EnumItemRemap = new()
     {
         { "CreateShaderSourceInputStreamFlagSilent", "Silent" },
-        { "BlendFactorBlendFactor", "BlendFactor" }
+        { "TextureAddressMirror", "Mirror" },
+        { "TextureAddressMirrorOnce", "MirrorOnce" },
+        { "ShaderCompileFlagSkipReflection", "SkipReflection" }
     };
 
     public static readonly HashSet<string> Enums2Flags = new()

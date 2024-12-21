@@ -2,6 +2,8 @@ using System.Runtime.CompilerServices;
 
 namespace Diligent.Tests;
 
+[TestFixture]
+[NonParallelizable]
 public class DiligentCoreTest
 {
     private readonly Func<IEngineFactory?>[] _getFactoryCalls =

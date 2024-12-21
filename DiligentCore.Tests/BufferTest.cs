@@ -1,6 +1,7 @@
 namespace Diligent.Tests;
 
 [TestFixture]
+[NonParallelizable]
 public class BufferTest : BaseRenderTest
 {
     [Test]
@@ -18,6 +19,23 @@ public class BufferTest : BaseRenderTest
         Assert.Pass();
     }
 
+    [Test]
+    public void MustCreateWithInitialData()
+    {
+        var data = new byte[1024];
+        Array.Fill<byte>(data, 0xFF);
+        
+        var bufferDesc = new BufferDesc()
+        {
+            Name = "Test Buffer",
+            Size = 1024,
+            BindFlags = BindFlags.VertexBuffer,
+            Usage = Usage.Immutable,
+        };
+        using var buffer = Device.CreateBuffer(bufferDesc, data.AsSpan());
+        Assert.Pass();
+    }
+    
     [Test]
     public void MustThrowErrorIfBufferCreationFails()
     {
@@ -48,5 +66,23 @@ public class BufferTest : BaseRenderTest
         };
         using var buffer = Device.CreateBuffer(bufferDesc);
         Assert.That(buffer.Desc.Name, Is.EqualTo(bufferDesc.Name));
+    }
+
+    [Test]
+    public void MustGetDefaultView()
+    {
+        var initialData = new byte[1024];
+        var bufferDesc = new BufferDesc()
+        {
+            Name = "Test Buffer",
+            Size = 1024,
+            BindFlags = BindFlags.UnorderedAccess,
+            Mode = BufferMode.Raw,
+            Usage = Usage.Default,
+        };
+        using var buffer = Device.CreateBuffer(bufferDesc, initialData.AsSpan());
+        using var view = buffer.GetDefaultView(BufferViewType.UnorderedAccess);
+        
+        Assert.That(view, Is.Not.Null);
     }
 }

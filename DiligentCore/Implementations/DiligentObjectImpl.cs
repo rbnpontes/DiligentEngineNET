@@ -41,26 +41,31 @@ internal partial class DiligentObject : NativeObject, IDiligentObject
     {
         if(IsDisposed)
             return;
-        
+        IsDisposed = true;
         GC.SuppressFinalize(this);
-        NativeObjectRegistry.RemoveObject(Handle);
+        NativeObjectRegistry.RemoveObject(InternalHandle);
         Release();
         SetCurrentHandle(IntPtr.Zero);
+    }
+
+    internal void DisposeInternal()
+    {
+        if (IsDisposed)
+            return;
+        
         IsDisposed = true;
+        GC.SuppressFinalize(this);
+        SetCurrentHandle(IntPtr.Zero);
     }
 
     protected virtual int AddRef()
     {
-        AssertDispose();
         return Interop.object_add_ref(Handle);
     }
     
     protected virtual void Release()
     {
-        if (IsDisposed)
-            return;
-        
-        Interop.object_release(Handle);
+        Interop.object_release(InternalHandle);
     }
 }
 

@@ -2,22 +2,23 @@ namespace Diligent;
 
 public class NativeObject : INativeObject
 {
-    private IntPtr _handle;
+    protected IntPtr InternalHandle { get; private set; }
 
     public IntPtr Handle => GetCurrentHandle();
 
+    
     internal NativeObject(IntPtr handle)
     {
-        _handle = handle;
+        InternalHandle = handle;
     }
 
     protected virtual IntPtr GetCurrentHandle()
     {
-        return _handle;
+        return InternalHandle;
     }
 
     protected virtual void SetCurrentHandle(IntPtr handle)
     {
-        _handle = handle;
+        InternalHandle = handle;
     }
 }

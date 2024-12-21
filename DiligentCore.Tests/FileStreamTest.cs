@@ -5,6 +5,7 @@ using System.Text;
 namespace Diligent.Tests;
 
 [TestFixture]
+[NonParallelizable]
 public class FileStreamTest : BaseFactoryTest
 {
 	private readonly string _basePath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);

@@ -10,7 +10,7 @@ public static unsafe class DiligentDescFactory
     {
         var desc = (DeviceObjectAttribs.__Internal*)handle;
         var result = DeviceObjectAttribs.FromInternalStruct(*desc);
-        result.Name = Marshal.PtrToStringAnsi(handle) ?? string.Empty;
+        result.Name = Marshal.PtrToStringAnsi(desc->Name) ?? string.Empty;
         return result;
     }
 
@@ -18,7 +18,7 @@ public static unsafe class DiligentDescFactory
     {
         var desc = (PipelineStateDesc.__Internal*)handle;
         var result = PipelineStateDesc.FromInternalStruct(*desc);
-        result.Name = Marshal.PtrToStringAnsi(handle) ?? string.Empty;
+        result.Name = Marshal.PtrToStringAnsi(desc->Name) ?? string.Empty;
 
         var variables =
             new ReadOnlySpan<ShaderResourceVariableDesc.__Internal>(desc->ResourceLayout.Variables.ToPointer(),
@@ -528,24 +528,25 @@ public static unsafe class DiligentDescFactory
                                   Unsafe.SizeOf<SparseBufferMemoryBindInfo.__Internal>() * value.BufferBinds.Length;
             var bufferRangesPtr = textureBindsPtr +
                                   Unsafe.SizeOf<SparseTextureMemoryBindInfo.__Internal>() * value.TextureBinds.Length;
-            var textureRangesPtr = bufferRangesPtr + 
-                                   value.BufferBinds.Sum(x => x.Ranges.Length) * Unsafe.SizeOf<SparseBufferMemoryBindRange.__Internal>();
+            var textureRangesPtr = bufferRangesPtr +
+                                   value.BufferBinds.Sum(x => x.Ranges.Length) *
+                                   Unsafe.SizeOf<SparseBufferMemoryBindRange.__Internal>();
             var waitFenceValuesPtr = textureRangesPtr +
                                      value.TextureBinds.Sum(x => x.Ranges.Length) *
                                      Unsafe.SizeOf<SparseTextureMemoryBindRange.__Internal>();
-            var fencesPtr = waitFenceValuesPtr 
+            var fencesPtr = waitFenceValuesPtr
                             + (Unsafe.SizeOf<ulong>() * value.WaitFenceValues.Length)
                             + (Unsafe.SizeOf<ulong>() * value.SignalFenceValues.Length);
-            
+
             attribs->pBufferBinds = new IntPtr(bufferBindsPtr);
             attribs->pTextureBinds = new IntPtr(textureBindsPtr);
-            
+
             CollectBufferBinds(bufferBindsPtr, bufferRangesPtr);
             CollectTextureBinds(textureBindsPtr, textureRangesPtr);
             CollectWaitFenceValues(attribs, waitFenceValuesPtr);
             CollectFencesPtr(attribs, fencesPtr);
         }
-        
+
         return result;
 
         void CollectBufferBinds(byte* bufferBindsPtr, byte* bufferRangesPtr)
@@ -598,7 +599,7 @@ public static unsafe class DiligentDescFactory
 
                 fenceValuesPtr += Unsafe.SizeOf<ulong>();
             }
-            
+
             attribs->pSignalFenceValues = new IntPtr(fenceValuesPtr);
             for (var i = 0; i < attribs->NumSignalFences; ++i)
             {
@@ -608,7 +609,7 @@ public static unsafe class DiligentDescFactory
                 fenceValuesPtr += Unsafe.SizeOf<ulong>();
             }
         }
-        
+
         void CollectFencesPtr(BindSparseResourceMemoryAttribs.__Internal* attribs, byte* fencesPtr)
         {
             attribs->ppWaitFences = new IntPtr(fencesPtr);
@@ -643,10 +644,12 @@ public static unsafe class DiligentDescFactory
                 .Select(x =>
                 {
                     var bufferBind = SparseBufferMemoryBindInfo.FromInternalStruct(x);
-                    var ranges = new ReadOnlySpan<SparseBufferMemoryBindRange.__Internal>(x.pRanges.ToPointer(), (int)x.NumRanges)
-                        .ToArray()
-                        .Select(SparseBufferMemoryBindRange.FromInternalStruct)
-                        .ToArray();
+                    var ranges =
+                        new ReadOnlySpan<SparseBufferMemoryBindRange.__Internal>(x.pRanges.ToPointer(),
+                                (int)x.NumRanges)
+                            .ToArray()
+                            .Select(SparseBufferMemoryBindRange.FromInternalStruct)
+                            .ToArray();
                     bufferBind.Ranges = ranges;
                     return bufferBind;
                 })
@@ -684,5 +687,32 @@ public static unsafe class DiligentDescFactory
         result.WaitFences = waitFences;
         result.WaitFenceValues = waitFenceValues.ToArray();
         return result;
+    }
+
+    public static ShaderCodeBufferDesc GetShaderCodeBufferDesc(IntPtr handle)
+    {
+        var data = (ShaderCodeBufferDesc.__Internal*)handle.ToPointer();
+        var variables =
+            new Span<ShaderCodeVariableDesc.__Internal>(data->pVariables.ToPointer(), (int)data->NumVariables);
+
+        var desc = ShaderCodeBufferDesc.FromInternalStruct(*data);
+        desc.Variables = ReadShaderCodeVariableDesc(data->pVariables, (int)data->NumVariables);
+        return desc;
+        
+        ShaderCodeVariableDesc[] ReadShaderCodeVariableDesc(IntPtr data, int num)
+        {
+            var res = new Span<ShaderCodeVariableDesc.__Internal>(data.ToPointer(), num);
+            return res
+                .ToArray()
+                .Select(x =>
+                {
+                    var varDesc = ShaderCodeVariableDesc.FromInternalStruct(x);
+                    varDesc.Name = Marshal.PtrToStringAnsi(x.Name) ?? string.Empty;
+                    varDesc.TypeName = Marshal.PtrToStringAnsi(x.TypeName) ?? string.Empty;
+                    varDesc.Members = ReadShaderCodeVariableDesc(x.pMembers, (int)x.NumMembers);
+                    return varDesc;
+                })
+                .ToArray();
+        }
     }
 }

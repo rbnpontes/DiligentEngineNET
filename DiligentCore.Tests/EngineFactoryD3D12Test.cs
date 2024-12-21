@@ -4,6 +4,7 @@ namespace Diligent.Tests;
 
 [TestFixture]
 [Platform("Win")]
+[NonParallelizable]
 public class EngineFactoryD3D12Test
 {
     private IEngineFactoryD3D12 GetFactory()
