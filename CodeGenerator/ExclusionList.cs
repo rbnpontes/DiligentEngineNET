@@ -20,7 +20,7 @@ public static class ExclusionList
         "TVOSNativeWindow",
         "IOSNativeWindow",
         "MacOSNativeWindow",
-        "AndroidNativeWindow"
+        "AndroidNativeWindow",
     ];
 
     public static string[] PropertiesToSkip =
@@ -36,7 +36,8 @@ public static class ExclusionList
         "SubpassDesc::pResolveAttachments",
         "SubpassDesc::pDepthStencilAttachment",
         "SubpassDesc::pShadingRateAttachment",
-        "MultiDrawAttribs::pDrawItems"
+        "MultiDrawAttribs::pDrawItems",
+        "ShaderCreateInfo::Macros",
     ];
 
     public static Dictionary<string, string[]> PlatformSpecificClasses = new()

@@ -377,13 +377,6 @@ public class CSharpCodeGenerator(string diligentCorePath, string outputBaseDir, 
                 if(BuildArrayProperty(field))
                     continue;
             }
-
-            // var resolvedType = AstUtils.Resolve(field.Type);
-            // if (resolvedType is CppClass)
-            // {
-            //     BuildClassProperty(field, resolvedType);
-            //     continue;
-            // }
             
             var propDef = CSharpUtils.GetPropertyField(field.Type, field.Name);
             if (string.IsNullOrEmpty(propDef))
@@ -563,8 +556,15 @@ public class CSharpCodeGenerator(string diligentCorePath, string outputBaseDir, 
         if (fieldClassTypes.Length != 0)
             builder.Line("// update class properties");
         
+        var props2Skip = new HashSet<string>(ExclusionList.PropertiesToSkip);
         foreach (var field in fieldClassTypes)
         {
+            var fieldWithClass = @class.Name + "::" + field.Name;
+            if(props2Skip.Contains(fieldWithClass))
+                continue;
+            if(field.Name.StartsWith("pp"))
+                continue;
+            
             var propNameFixed = CSharpUtils.FixPropertyName(field.Name);
             var classType = (CppClass)AstUtils.Resolve(field.Type);
             builder.Line($"obj._data.{field.Name} = {classType.Name}.GetInternalStruct(obj.{propNameFixed});");
@@ -605,8 +605,16 @@ public class CSharpCodeGenerator(string diligentCorePath, string outputBaseDir, 
         var fieldClassTypes = @class.Fields.Where(x => AstUtils.Resolve(x.Type) is CppClass).ToArray();
         if (fieldClassTypes.Length != 0)
             builder.Line("// update class objects");
+        
+        var props2Skip = new HashSet<string>(ExclusionList.PropertiesToSkip);
         foreach (var field in fieldClassTypes)
         {
+            var fieldWithClass = @class.Name + "::" + field.Name;
+            if(props2Skip.Contains(fieldWithClass))
+                continue;
+            if(field.Name.StartsWith("pp"))
+                continue;
+            
             var propName = CSharpUtils.FixPropertyName(field.Name);
             var classType = (CppClass)AstUtils.Resolve(field.Type);
             builder.Line($"target.{propName} = {classType.Name}.FromInternalStruct(data.{field.Name});");
