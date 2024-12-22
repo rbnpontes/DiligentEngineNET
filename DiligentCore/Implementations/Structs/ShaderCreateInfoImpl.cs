@@ -7,6 +7,7 @@ public partial class ShaderCreateInfo
     /// you can use ByteCode property.
     /// </summary>
     public byte[] ByteCodeData { get; set; } = [];
+    public ShaderMacro[] Macros { get; set; } = [];
     public ShaderCreateInfo()
     {
         EntryPoint = "main";
