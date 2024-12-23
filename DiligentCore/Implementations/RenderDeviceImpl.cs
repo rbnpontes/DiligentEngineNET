@@ -124,6 +124,7 @@ internal unsafe partial class RenderDevice : IRenderDevice
         createInfoData.Desc.Name = strAlloc.Acquire(createInfo.Desc.Name);
         createInfoData.Source = strAlloc.Acquire(createInfo.Source);
         createInfoData.EntryPoint = strAlloc.Acquire(createInfo.EntryPoint);
+        createInfoData.FilePath = strAlloc.Acquire(createInfo.FilePath);
 
         var byteCode = createInfo.ByteCodeData.AsSpan();
         fixed(void* shaderMacroPtr = shaderMacros.AsSpan())
