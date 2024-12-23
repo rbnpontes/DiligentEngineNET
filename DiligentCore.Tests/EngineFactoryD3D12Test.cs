@@ -26,7 +26,7 @@ public class EngineFactoryD3D12Test
     public void MustCreateDeviceAndContext()
     {
         using var factory = GetFactory();
-        (var renderDevice, var deviceContexts) = factory.CreateDeviceAndContext(new EngineD3D12CreateInfo());
+        (var renderDevice, var deviceContexts) = factory.CreateDeviceAndContexts(new EngineD3D12CreateInfo());
 
         Assert.That(renderDevice, Is.Not.Null);
         Assert.That(deviceContexts.FirstOrDefault(), Is.Not.Null);
@@ -40,7 +40,7 @@ public class EngineFactoryD3D12Test
     public void MustCreateDeferredContexts()
     {
         using var factory = GetFactory();
-        (var renderDevice, var deviceContexts) = factory.CreateDeviceAndContext(new EngineD3D12CreateInfo()
+        (var renderDevice, var deviceContexts) = factory.CreateDeviceAndContexts(new EngineD3D12CreateInfo()
         {
             NumDeferredContexts = 3
         });
@@ -58,7 +58,7 @@ public class EngineFactoryD3D12Test
     {
         using var window = new TestWindow();
         using var factory = GetFactory();
-        (var renderDevice, var deviceContexts) = factory.CreateDeviceAndContext(new EngineD3D12CreateInfo());
+        (var renderDevice, var deviceContexts) = factory.CreateDeviceAndContexts(new EngineD3D12CreateInfo());
         var swapChain = factory.CreateSwapChain(
             renderDevice,
             deviceContexts.First(),
