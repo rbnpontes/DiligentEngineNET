@@ -341,13 +341,17 @@ public class CSharpCodeGenerator(string diligentCorePath, string outputBaseDir, 
         foreach (var field in @class.Fields)
         {
             var fieldWithClass = @class.Name + "::" + field.Name;
-            if(props2Skip.Contains(fieldWithClass))
+            if (props2Skip.Contains(fieldWithClass))
                 continue;
-            if(field.Name.StartsWith("pp"))
+            if (field.Name.StartsWith("pp"))
                 continue;
-            
+
             if (CSharpUtils.RequiresSpecialSetStructMethod(field))
-                continue;
+            {
+                if (!AstUtils.IsArrayType(field.Type))
+                    continue;
+            }
+
             if (AstUtils.IsFixedStringType(field.Type))
             {
                 BuildFixedStringProperty(field);
@@ -361,7 +365,7 @@ public class CSharpCodeGenerator(string diligentCorePath, string outputBaseDir, 
                     BuildDiligentObjectProperty(field, classType);
                 else
                     BuildObjectProperty(field, classType);
-                
+
                 continue;
             }
 
@@ -370,14 +374,14 @@ public class CSharpCodeGenerator(string diligentCorePath, string outputBaseDir, 
                 BuildFixedArrayProperty(field);
                 continue;
             }
-            
+
             // Array members has pField and NumField or can be FieldCount
             if (field.Name.StartsWith("Num") || field.Name.EndsWith("Count"))
             {
-                if(BuildArrayProperty(field))
+                if (BuildArrayProperty(field))
                     continue;
             }
-            
+
             var propDef = CSharpUtils.GetPropertyField(field.Type, field.Name);
             if (string.IsNullOrEmpty(propDef))
                 continue;
@@ -451,18 +455,27 @@ public class CSharpCodeGenerator(string diligentCorePath, string outputBaseDir, 
             {
                 var name = x.Name.ToLower();
                 return name == (fieldName + "Count").ToLower()
-                    || name == (fieldNameSingular + "Count").ToLower()
-                    || name == ("Num" + fieldName).ToLower()
-                    || name == ("Num" + fieldNameSingular).ToLower();
+                       || name == (fieldNameSingular + "Count").ToLower()
+                       || name == ("Num" + fieldName).ToLower()
+                       || name == ("Num" + fieldNameSingular).ToLower();
             });
             // skip this field is an array
             if (countField is not null)
                 return;
-            
+
             builder.Line($"public {fieldClass.Name}? {fieldName} {{ get; set; }}");
         }
-        
+
         void BuildFixedArrayProperty(CppField field)
+        {
+            var arrayType = (CppArrayType)field.Type;
+            if (arrayType.ElementType is CppClass)
+                BuildClassFixedArrayProperty(field);
+            else
+                BuildPrimitiveFixedArrayProperty(field);
+        }
+
+        void BuildPrimitiveFixedArrayProperty(CppField field)
         {
             var arrayType = (CppArrayType)field.Type;
             var propType = CSharpUtils.GetPropertyType(arrayType.ElementType);
@@ -501,14 +514,43 @@ public class CSharpCodeGenerator(string diligentCorePath, string outputBaseDir, 
             });
         }
 
+        void BuildClassFixedArrayProperty(CppField field)
+        {
+            var arrayType = (CppArrayType)field.Type;
+            var classType = (CppClass)arrayType.ElementType;
+            var className = CSharpUtils.GetFixedClassName(classType);
+            var propName = CSharpUtils.FixPropertyName(field.Name);
+
+            builder.Line($"private {className}[] _{field.Name} = [");
+            for (var i = 0; i < arrayType.Size; ++i)
+                builder.Line($"\tnew {className}(),");
+            builder
+                .Line("];")
+                .Line($"public {className}[] {propName}")
+                .Closure(propBuilder =>
+                {
+                    propBuilder
+                        .Line($"get => _{field.Name};")
+                        .Line("set")
+                        .Closure(setBuilder =>
+                        {
+                            setBuilder
+                                .Line($"if (value.Length >= {arrayType.Size})")
+                                .Line(
+                                    $"\tthrow new Exception(\"{className} Length cannot be greater than {arrayType.Size}\");")
+                                .Line($"_{field.Name} = value;");
+                        });
+                });
+        }
+
         bool BuildArrayProperty(CppField field)
         {
             var propName = field.Name
                 .Replace("Num", string.Empty)
                 .Replace("Count", string.Empty);
             var propNamePlural = CodeUtils.ToPlural(propName);
-            var targetField = @class.Fields.FirstOrDefault(x => x.Name == propName 
-                                                                || x.Name == ('p' + propName) 
+            var targetField = @class.Fields.FirstOrDefault(x => x.Name == propName
+                                                                || x.Name == ('p' + propName)
                                                                 || x.Name == ('p' + propNamePlural)
                                                                 || x.Name == "pp" + propName);
             // Sometimes, when the 'Num' prefix exists but the field is not found,
@@ -518,7 +560,7 @@ public class CSharpCodeGenerator(string diligentCorePath, string outputBaseDir, 
 
             var isPlural = targetField.Name == 'p' + propNamePlural;
             var finalPropName = isPlural ? propNamePlural : propName;
-            var privatePropName = "_"+CodeUtils.ToCamelCase(finalPropName);
+            var privatePropName = "_" + CodeUtils.ToCamelCase(finalPropName);
             var classType = AstUtils.ResolveClassPointer(targetField.Type);
 
             builder
@@ -552,27 +594,37 @@ public class CSharpCodeGenerator(string diligentCorePath, string outputBaseDir, 
 
     private void BuildGetInternalStructMethod(CppClass @class, CSharpBuilder builder)
     {
-        var fieldClassTypes = @class.Fields.Where(x => AstUtils.Resolve(x.Type) is CppClass).ToArray();
+        var fieldClassTypes = @class.Fields.Where(x =>
+        {
+            var allowedFields = AstUtils.Resolve(x.Type) is CppClass;
+            var arrayTypeField = x.Type as CppArrayType;
+            allowedFields = allowedFields || (x.Type is not null && arrayTypeField?.ElementType is CppClass);
+            return allowedFields;
+        }).ToArray();
         if (fieldClassTypes.Length != 0)
             builder.Line("// update class properties");
-        
+
         var props2Skip = new HashSet<string>(ExclusionList.PropertiesToSkip);
         foreach (var field in fieldClassTypes)
         {
             var fieldWithClass = @class.Name + "::" + field.Name;
-            if(props2Skip.Contains(fieldWithClass))
+            if (props2Skip.Contains(fieldWithClass))
                 continue;
-            if(field.Name.StartsWith("pp"))
+            if (field.Name.StartsWith("pp"))
                 continue;
+
+            if (field.Type is CppArrayType)
+            {
+                BuildFieldUpdateFixedArray(field);
+                continue;
+            }
             
-            var propNameFixed = CSharpUtils.FixPropertyName(field.Name);
-            var classType = (CppClass)AstUtils.Resolve(field.Type);
-            builder.Line($"obj._data.{field.Name} = {classType.Name}.GetInternalStruct(obj.{propNameFixed});");
+            BuildFieldUpdateDefault(field);
         }
 
         if (fieldClassTypes.Length != 0)
             builder.Line();
-        
+
         builder.Line("var result = obj._data;");
         if (AstUtils.HasBaseClass(@class))
         {
@@ -598,33 +650,61 @@ public class CSharpCodeGenerator(string diligentCorePath, string outputBaseDir, 
         }
 
         builder.Line("return result;");
+
+        void BuildFieldUpdateDefault(CppField field)
+        {
+            var propNameFixed = CSharpUtils.FixPropertyName(field.Name);
+            var classType = (CppClass)AstUtils.Resolve(field.Type);
+            builder.Line($"obj._data.{field.Name} = {classType.Name}.GetInternalStruct(obj.{propNameFixed});");
+        }
+
+        void BuildFieldUpdateFixedArray(CppField field)
+        {
+            var arrayType = (CppArrayType)field.Type;
+            var classType = (CppClass)arrayType.ElementType;
+            var className = CSharpUtils.GetFixedClassName(classType);
+            builder
+                .Line($"for(var i = 0; i < obj._{field.Name}.Length; ++i)")
+                .Line($"\tobj._data.Set{field.Name}(i, {className}.GetInternalStruct(obj._{field.Name}[i]));");
+        }
     }
 
     private void BuildUpdateInternalStructMethod(CppClass @class, CSharpBuilder builder)
     {
-        var fieldClassTypes = @class.Fields.Where(x => AstUtils.Resolve(x.Type) is CppClass).ToArray();
+        var fieldClassTypes = @class.Fields.Where(x =>
+        {
+            // TODO: move this logic
+            var allowedFields = AstUtils.Resolve(x.Type) is CppClass;
+            var arrayTypeField = x.Type as CppArrayType;
+            allowedFields = allowedFields || (x.Type is not null && arrayTypeField?.ElementType is CppClass);
+            return allowedFields;
+        }).ToArray();
         if (fieldClassTypes.Length != 0)
             builder.Line("// update class objects");
-        
+
         var props2Skip = new HashSet<string>(ExclusionList.PropertiesToSkip);
         foreach (var field in fieldClassTypes)
         {
             var fieldWithClass = @class.Name + "::" + field.Name;
-            if(props2Skip.Contains(fieldWithClass))
+            if (props2Skip.Contains(fieldWithClass))
                 continue;
-            if(field.Name.StartsWith("pp"))
+            if (field.Name.StartsWith("pp"))
                 continue;
+
+            if (field.Type is CppArrayType)
+            {
+                BuildFieldUpdateFixedArray(field);
+                continue;
+            }
             
-            var propName = CSharpUtils.FixPropertyName(field.Name);
-            var classType = (CppClass)AstUtils.Resolve(field.Type);
-            builder.Line($"target.{propName} = {classType.Name}.FromInternalStruct(data.{field.Name});");
+            BuildFieldUpdateDefault(field);
         }
 
         if (fieldClassTypes.Length != 0)
             builder.Line();
-        
+
         builder.Line("target._data = data;");
-        
+
         if (!AstUtils.HasBaseClass(@class))
             return;
         var parentClass = AstUtils.GetClassParent(@class);
@@ -648,5 +728,24 @@ public class CSharpCodeGenerator(string diligentCorePath, string outputBaseDir, 
         }
 
         builder.Line($"{parentClassName}.UpdateInternalStruct(target, childData);");
+
+        void BuildFieldUpdateDefault(CppField field)
+        {
+            var propName = CSharpUtils.FixPropertyName(field.Name);
+            var classType = (CppClass)AstUtils.Resolve(field.Type);
+            builder.Line($"target.{propName} = {classType.Name}.FromInternalStruct(data.{field.Name});");
+        }
+
+        void BuildFieldUpdateFixedArray(CppField field)
+        {
+            var arrayType = (CppArrayType)field.Type;
+            var classType = (CppClass)arrayType.ElementType;
+            var className = CSharpUtils.GetFixedClassName(classType);
+            
+            builder
+                .Line($"target._{field.Name} = new {className}[{arrayType.Size}];")
+                .Line($"for (var i = 0; i < {arrayType.Size}; ++i)")
+                .Line($"\ttarget._{field.Name}[i] = {className}.FromInternalStruct(data.Get{field.Name}(i));");
+        }
     }
 }
