@@ -25,7 +25,7 @@ internal partial class EngineFactoryD3D12 : IEngineFactoryD3D12
         Interop.engine_factory_d3d12_load_d3d12(Handle, strAlloc.Acquire(dllName));
     }
 
-    public unsafe (IRenderDevice, IDeviceContext[]) CreateDeviceAndContext(EngineD3D12CreateInfo createInfo)
+    public unsafe (IRenderDevice, IDeviceContext[]) CreateDeviceAndContexts(EngineD3D12CreateInfo createInfo)
     {
         using var strAlloc = new StringAllocator();
         var numDeferredContexts = GetNumDeferredContexts(createInfo);
