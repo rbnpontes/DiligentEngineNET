@@ -5,7 +5,7 @@ namespace Diligent;
 
 internal static class NativeObjectRegistry
 {
-    private static readonly Dictionary<IntPtr, WeakReference<INativeObject>> sRegistry = new();
+    private static readonly ConcurrentDictionary<IntPtr, WeakReference<INativeObject>> sRegistry = new();
     public static void AddToRegister(IntPtr nativePointer, INativeObject obj)
     {
         sRegistry.TryAdd(nativePointer, new WeakReference<INativeObject>(obj));
@@ -13,7 +13,7 @@ internal static class NativeObjectRegistry
 
     public static void RemoveObject(IntPtr handle)
     {
-        sRegistry.Remove(handle);
+        sRegistry.Remove(handle, out _);
     }
     
     public static bool TryGetObject(IntPtr nativePointer, out INativeObject? output)
