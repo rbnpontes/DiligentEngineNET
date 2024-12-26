@@ -359,9 +359,12 @@ internal unsafe partial class DeviceContext(IntPtr handle) : DiligentObject(hand
     {
         if (commandLists.Length > _tmpPointersBuffer.Length)
             _tmpPointersBuffer = new IntPtr[commandLists.Length];
+        
+        for(var i = 0; i < commandLists.Length; ++i)
+            _tmpPointersBuffer[i] = commandLists[i].Handle;
 
         fixed (nint* commandListsPtr = _tmpPointersBuffer)
-            Interop.device_context_finish_command_list(Handle, new IntPtr(commandListsPtr));
+            Interop.device_context_execute_command_lists(Handle, (uint)commandLists.Length, new IntPtr(commandListsPtr));
 
         foreach (var commandList in commandLists)
         {
