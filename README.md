@@ -21,12 +21,15 @@ If your project demands **high performance**, this binding may not be suitable. 
 ## Current Status
 
 | Platform | Status      |
-| -------- | ----------- |
-| Windows  | In Progress |
-| Linux    | In Progress |
+| -------- |-------------|
+| Windows  | Done        |
+| Linux    | Done        |
 | macOS    | Not Started |
 | Android  | Not Started |
 | Web      | Not Started |
+
+## Samples
+https://github.com/rbnpontes/DiligentEngineNET.Samples
 
 ---
 
