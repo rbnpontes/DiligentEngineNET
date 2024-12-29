@@ -4,32 +4,36 @@ namespace Diligent.Tests;
 [NonParallelizable]
 public class ShaderTest : BaseRenderTest
 {
-    private readonly string _testShader = "cbuffer Constants" +
-                                         "{" +
-                                         "    float4x4 g_world_view_proj;" +
-                                         "    float4 g_color;" +
-                                         "};" +
-                                         "" +
-                                         "struct VertexInput" +
-                                         "{" +
-                                         "    float3 position : ATTRIB0;" +
-                                         "    float3 normal : ATTRIB1;" +
-                                         "};" +
-                                         "" +
-                                         "struct PixelInput" +
-                                         "{" +
-                                         "    float4 position: SV_POSITION;" +
-                                         "    float4 color: COLOR;" +
-                                         "};" +
-                                         "" +
-                                         "PixelInput VS(VertexInput input)" +
-                                         "{" +
-                                         "    PixelInput output;" +
-                                         "    float4 pos = float4(input.position, 1.0);" +
-                                         "    output.position = mul(pos, g_world_view_proj);" +
-                                         "    output.color = g_color;" +
-                                         "    return output;" +
-                                         "}";
+    private readonly string _testShader = @"
+cbuffer Constants
+{
+    float4x4 g_world_view_proj;
+    float4 g_color;
+};
+
+struct VertexInput
+{
+    float3 position : ATTRIB0;
+    float3 normal : ATTRIB1;
+};
+
+struct PixelInput
+{
+    float4 position: SV_POSITION;
+    float4 color: COLOR;
+};
+
+PixelInput VS(VertexInput input)
+{
+    PixelInput output;
+    float4 pos = float4(input.position, 1.0);
+    output.position = mul(pos, g_world_view_proj);
+    output.color = g_color;
+#if defined(DEBUG)
+    output.color = output.color + float(0.001);
+#endif
+    return output;
+}";
     
     [Test]
     public void MustCreate()
@@ -44,6 +48,7 @@ public class ShaderTest : BaseRenderTest
             Source = _testShader,
             EntryPoint = "VS",
             SourceLanguage = ShaderSourceLanguage.Hlsl,
+            Macros = [new ShaderMacro("DEBUG", "1")]
         };
         using var shader = Device.CreateShader(createInfo);
         
@@ -63,6 +68,7 @@ public class ShaderTest : BaseRenderTest
             Source = _testShader,
             EntryPoint = "VS",
             SourceLanguage = ShaderSourceLanguage.Hlsl,
+            Macros = [new ShaderMacro("DEBUG", "1")],
         };
         using var shader = Device.CreateShader(createInfo);
         var testDesc = createInfo.Desc;
@@ -83,7 +89,8 @@ public class ShaderTest : BaseRenderTest
             Source = _testShader,
             EntryPoint = "VS",
             SourceLanguage = ShaderSourceLanguage.Hlsl,
-            LoadConstantBufferReflection = true
+            LoadConstantBufferReflection = true,
+            Macros = [new ShaderMacro("DEBUG", "1")],
         };
         using var shader = Device.CreateShader(createInfo);
         var cbufferDesc = shader.GetConstantBufferDesc(0);

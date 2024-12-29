@@ -6,7 +6,7 @@ public unsafe interface IDeviceContext : IDiligentObject
     ulong FrameNumber { get; }
     IDiligentObject? UserData { get; set; }
     DeviceContextStats Stats { get; }
-    
+
     void Begin(uint immediateContextId);
     void SetPipelineState(IPipelineState pipelineState);
     void TransitionShaderResources(IShaderResourceBinding shaderResourceBinding);
@@ -67,6 +67,18 @@ public unsafe interface IDeviceContext : IDiligentObject
     void EndQuery(IQuery query);
     void Flush();
 
+    void UpdateBuffer(IBuffer buffer, ulong offset, ulong size, IntPtr data,
+        ResourceStateTransitionMode stateTransitionMode);
+
+    void UpdateBuffer<T>(IBuffer buffer, ulong offset, Span<T> data, ResourceStateTransitionMode stateTransitionMode)
+        where T : unmanaged;
+
+    void UpdateBuffer<T>(IBuffer buffer, ulong offset, ReadOnlySpan<T> data,
+        ResourceStateTransitionMode stateTransitionMode) where T : unmanaged;
+
+    void UpdateBuffer<T>(IBuffer buffer, ulong offset, T data, ResourceStateTransitionMode stateTransitionMode)
+        where T : unmanaged;
+
     void CopyBuffer(IBuffer srcBuffer, ulong srcOffset, ResourceStateTransitionMode srcBufferTransitionMode,
         IBuffer dstBuffer, ulong dstOffset, ulong size, ResourceStateTransitionMode dstBufferTransitionMode);
 
@@ -78,8 +90,11 @@ public unsafe interface IDeviceContext : IDiligentObject
 
     void CopyTexture(CopyTextureAttribs copyAttribs);
 
-    void MapTextureSubresource(ITexture texture, uint mipLevel, uint arraySlice, MapType mapType, MapFlags mapFlags,
-        Box? mapRegion, MappedTextureSubresource mappedData);
+    MappedTextureSubresource MapTextureSubresource(ITexture texture, uint mipLevel, uint arraySlice, MapType mapType,
+        MapFlags mapFlags,
+        Box? mapRegion);
+
+    void UnmapTextureSubresource(ITexture texture, uint mipLevel, uint arraySlice);
 
     void GenerateMips(ITextureView textureView);
     void FinishFrame();

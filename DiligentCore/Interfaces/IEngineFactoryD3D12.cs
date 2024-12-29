@@ -3,7 +3,7 @@ namespace Diligent;
 public interface IEngineFactoryD3D12 : IEngineFactory
 {
      void LoadD3D12(string dllName = "d3d12.dll");
-     (IRenderDevice, IDeviceContext[]) CreateDeviceAndContext(EngineD3D12CreateInfo createInfo);
+     (IRenderDevice, IDeviceContext[]) CreateDeviceAndContexts(EngineD3D12CreateInfo createInfo);
 
      (IMemoryAllocator, ICommandQueueD3D12) CreateCommandQueueD3D12(IntPtr d3d12NativeDevice,
           IntPtr d3d12NativeCommandQueue);

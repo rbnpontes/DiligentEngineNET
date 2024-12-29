@@ -65,7 +65,7 @@ internal partial class EngineFactoryVk : IEngineFactoryVk
         return DiligentObjectsFactory.CreateSwapChain(swapChainPtr);
     }
 
-    public unsafe void EnableDeviceSimulation()
+    public void EnableDeviceSimulation()
     {
         Interop.engine_factory_vk_enable_device_simulation(Handle);
     }

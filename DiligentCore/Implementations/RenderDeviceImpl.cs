@@ -113,14 +113,29 @@ internal unsafe partial class RenderDevice : IRenderDevice
         var createInfoData = ShaderCreateInfo.GetInternalStruct(createInfo);
         var shaderPtr = IntPtr.Zero;
         var compilerOutputPtr = IntPtr.Zero;
+        var shaderMacros = createInfo.Macros.Select(x =>
+        {
+            var data = ShaderMacro.GetInternalStruct(x);
+            data.Name = strAlloc.Acquire(x.Name);
+            data.Definition = strAlloc.Acquire(x.Definition);
+            return data;
+        }).ToArray();
 
         createInfoData.Desc.Name = strAlloc.Acquire(createInfo.Desc.Name);
         createInfoData.Source = strAlloc.Acquire(createInfo.Source);
         createInfoData.EntryPoint = strAlloc.Acquire(createInfo.EntryPoint);
+        createInfoData.FilePath = strAlloc.Acquire(createInfo.FilePath);
 
         var byteCode = createInfo.ByteCodeData.AsSpan();
+        fixed(void* shaderMacroPtr = shaderMacros.AsSpan())
         fixed (void* byteCodePtr = byteCode)
         {
+            createInfoData.Macros = new ShaderMacroArray.__Internal()
+            {
+                Count = (uint)createInfo.Macros.Length,
+                Elements = new IntPtr(shaderMacroPtr)
+            };
+            
             if (createInfo.ByteCode == IntPtr.Zero)
             {
                 createInfoData.ByteCode = new IntPtr(byteCodePtr);

@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using Diligent.Utils;
 
 namespace Diligent;
@@ -358,9 +359,12 @@ internal unsafe partial class DeviceContext(IntPtr handle) : DiligentObject(hand
     {
         if (commandLists.Length > _tmpPointersBuffer.Length)
             _tmpPointersBuffer = new IntPtr[commandLists.Length];
+        
+        for(var i = 0; i < commandLists.Length; ++i)
+            _tmpPointersBuffer[i] = commandLists[i].Handle;
 
         fixed (nint* commandListsPtr = _tmpPointersBuffer)
-            Interop.device_context_finish_command_list(Handle, new IntPtr(commandListsPtr));
+            Interop.device_context_execute_command_lists(Handle, (uint)commandLists.Length, new IntPtr(commandListsPtr));
 
         foreach (var commandList in commandLists)
         {
@@ -397,6 +401,34 @@ internal unsafe partial class DeviceContext(IntPtr handle) : DiligentObject(hand
     public void Flush()
     {
         Interop.device_context_flush(Handle);
+    }
+
+    public void UpdateBuffer(IBuffer buffer, ulong offset, ulong size, IntPtr data,
+        ResourceStateTransitionMode stateTransitionMode)
+    {
+        Interop.device_context_update_buffer(Handle, buffer.Handle, offset, size, data, stateTransitionMode);
+    }
+
+    public void UpdateBuffer<T>(IBuffer buffer, ulong offset, Span<T> data,
+        ResourceStateTransitionMode stateTransitionMode) where T : unmanaged
+    {
+        fixed (void* dataPtr = data)
+            UpdateBuffer(buffer, offset, (ulong)(data.Length * Unsafe.SizeOf<T>()), new IntPtr(dataPtr),
+                stateTransitionMode);
+    }
+
+    public void UpdateBuffer<T>(IBuffer buffer, ulong offset, ReadOnlySpan<T> data,
+        ResourceStateTransitionMode stateTransitionMode) where T : unmanaged
+    {
+        fixed (void* dataPtr = data)
+            UpdateBuffer(buffer, offset, (ulong)(data.Length * Unsafe.SizeOf<T>()), new IntPtr(dataPtr),
+                stateTransitionMode);
+    }
+
+    public void UpdateBuffer<T>(IBuffer buffer, ulong offset, T data, ResourceStateTransitionMode stateTransitionMode)
+        where T : unmanaged
+    {
+        UpdateBuffer(buffer, offset, (ulong)Unsafe.SizeOf<T>(), new IntPtr(&data), stateTransitionMode);
     }
 
     public void CopyBuffer(IBuffer srcBuffer, ulong srcOffset, ResourceStateTransitionMode srcBufferTransitionMode,
@@ -449,12 +481,13 @@ internal unsafe partial class DeviceContext(IntPtr handle) : DiligentObject(hand
         Interop.device_context_copy_texture(Handle, new IntPtr(&copyAttribsData));
     }
 
-    public void MapTextureSubresource(ITexture texture, uint mipLevel, uint arraySlice, MapType mapType,
+    public MappedTextureSubresource MapTextureSubresource(ITexture texture, uint mipLevel, uint arraySlice,
+        MapType mapType,
         MapFlags mapFlags,
-        Box? mapRegion, MappedTextureSubresource mappedData)
+        Box? mapRegion)
     {
         var mapRegionData = Box.GetInternalStruct(mapRegion ?? new Box());
-        var mappedTexSubRes = MappedTextureSubresource.GetInternalStruct(mappedData);
+        var mappedTexSubResPtr = IntPtr.Zero;
 
         Interop.device_context_map_texture_subresource(Handle,
             texture.Handle,
@@ -463,9 +496,16 @@ internal unsafe partial class DeviceContext(IntPtr handle) : DiligentObject(hand
             mapType,
             mapFlags,
             new IntPtr(&mapRegionData),
-            new IntPtr(&mappedTexSubRes));
+            new IntPtr(&mappedTexSubResPtr));
+        
+        return MappedTextureSubresource.FromInternalStruct(*(MappedTextureSubresource.__Internal*)mappedTexSubResPtr);
     }
 
+    public void UnmapTextureSubresource(ITexture texture, uint mipLevel, uint arraySlice)
+    {
+        Interop.device_context_unmap_texture_subresource(Handle, texture.Handle, mipLevel, arraySlice);
+    }
+    
     public void GenerateMips(ITextureView textureView)
     {
         Interop.device_context_generate_mips(Handle, textureView.Handle);
@@ -605,7 +645,7 @@ internal unsafe partial class DeviceContext(IntPtr handle) : DiligentObject(hand
 
     public void BeginDebugGroup(string name, float[] color)
     {
-        fixed(float* colorPtr = color)
+        fixed (float* colorPtr = color)
             BeginDebugGroup(name, colorPtr);
     }
 
@@ -629,7 +669,7 @@ internal unsafe partial class DeviceContext(IntPtr handle) : DiligentObject(hand
 
     public void InsertDebugLabel(string label, float[] color)
     {
-        fixed(float* colorPtr = color)
+        fixed (float* colorPtr = color)
             InsertDebugLabel(label, colorPtr);
     }
 
@@ -656,7 +696,7 @@ internal unsafe partial class DeviceContext(IntPtr handle) : DiligentObject(hand
     public void BindSparseResourceMemory(BindSparseResourceMemoryAttribs attribs)
     {
         var data = DiligentDescFactory.GetBindSparseResourceMemoryAttribsBytes(attribs);
-        fixed(void* dataPtr = data)
+        fixed (void* dataPtr = data)
             Interop.device_context_bind_sparse_resource_memory(Handle, new IntPtr(&dataPtr));
     }
 
