@@ -1,4 +1,5 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<!--<Project Sdk="Microsoft.NET.Sdk">-->
+<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
@@ -14,9 +15,11 @@
         <Product>DiligentEngineNET</Product>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <Version>1.0.0</Version>
+        <RunAOTCompilation>true</RunAOTCompilation>
+        <WasmBuildNative>true</WasmBuildNative>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-      <NoWarn>1701;1702;CS0108</NoWarn>
+        <NoWarn>1701;1702;CS0108</NoWarn>
     </PropertyGroup>
     <ItemGroup>
         <!-- Include all generated .cs files -->
@@ -24,45 +27,52 @@
             <Link>Bindings\%(Filename)%(Extension)</Link>
         </Compile>
         <Content Include="$(SolutionDir)\glue-build\win32\bin\$(Configuration)\DiligentCore.dll"
-            Condition="Exists('$(SolutionDir)\glue-build\win32\bin\$(Configuration)\DiligentCore.dll')">
+                 Condition="Exists('$(SolutionDir)\glue-build\win32\bin\$(Configuration)\DiligentCore.dll')">
             <Pack>true</Pack>
             <Link>runtimes/win-x64/native/DiligentCore.dll</Link>
             <PackagePath>runtimes/win-x64/native/DiligentCore.dll</PackagePath>
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
         <Content Include="$(SolutionDir)\glue-build\win32\bin\$(Configuration)\D3Dcompiler_47.dll"
-            Condition="Exists('$(SolutionDir)\glue-build\win32\bin\$(Configuration)\D3Dcompiler_47.dll')">
+                 Condition="Exists('$(SolutionDir)\glue-build\win32\bin\$(Configuration)\D3Dcompiler_47.dll')">
             <Pack>true</Pack>
             <Link>runtimes/win-x64/native/D3Dcompiler_47.dll</Link>
             <PackagePath>runtimes/win-x64/native/D3Dcompiler_47.dll</PackagePath>
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
         <Content Include="$(SolutionDir)\glue-build\win32\bin\$(Configuration)\dxcompiler.dll"
-            Condition="Exists('$(SolutionDir)\glue-build\win32\bin\$(Configuration)\dxcompiler.dll')">
+                 Condition="Exists('$(SolutionDir)\glue-build\win32\bin\$(Configuration)\dxcompiler.dll')">
             <Pack>true</Pack>
             <Link>runtimes/win-x64/native/dxcompiler.dll</Link>
             <PackagePath>runtimes/win-x64/native/dxcompiler.dll</PackagePath>
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
         <Content Include="$(SolutionDir)\glue-build\win32\bin\$(Configuration)\dxil.dll"
-            Condition="Exists('$(SolutionDir)\glue-build\win32\bin\$(Configuration)\dxil.dll')">
+                 Condition="Exists('$(SolutionDir)\glue-build\win32\bin\$(Configuration)\dxil.dll')">
             <Pack>true</Pack>
             <Link>runtimes/win-x64/native/dxil.dll</Link>
             <PackagePath>runtimes/win-x64/native/dxil.dll</PackagePath>
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
         <Content Include="$(SolutionDir)\glue-build\win32\bin\$(Configuration)\spv_dxcompiler.dll"
-            Condition="Exists('$(SolutionDir)\glue-build\win32\bin\$(Configuration)\spv_dxcompiler.dll')">
+                 Condition="Exists('$(SolutionDir)\glue-build\win32\bin\$(Configuration)\spv_dxcompiler.dll')">
             <Pack>true</Pack>
             <Link>runtimes/win-x64/native/spv_dxcompiler.dll</Link>
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
         <Content Include="$(SolutionDir)\glue-build\linux\libDiligentCore.so"
-            Condition="Exists('$(SolutionDir)\glue-build\linux\libDiligentCore.so')">
+                 Condition="Exists('$(SolutionDir)\glue-build\linux\libDiligentCore.so')">
             <Pack>true</Pack>
             <Link>runtimes/linux-x64/native/libDiligentCore.so</Link>
             <PackagePath>runtimes/linux-x64/native/libDiligentCore.so</PackagePath>
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
+<!--        <Content Include="C:\Users\rbnpo\Documents\Projects\DiligentEngineNET\\glue-build\web\libDiligentCore.a">-->
+<!--            <Pack>true</Pack>-->
+<!--            <PackagePath>runtimes/browser-wasm/native/libDiligentCore.a</PackagePath>-->
+<!--            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>-->
+<!--            <Link>libDiligentCore.a</Link>-->
+<!--        </Content>-->
+        <NativeFileReference Include="$(SolutionDir)\glue-build\web\*.a"/>
     </ItemGroup>
 </Project>

@@ -8,6 +8,7 @@ var outDir = args[1];
 var glueDir = args[2];
 
 var parserOptions = new CppParserOptions();
+parserOptions.ConfigureForWindowsMsvc(CppTargetCpu.X86_64);
 parserOptions.Defines.AddRange([
     "PLATFORM_WIN32=1",
     "GUID=INTERFACE_ID",

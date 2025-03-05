@@ -30,4 +30,19 @@ async function generateNativeProject() {
     ].join(' '));
 }
 
-module.exports = { generateBindings, generateNativeProject };
+async function generateWebNativeProject() {
+    const glue_path = path.join(g_source_dir, 'DiligentCoreGlue');
+    const build_path = path.join(g_source_dir, 'glue-build', 'web');
+
+    process.chdir(glue_path);
+    await execAsync([
+        'emcmake', 'cmake',
+        '-S', '.',
+        '-B', build_path,
+        '-G', 'Ninja',
+        '-DCMAKE_BUILD_TYPE=Release'
+    ].join(' '));
+
+}
+
+module.exports = { generateBindings, generateNativeProject, generateWebNativeProject };

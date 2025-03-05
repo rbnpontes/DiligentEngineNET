@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DiligentCore.WebTest</title>
+    <base href="/" />
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <style>
+        body {
+            margin: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div>
+        <canvas id="canvas"></canvas>
+    </div>
+    <script>
+        (function() {
+            const canvas = document.getElementById("canvas")
+            function handleResize() {
+                canvas.style.width = window.innerWidth + 'px';
+                canvas.style.height = window.innerHeight + 'px';
+            }
+            
+            window.addEventListener('resize', handleResize);
+            handleResize();
+        })();
+    </script>
+    <script src="main.js" type="module"></script>
+</body>
+
+</html>

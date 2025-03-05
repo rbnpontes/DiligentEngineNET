@@ -3,9 +3,8 @@ using System.Runtime.InteropServices;
 
 namespace Diligent;
 
-
 internal delegate void DiligentReleaseCalback(IntPtr obj, IntPtr refCount);
-internal static partial class ApiExtensionsInterop
+internal static unsafe partial class ApiExtensionsInterop
 {
     [LibraryImport((Constants.LibName))]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
@@ -14,4 +13,9 @@ internal static partial class ApiExtensionsInterop
     [LibraryImport((Constants.LibName))]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial void diligent_core_api_set_release_callback(IntPtr callback);
+    
+    public static void SetReleaseCallback(delegate* unmanaged[Cdecl]<void*, void*, void> callbackPtr)
+    {
+        diligent_core_api_set_release_callback(new IntPtr(callbackPtr));
+    }
 }

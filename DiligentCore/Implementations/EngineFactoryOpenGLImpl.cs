@@ -28,7 +28,7 @@ internal partial class EngineFactoryOpenGL : IEngineFactoryOpenGL
     public unsafe (IRenderDevice, IDeviceContext, ISwapChain) CreateDeviceAndSwapChain(
         EngineOpenGlCreateInfo createInfo, SwapChainDesc swapChainDesc)
     {
-        var window = createInfo.Window ?? WindowHandle.CreateNull();
+        var window = createInfo.Window ?? WindowHandleFactory.CreateNull();
         var windowData = WindowHandle.GetInternalStruct(window);
         var linuxWindowData = LinuxWindowHandle.GetInternalStruct(window.LinuxWindowHandle);
         if (OperatingSystem.IsLinux())
@@ -47,6 +47,8 @@ internal partial class EngineFactoryOpenGL : IEngineFactoryOpenGL
         var deviceContextPtr = IntPtr.Zero;
         var swapChainPtr = IntPtr.Zero;
 
+        var createInfoDataPtr = &createInfoData;
+        var dbgWnd = createInfoDataPtr->Window;
         Interop.engine_factory_open_gl_create_device_and_swap_chain_gl(Handle,
             new IntPtr(&createInfoData),
             new IntPtr(&renderDevicePtr),
@@ -71,7 +73,7 @@ internal partial class EngineFactoryOpenGL : IEngineFactoryOpenGL
 
     public unsafe (IRenderDevice, IDeviceContext) AttachToActiveGLContext(EngineOpenGlCreateInfo createInfo)
     {
-        var window = createInfo.Window ?? WindowHandle.CreateNull();
+        var window = createInfo.Window ?? WindowHandleFactory.CreateNull();
         var windowData = WindowHandle.GetInternalStruct(window);
         var linuxWindowData = LinuxWindowHandle.GetInternalStruct(window.LinuxWindowHandle);
         if (OperatingSystem.IsLinux())

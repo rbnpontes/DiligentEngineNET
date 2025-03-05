@@ -2,6 +2,8 @@ cmake_minimum_required (VERSION 3.6)
 
 project(DiligentCoreGlue CXX)
 
+set(CMAKE_CXX_STANDARD 20)
+
 include(FetchContent)
 FetchContent_Declare(
     DiligentCore
@@ -20,12 +22,19 @@ if(LINUX)
 endif()
 
 file(GLOB SOURCE_FILES *.h *.cpp ../code/Native/*.h ../code/Native/*.cpp)
-add_library(DiligentCoreGlue SHARED ${SOURCE_FILES})
+
+
+if(EMSCRIPTEN)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -s RELOCATABLE=1 -sEXPORT_ALL=1")
+    add_library(DiligentCoreGlue STATIC ${SOURCE_FILES})
+else()
+    add_library(DiligentCoreGlue SHARED ${SOURCE_FILES})
+endif()
 
 target_include_directories(DiligentCoreGlue
-PRIVATE
-    ${diligentcore_SOURCE_DIR}
-    ${CMAKE_CURRENT_SOURCE_DIR}
+    PRIVATE
+        ${diligentcore_SOURCE_DIR}
+        ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
 set(DILIGENT_LIBS 
@@ -33,8 +42,11 @@ set(DILIGENT_LIBS
     Diligent-Common
     Diligent-HLSL2GLSLConverterLib
     Diligent-GraphicsEngineOpenGL-static
-    Diligent-GraphicsEngineVk-static
 )
+
+if(!EMSCRIPTEN)
+    list(APPEND DILIGENT_LIBS Diligent-GraphicsEngineVk-static)
+endif()
 
 if(WIN32)
     list(APPEND DILIGENT_LIBS Diligent-GraphicsEngineD3D11-static Diligent-GraphicsEngineD3D12-static)
@@ -47,6 +59,16 @@ target_link_libraries(DiligentCoreGlue
 target_compile_definitions(DiligentCoreGlue PRIVATE GUID=INTERFACE_ID)
 
 set_target_properties(DiligentCoreGlue PROPERTIES OUTPUT_NAME "DiligentCore")
+if(EMSCRIPTEN)
+    target_compile_definitions(DiligentCoreGlue PRIVATE WEB=1)
+    set_target_properties(DiligentCoreGlue PROPERTIES
+        LINK_FLAGS "--whole-archive"
+    )
+    # target_compile_options(DiligentCoreGlue PRIVATE
+    #     #"-sEXPORT_ALL=1"
+    #     "-sEXPORTED_FUNCTIONS=['_diligent_core_api_ext_get_api_version']"
+    # )
+endif()
 
 if(WIN32)
     copy_required_dlls(DiligentCoreGlue)

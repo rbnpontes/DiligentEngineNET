@@ -2,11 +2,15 @@
 #include <WindowHandle.h>
 
 #ifdef PLATFORM_WIN32
-#include <EngineFactoryD3D11.h>
-#include <EngineFactoryD3D12.h>
+	#include <EngineFactoryD3D11.h>
+	#include <EngineFactoryD3D12.h>
 #endif
-#include <EngineFactoryVk.h>
+
+#ifndef PLATFORM_EMSCRIPTEN
+	#include <EngineFactoryVk.h>
+#endif
 #include <EngineFactoryOpenGL.h>
+#include <DebugOutput.h>
 
 using namespace Diligent;
 #define UNSUPPORTED_PLATFORM_MSG() \
@@ -15,6 +19,12 @@ using namespace Diligent;
 
 void utils_get_native_window(WindowHandle* window, NativeWindow& native_window)
 {
+	if(window == nullptr)
+	{
+		DebugMessageCallback(DEBUG_MESSAGE_SEVERITY_WARNING, "WindowHandle is null", __FUNCTION__, __FILE__, __LINE__);
+		return;
+	}
+
 #if PLATFORM_WIN32
 	native_window.hWnd = window->window_handle_;
 #elif PLATFORM_UNIVERSAL_WINDOWS
@@ -99,22 +109,28 @@ EXPORT void engine_factory_d3d12_create_swap_chain_d3d12(void* factory,
 #endif
 }
 
-EXPORT void engine_factory_vk_create_swap_chain_vk(IEngineFactoryVk* factory,
+EXPORT void engine_factory_vk_create_swap_chain_vk(void* factory,
 	IRenderDevice* device,
 	IDeviceContext* immediate_ctx,
 	SwapChainDesc* swap_chain_desc,
 	WindowHandle* window,
 	ISwapChain** swap_chain)
 {
+#ifndef PLATFORM_EMSCRIPTEN
+	IEngineFactoryVk* vk_factory = static_cast<IEngineFactoryVk*>(factory);
 	NativeWindow native_window;
 	utils_get_native_window(window, native_window);
 
-	factory->CreateSwapChainVk(
+	vk_factory->CreateSwapChainVk(
 		device,
 		immediate_ctx,
 		*swap_chain_desc,
 		native_window,
 		swap_chain);
+#else
+	UNSUPPORTED_PLATFORM_MSG();
+	return;
+#endif
 }
 
 EXPORT void engine_factory_open_gl_create_device_and_swap_chain_gl(IEngineFactoryOpenGL* factory,
@@ -124,6 +140,8 @@ EXPORT void engine_factory_open_gl_create_device_and_swap_chain_gl(IEngineFactor
 	SwapChainDesc* swap_chain_desc,
 	ISwapChain** swap_chain)
 {
+
+	printf("immediate contexts: %u", create_info->NumImmediateContexts);
 	EngineGLCreateInfo ci;
 	utils_get_gl_create_info(create_info, ci);
 

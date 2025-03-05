@@ -44,5 +44,13 @@ public static class ExclusionList
     {
         { "IEngineFactoryD3D11", ["PLATFORM_WIN32", "PLATFORM_UNIVERSAL_PLATFORM"] },
         { "IEngineFactoryD3D12", ["PLATFORM_WIN32", "PLATFORM_UNIVERSAL_PLATFORM"] },
+        { "IEngineFactoryVk", [
+            "PLATFORM_WIN32", 
+            "PLATFORM_UNIVERSAL_PLATFORM", 
+            "PLATFORM_ANDROID",
+            "PLATFORM_IOS",
+            "PLATFORM_MACOS",
+            "PLATFORM_TVOS"
+        ] },
     };
 }

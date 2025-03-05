@@ -7,11 +7,11 @@ namespace Diligent;
 [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 internal delegate void NativeDebugMessageCallbackDelegate(DebugMessageSeverity severity, IntPtr message, IntPtr function,
     IntPtr file, int line);
-internal abstract partial class EngineFactory : IEngineFactory
+internal abstract unsafe partial class EngineFactory : IEngineFactory
 {
-    private static DebugMessageCallbackDelegate? sCallback;
-    private static NativeDebugMessageCallbackDelegate? sNativeDelegate;
-    private static IntPtr sNativeDelegatePtr;
+    private static DebugMessageCallbackDelegate? _sCallback;
+    // private static NativeDebugMessageCallbackDelegate? sNativeDelegate;
+    // private static IntPtr sNativeDelegatePtr;
 
     
     public unsafe APIInfo APIInfo
@@ -25,11 +25,12 @@ internal abstract partial class EngineFactory : IEngineFactory
 
     internal EngineFactory(IntPtr handle) : base(handle)
     {
-        sNativeDelegate ??= NativeMessageCallbackCall;
-        sNativeDelegatePtr = Marshal.GetFunctionPointerForDelegate(sNativeDelegate);
-        Interop.engine_factory_set_message_callback(handle, sNativeDelegatePtr);
+        // sNativeDelegate ??= NativeMessageCallbackCall;
+        // sNativeDelegatePtr = Marshal.GetFunctionPointerForDelegate(sNativeDelegate);
+        // Interop.engine_factory_set_message_callback(handle, sNativeDelegatePtr);
+        InternalSetMessageCallback(handle, &NativeMessageCallbackCall);
     }
-
+    
     protected override void Release()
     {
     }
@@ -67,7 +68,7 @@ internal abstract partial class EngineFactory : IEngineFactory
 
     public void SetMessageCallback(DebugMessageCallbackDelegate? messageCallback)
     {
-        sCallback = messageCallback;
+        _sCallback = messageCallback;
     }
 
     public void SetBreakOnError(bool breakOnError)
@@ -120,17 +121,23 @@ internal abstract partial class EngineFactory : IEngineFactory
         return DiligentObjectsFactory.CreateDearchiver(dearchiverPtr);
     }
 
-    private static void NativeMessageCallbackCall(DebugMessageSeverity severity, IntPtr message, IntPtr function,
-        IntPtr file, int line)
+    private static void InternalSetMessageCallback(IntPtr handle, delegate* unmanaged[Cdecl]<int, void*, void*, void*, int, void> callbackPtr)
     {
-        if (sCallback is null)
+        Interop.engine_factory_set_message_callback(handle, new IntPtr(callbackPtr));
+    }
+    
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static void NativeMessageCallbackCall(int severity, void* message, void* function,
+        void* file, int line)
+    {
+        if (_sCallback is null)
             return;
 
-        var messageStr = Marshal.PtrToStringAnsi(message) ?? string.Empty;
-        var funcStr = Marshal.PtrToStringAnsi(function) ?? string.Empty;
-        var fileStr = Marshal.PtrToStringAnsi(file) ?? string.Empty;
+        var messageStr = Marshal.PtrToStringAnsi(new IntPtr(message)) ?? string.Empty;
+        var funcStr = Marshal.PtrToStringAnsi(new IntPtr(function)) ?? string.Empty;
+        var fileStr = Marshal.PtrToStringAnsi(new IntPtr(file)) ?? string.Empty;
 
-        sCallback(severity, messageStr, funcStr, fileStr, line);
+        _sCallback((DebugMessageSeverity)severity, messageStr, funcStr, fileStr, line);
     }
 
     protected int GetNumDeferredContexts(EngineCreateInfo createInfo)

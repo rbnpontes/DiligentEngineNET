@@ -18,6 +18,11 @@ public static class DiligentLibraryResolver
             runtimesPath = Path.Join(runtimesPath, "linux-x64");
             libraryName = "lib" + libraryName + ".so";
         }
+        else if (OperatingSystem.IsBrowser())
+        {
+            //libraryName = "lib" + libraryName;
+            return NativeLibrary.Load(libraryName);
+        }
 
         runtimesPath = Path.Join(runtimesPath, "native", libraryName);
         return NativeLibrary.Load(runtimesPath);

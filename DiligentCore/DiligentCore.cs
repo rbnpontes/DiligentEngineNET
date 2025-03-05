@@ -1,5 +1,7 @@
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using Diligent.Utils;
 
 namespace Diligent;
@@ -19,14 +21,21 @@ public static partial class DiligentCore
         [LibraryImport(Constants.LibName)]
         [UnmanagedCallConv(CallConvs = [typeof(System.Runtime.CompilerServices.CallConvCdecl)])]
         public static partial IntPtr diligent_core_get_vk_factory();
-        
+
         [LibraryImport(Constants.LibName)]
         [UnmanagedCallConv(CallConvs = [typeof(System.Runtime.CompilerServices.CallConvCdecl)])]
         public static partial IntPtr diligent_core_get_opengl_factory();
     }
 
     private static DiligentReleaseCalback sReleaseCalback;
+
     static DiligentCore()
+    {
+        if (!OperatingSystem.IsWindows())
+            SetupInternalLibrary();
+    }
+
+    private static void SetupInternalLibrary()
     {
         try
         {
@@ -39,27 +48,44 @@ public static partial class DiligentCore
             // to register a self resolver.We must skip to prevent
             // issues at Assembly loading.
         }
-        
-        // listen to diligent object destruction
-        sReleaseCalback = HandleDiligentRelease;
-        var delegatePtr = Marshal.GetFunctionPointerForDelegate(sReleaseCalback);
-        ApiExtensionsInterop.diligent_core_api_set_release_callback(delegatePtr);
+
+        SetupReleaseFunction();
     }
 
-    private static void HandleDiligentRelease(IntPtr objPtr, IntPtr refCountPtr)
+    private static unsafe void SetupReleaseFunction()
     {
+        // listen to diligent object destruction
+        ApiExtensionsInterop.SetReleaseCallback(&HandleDiligentRelease);
+    }
+
+    public static void SetupLibrary()
+    {
+        if (!OperatingSystem.IsBrowser())
+            return;
+        SetupInternalLibrary();
+    }
+
+
+    [UnmanagedCallersOnly(CallConvs =
+    [
+        typeof(CallConvCdecl)
+    ])]
+    private static unsafe void HandleDiligentRelease(void* arg0, void* arg1)
+    {
+        var objPtr = (IntPtr)arg0;
+        var refCountPtr = (IntPtr)arg1;
         var obj = NativeObjectRegistry.TryGetObject(objPtr);
         var refCount = NativeObjectRegistry.TryGetObject(refCountPtr);
-        
-        if(obj is DiligentObject targetObj)
+
+        if (obj is DiligentObject targetObj)
             targetObj.DisposeInternal();
-        if(refCount is ReferenceCounters targetRefCount)
-           targetRefCount.DisposeInternal();
-        
+        if (refCount is ReferenceCounters targetRefCount)
+            targetRefCount.DisposeInternal();
+
         NativeObjectRegistry.RemoveObject(objPtr);
         NativeObjectRegistry.RemoveObject(refCountPtr);
     }
-    
+
     public static IEngineFactoryD3D11? GetEngineFactoryD3D11()
     {
         var ptr = Interop.diligent_core_get_d3d11_factory();

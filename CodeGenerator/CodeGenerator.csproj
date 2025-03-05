@@ -10,7 +10,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="CppAst" Version="0.20.2" />
+      <PackageReference Include="CppAst" Version="0.21.1" />
       <PackageReference Include="Humanizer" Version="3.0.0-beta.54" />
     </ItemGroup>
 

@@ -14,6 +14,12 @@ namespace('build', ()=>{
     task('bindings', async () => {
         await buildTasks.buildBindings();
     });
+
+    namespace('web', ()=> {
+        task('native', async ()=> {
+            await buildTasks.buildNativeWeb();
+        });
+    });
 });
 
 namespace('generate', ()=> {
@@ -22,6 +28,12 @@ namespace('generate', ()=> {
     });
     task('bindings', async ()=> {
         await generateTasks.generateBindings();
+    });
+
+    namespace('web', ()=> {
+        task('native', async ()=> {
+            await generateTasks.generateWebNativeProject();
+        });
     });
 });
 
