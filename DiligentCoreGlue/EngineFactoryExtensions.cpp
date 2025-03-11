@@ -140,9 +140,7 @@ EXPORT void engine_factory_open_gl_create_device_and_swap_chain_gl(IEngineFactor
 	SwapChainDesc* swap_chain_desc,
 	ISwapChain** swap_chain)
 {
-
-	printf("immediate contexts: %u", create_info->NumImmediateContexts);
-	EngineGLCreateInfo ci;
+ 	EngineGLCreateInfo ci;
 	utils_get_gl_create_info(create_info, ci);
 
 	factory->CreateDeviceAndSwapChainGL(

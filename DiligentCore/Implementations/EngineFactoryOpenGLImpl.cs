@@ -37,7 +37,6 @@ internal partial class EngineFactoryOpenGL : IEngineFactoryOpenGL
         var createInfoData = EngineOpenGlCreateInfo.GetInternalStruct(createInfo);
         var openXrAttribsData = OpenXRAttribs.GetInternalStruct(createInfo.XRAttribs ?? new OpenXRAttribs());
         createInfoData.Window = new IntPtr(&windowData);
-
         if (createInfo.XRAttribs is not null)
             createInfoData.pXRAttribs = new IntPtr(&openXrAttribsData);
 
@@ -47,8 +46,6 @@ internal partial class EngineFactoryOpenGL : IEngineFactoryOpenGL
         var deviceContextPtr = IntPtr.Zero;
         var swapChainPtr = IntPtr.Zero;
 
-        var createInfoDataPtr = &createInfoData;
-        var dbgWnd = createInfoDataPtr->Window;
         Interop.engine_factory_open_gl_create_device_and_swap_chain_gl(Handle,
             new IntPtr(&createInfoData),
             new IntPtr(&renderDevicePtr),

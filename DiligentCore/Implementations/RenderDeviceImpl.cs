@@ -136,16 +136,8 @@ internal unsafe partial class RenderDevice : IRenderDevice
                 Elements = new IntPtr(shaderMacroPtr)
             };
             
-            if (createInfo.ByteCode == IntPtr.Zero)
-            {
-                createInfoData.ByteCode = new IntPtr(byteCodePtr);
-                createInfoData.ByteCodeSize = (uint)createInfo.ByteCodeData.Length;
-            }
-            else
-            {
-                createInfoData.ByteCode = createInfo.ByteCode;
-                createInfoData.ByteCodeSize = createInfo.ByteCodeSize;
-            }
+            createInfoData.ByteCode = new IntPtr(byteCodePtr);
+            createInfoData.ByteCodeSize = (uint)createInfo.ByteCodeData.Length;
 
             Interop.render_device_create_shader(Handle,
                 new IntPtr(&createInfoData),

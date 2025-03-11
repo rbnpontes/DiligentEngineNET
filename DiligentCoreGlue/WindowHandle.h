@@ -33,7 +33,7 @@ struct WindowHandle
 	 * - On Android must be a valid AWindow pointer
 	 * - On Web must be a canvas id string
 	 */
-	alignas(8) void* window_handle_;
+	void* window_handle_;
 };
 
 enum WEB_GL_POWER_PREFERENCE : uint8_t
@@ -53,7 +53,9 @@ struct WebGlContextAttribs
 };
 
 struct EngineOpenGlCreateInfo DILIGENT_DERIVE(Diligent::EngineCreateInfo)
-	alignas(8) WindowHandle* Window;
+	WindowHandle* Window;
+	WEB_DWORD_PADDING()
+	
 	Diligent::Bool ZeroToOneNDZ;
 	Diligent::ADAPTER_TYPE PreferredAdapterType;
 	WebGlContextAttribs WebGlAttribs;
