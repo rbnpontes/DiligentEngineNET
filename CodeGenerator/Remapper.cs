@@ -7,6 +7,7 @@ public static class Remapper
         { "TextureAddressMirrorOnce", "MirrorOnce" },
         { "ShaderCompileFlagSkipReflection", "SkipReflection" },
         { "LogicOpEquiv", "Equiv" },
+        { "MiscBufferFlagSparseAliasing", "SparseAliasing" },
     };
 
     public static readonly HashSet<string> Enums2Flags = new()
