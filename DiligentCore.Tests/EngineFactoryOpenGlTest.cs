@@ -29,7 +29,7 @@ public class EngineFactoryOpenGlTest
         var createInfo = new EngineOpenGlCreateInfo()
         {
             EnableValidation = true,
-            Window = WindowHandle.CreateWin32Window(window.Handle)
+            Window = WindowHandleFactory.CreateWin32Window(window.Handle)
         };
         
         var (device, context, swapChain) = factory.CreateDeviceAndSwapChain(createInfo, new SwapChainDesc());
@@ -59,7 +59,7 @@ public class EngineFactoryOpenGlTest
         var createInfo = new EngineOpenGlCreateInfo()
         {
             EnableValidation = true,
-            Window = WindowHandle.CreateWin32Window(window.Handle)
+            Window = WindowHandleFactory.CreateWin32Window(window.Handle)
         };
 
         var (device, context) = factory.AttachToActiveGLContext(createInfo);

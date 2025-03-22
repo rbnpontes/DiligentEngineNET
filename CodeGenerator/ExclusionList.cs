@@ -8,6 +8,7 @@ public static class ExclusionList
         "CreateSwapChainD3D12",
         "CreateSwapChainVk",
         "CreateDeviceAndSwapChainGL",
+        "CreateSwapChainWebGPU",
         "AttachToActiveGLContext"
     ];
 
@@ -52,5 +53,13 @@ public static class ExclusionList
             "PLATFORM_MACOS",
             "PLATFORM_TVOS"
         ] },
+        { "IEngineFactoryWebGPU", ["PLATFORM_WEB"] }
+    };
+
+    public static HashSet<string> IgnoreFromList = new()
+    {
+        "IEngineFactoryD3D11",
+        "IEngineFactoryD3D12",
+        "IEngineFactoryVk",
     };
 }

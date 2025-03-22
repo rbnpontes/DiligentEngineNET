@@ -88,6 +88,11 @@ public class CodeUtils
         
         File.WriteAllText(filePath, source);
     }
+
+    public static void WriteCode(string filePath, StringBuilder source)
+    {
+        WriteCode(filePath, source.ToString());
+    }
     
     public static void WriteCode(string path, CppBuilder builder)
     {

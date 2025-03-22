@@ -6,7 +6,9 @@
 	#include <EngineFactoryD3D12.h>
 #endif
 
-#ifndef PLATFORM_EMSCRIPTEN
+#ifdef PLATFORM_WEB
+	#include <EngineFactoryWebGPU.h>
+#else
 	#include <EngineFactoryVk.h>
 #endif
 #include <EngineFactoryOpenGL.h>
@@ -40,7 +42,7 @@ void utils_get_native_window(WindowHandle* window, NativeWindow& native_window)
 	native_window.pCALayer = window->window_handle_;
 #elif PLATFORM_ANDROID
 	native_window.pAWindow = window->window_handle_;
-#elif PLATFORM_EMSCRIPTEN
+#elif PLATFORM_WEB
 	native_window.pCanvasId = static_cast<const char*>(window->window_handle_);
 #endif
 }
@@ -162,4 +164,27 @@ EXPORT void engine_factory_open_gl_attach_to_active_glcontext(IEngineFactoryOpen
 		ci,
 		device,
 		immediate_context);
+}
+
+EXPORT void engine_factory_web_gpu_create_swap_chain_web_gpu(void* factory,
+	IRenderDevice* device,
+	IDeviceContext* immediate_ctx,
+	SwapChainDesc* swap_chain_desc,
+	WindowHandle* window,
+	ISwapChain** swap_chain)
+{
+#ifdef PLATFORM_WEB
+	NativeWindow native_window;
+	utils_get_native_window(window, native_window);
+
+	IEngineFactoryWebGPU* webgpu_factory = static_cast<IEngineFactoryWebGPU*>(factory);
+	webgpu_factory->CreateSwapChainWebGPU(
+		device,
+		immediate_ctx,
+		*swap_chain_desc,
+		native_window,
+		swap_chain);
+#else
+	UNSUPPORTED_PLATFORM_MSG();
+#endif
 }

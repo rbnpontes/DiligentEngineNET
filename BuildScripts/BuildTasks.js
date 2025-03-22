@@ -71,19 +71,29 @@ async function buildNativeWeb() {
             fs.unlinkSync(lib);
     }
 
-    function _cleanBinDir() {
-        const bin_path = path.join(build_path, 'bin');
-        if(!fs.existsSync(bin_path))
-            return;
-        
-        fs.readdirSync(bin_path).forEach(file => {
-            fs.unlinkSync(path.join(bin_path, file));
+    function _cleanPrevBuildFiles() {
+        const paths_2_clean = [
+            path.join(build_path, 'obj'),
+            path.join(build_path, 'bin'),
+        ];
+
+        paths_2_clean.forEach(x => {
+            if(!fs.existsSync(x))
+                return;
+
+            fs.readdirSync(x).forEach(file => {
+                fs.unlinkSync(path.join(x, file));
+            });
         });
     }
     function _copyArchivesToBin() {
         process.chdir(build_path);
+
+        const ignored_archives = [];
         const bin_path = path.join(build_path, 'bin');
-        const archives = fs.globSync('**/*.a').filter(x => !x.startsWith(bin_path));
+        const archives = fs.globSync('**/*.a')
+            .filter(x => !x.startsWith(bin_path))
+            .filter(x => !ignored_archives.find(y => path.basename(x).startsWith(y)));
         if(!fs.existsSync(bin_path))
             fs.mkdirSync(bin_path);
     
@@ -96,37 +106,52 @@ async function buildNativeWeb() {
     async function _mergeArchives() {
         const archives_path = path.join(build_path, 'bin');
         process.chdir(archives_path);
-        const archives = fs.globSync('*.a');
         
+        // first, we must extract all object files from all archives
+        const archives = fs.readdirSync(archives_path).filter(x => x.endsWith('.a'));
+        const processed_obj = {};
+
         while(archives.length > 0) {
             const archive = archives.pop();
-            
+            const archive_name = archive.replace('.a', '');
+
             console.log(`- Running Command: emar x ${archive}`);
             await execAsync([
                 'emar', 'x', archive
-            ].join(' '));   
+            ].join(' '));
+
+            // we must rename objects because they can have the same name
+            fs.readdirSync(archives_path).filter(x => x.endsWith('.o') && !processed_obj[x]).forEach(obj => {
+                const final_obj_name = [archive_name, obj].join('_');
+            
+                fs.renameSync(path.join(archives_path, obj), path.join(archives_path, final_obj_name));
+                processed_obj[final_obj_name] = true;
+            });
         }
 
-        console.log('- Creating Library Archive');
-        await execAsync(['emar', 'rc', 'DiligentCore.a', '*.o'].join(' '));
+        // now, we must run emar to generate the final archive
+        console.log('- Running Command: emar rcs DiligentCore.a *.o');
 
-        console.log('- Indexing Library Archive');
-        await execAsync(['emar', 's', 'DiligentCore.a'].join(' '));
+        await execAsync(['emar', 'rcs', 'DiligentCore.a', '*.o'].join(' '));
     }
 
     function _copyGeneratedLibToBuildPath() {
         const generated_lib_path = path.join(build_path, 'bin', 'DiligentCore.a');
         const target_path = path.join(build_path, 'DiligentCore.a');
 
+        if(fs.existsSync(target_path))
+            fs.unlinkSync(target_path);
+
         fs.copyFileSync(generated_lib_path, target_path);
+        fs.unlinkSync(generated_lib_path);
     }
 
-    _removePreviousBuildLib();
+    //_removePreviousBuildLib();
     await _build();
-    _cleanBinDir();
-    _copyArchivesToBin();
-    await _mergeArchives();
-    _copyGeneratedLibToBuildPath();
+    // _cleanPrevBuildFiles();
+    // _copyArchivesToBin();
+    // await _mergeArchives();
+    // _copyGeneratedLibToBuildPath();
 }
 
 async function buildBindings() {

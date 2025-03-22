@@ -1,5 +1,6 @@
 using Diligent;
 
+// Interop.exec_web_test();
 var vertexShaderCode = @"
 struct PSInput 
 { 
@@ -42,70 +43,73 @@ void main(in  PSInput  PSIn,
 }
 ";
 
-DiligentCore.SetupLibrary();
 var factory = DiligentCore.GetEngineFactoryOpenGL();
+//var factory = DiligentCore.GetEngineFactoryWebGPU();
 if (factory is null)
     throw new NullReferenceException();
-factory.SetMessageCallback((severity, message, function, file, line) =>
-{
-    Console.WriteLine($"[{severity}] {message} {function} ({file}:{line})");
-});
-
-var (device, context, swapChain) = factory.CreateDeviceAndSwapChain(
-    new EngineOpenGlCreateInfo() { Window = WindowHandleFactory.CreateBrowserWindow("#canvas") }, 
-    new SwapChainDesc()
-);
-
-IPipelineState CreatePipelineState()
-{
-    var createInfo = new GraphicsPipelineStateCreateInfo();
-    createInfo.PSODesc.Name = "Simple triangle PSO";
-    createInfo.PSODesc.PipelineType = PipelineType.Graphics;
-    createInfo.GraphicsPipeline.NumRenderTargets = 1;
-    createInfo.GraphicsPipeline.RTVFormats[0] = swapChain.Desc.ColorBufferFormat;
-    createInfo.GraphicsPipeline.DSVFormat = swapChain.Desc.DepthBufferFormat;
-    createInfo.GraphicsPipeline.PrimitiveTopology = PrimitiveTopology.TriangleList;
-    createInfo.GraphicsPipeline.RasterizerDesc.CullMode = CullMode.None;
-    createInfo.GraphicsPipeline.DepthStencilDesc.DepthEnable = false;
-
-    var shaderCi = new ShaderCreateInfo();
-    shaderCi.SourceLanguage = ShaderSourceLanguage.Hlsl;
-    shaderCi.EntryPoint = "main";
-    shaderCi.Desc.UseCombinedTextureSamplers = true;
-    
-    shaderCi.Desc.ShaderType = ShaderType.Vertex;
-    shaderCi.Desc.Name = "Triangle vertex shader";
-    shaderCi.Source = vertexShaderCode;
-    
-    using var vertexShader = device.CreateShader(shaderCi);
-
-    shaderCi.Desc.ShaderType = ShaderType.Pixel;
-    shaderCi.Desc.Name = "Triangle pixel shader";
-    shaderCi.Source = pixelShaderCode;
-    
-    using var pixelShader = device.CreateShader(shaderCi);
-    
-    createInfo.VS = vertexShader;
-    createInfo.PS = pixelShader;
-    
-    return device.CreateGraphicsPipelineState(createInfo);
-}
-
-var pipeline = CreatePipelineState();
-
-void Render()
-{
-    context.SetRenderTargets([swapChain.CurrentBackBufferRTV], swapChain.DepthBufferDSV, ResourceStateTransitionMode.Transition);
-    context.ClearRenderTarget(swapChain.CurrentBackBufferRTV, [0, 0, 0, 1.0f], ResourceStateTransitionMode.Transition);
-    context.ClearDepthStencil(swapChain.DepthBufferDSV, ClearDepthStencilFlags.ClearDepthFlag, 1.0f, 0, ResourceStateTransitionMode.Transition);
-    
-    context.SetPipelineState(pipeline);
-    
-    var drawAttrs = new DrawAttribs();
-    drawAttrs.NumVertices = 3;
-    context.Draw(drawAttrs);
-    
-    swapChain.Present();
-}
-
-Interop.SetRenderLoop(Render);
+Console.WriteLine("Gotcha!!! Engine Factory OpenGL has been created.");
+// factory.SetMessageCallback((severity, message, function, file, line) =>
+// {
+//     Console.WriteLine($"[{severity}] {message} {function} ({file}:{line})");
+// });
+//
+// // var (device, context) = factory.CreateDeviceAndContext(new EngineWebGPUCreateInfo());
+// // var swapChain = factory.CreateSwapChain(device, context, new SwapChainDesc(),
+// //     WindowHandleFactory.CreateBrowserWindow("#canvas"));
+// var (device, context, swapChain) = factory.CreateDeviceAndSwapChain(
+//     new EngineOpenGlCreateInfo() { Window = WindowHandleFactory.CreateBrowserWindow("#canvas") }, 
+//     new SwapChainDesc()
+// );
+//
+// IPipelineState CreatePipelineState()
+// {
+//     var createInfo = new GraphicsPipelineStateCreateInfo();
+//     createInfo.PSODesc.Name = "Simple triangle PSO";
+//     createInfo.PSODesc.PipelineType = PipelineType.Graphics;
+//     createInfo.GraphicsPipeline.NumRenderTargets = 1;
+//     createInfo.GraphicsPipeline.RTVFormats[0] = swapChain.Desc.ColorBufferFormat;
+//     createInfo.GraphicsPipeline.DSVFormat = swapChain.Desc.DepthBufferFormat;
+//     createInfo.GraphicsPipeline.PrimitiveTopology = PrimitiveTopology.TriangleList;
+//     createInfo.GraphicsPipeline.RasterizerDesc.CullMode = CullMode.None;
+//     createInfo.GraphicsPipeline.DepthStencilDesc.DepthEnable = false;
+//
+//     var shaderCi = new ShaderCreateInfo();
+//     shaderCi.SourceLanguage = ShaderSourceLanguage.Hlsl;
+//     shaderCi.EntryPoint = "main";
+//     shaderCi.Desc.UseCombinedTextureSamplers = true;
+//     
+//     shaderCi.Desc.ShaderType = ShaderType.Vertex;
+//     shaderCi.Desc.Name = "Triangle vertex shader";
+//     shaderCi.Source = vertexShaderCode;
+//     
+//     using var vertexShader = device.CreateShader(shaderCi);
+//
+//     shaderCi.Desc.ShaderType = ShaderType.Pixel;
+//     shaderCi.Desc.Name = "Triangle pixel shader";
+//     shaderCi.Source = pixelShaderCode;
+//     
+//     using var pixelShader = device.CreateShader(shaderCi);
+//     
+//     createInfo.VS = vertexShader;
+//     createInfo.PS = pixelShader;
+//     
+//     return device.CreateGraphicsPipelineState(createInfo);
+// }
+//
+// var pipeline = CreatePipelineState();
+// void Render()
+// {
+//     context.SetRenderTargets([swapChain.CurrentBackBufferRTV], swapChain.DepthBufferDSV, ResourceStateTransitionMode.Transition);
+//     context.ClearRenderTarget(swapChain.CurrentBackBufferRTV, [0, 0, 0, 1.0f], ResourceStateTransitionMode.Transition);
+//     context.ClearDepthStencil(swapChain.DepthBufferDSV, ClearDepthStencilFlags.ClearDepthFlag, 1.0f, 0, ResourceStateTransitionMode.Transition);
+//     
+//     context.SetPipelineState(pipeline);
+//     
+//     var drawAttrs = new DrawAttribs();
+//     drawAttrs.NumVertices = 3;
+//     context.Draw(drawAttrs);
+//     
+//     swapChain.Present();
+// }
+//
+// Interop.SetRenderLoop(Render);

@@ -3,8 +3,9 @@ const generateTasks = require('./BuildScripts/GenerateTasks');
 const testTasks = require('./BuildScripts/TestsTask');
 const packTasks = require('./BuildScripts/PackTasks');
 const ciTasks = require('./BuildScripts/CiTasks');
+const houseCleaningTasks = require('./BuildScripts/HouseCleaningTasks');
 
-namespace('build', ()=>{
+namespace('build', () => {
     task('codegen', async () => {
         await buildTasks.buildCodeGen();
     });
@@ -15,55 +16,63 @@ namespace('build', ()=>{
         await buildTasks.buildBindings();
     });
 
-    namespace('web', ()=> {
-        task('native', async ()=> {
+    namespace('web', () => {
+        task('native', async () => {
             await buildTasks.buildNativeWeb();
         });
     });
 });
 
-namespace('generate', ()=> {
-    task('native', async ()=> {
+namespace('generate', () => {
+    task('native', async () => {
         await generateTasks.generateNativeProject();
     });
-    task('bindings', async ()=> {
+    task('bindings', async () => {
         await generateTasks.generateBindings();
     });
 
-    namespace('web', ()=> {
-        task('native', async ()=> {
+    namespace('web', () => {
+        task('native', async () => {
             await generateTasks.generateWebNativeProject();
         });
     });
 });
 
-task('test', async ()=> {
+task('test', async () => {
     await testTasks.runTests();
 });
 
-namespace('ci', ()=> {
-    task('code_artifact', async ()=> {
+namespace('ci', () => {
+    task('code_artifact', async () => {
         await ciTasks.generateCodeArtifact();
     });
-    task('bin_artifact', async ()=> {
+    task('bin_artifact', async () => {
         await ciTasks.generateBinaryArtifact();
     });
-    task('win_artifact', async ()=> {
+    task('win_artifact', async () => {
         await ciTasks.generateWindowsArtifact();
     });
-    task('linux_artifact', async ()=> {
+    task('linux_artifact', async () => {
         await ciTasks.generateLinuxArtifact();
     });
-    task('tag', async ()=> {
+    task('tag', async () => {
         await ciTasks.updateLibVersion(process.env.RELEASE_TAG.replace('release/', ''));
     });
 });
 
-namespace('pack', ()=> {
-    task('create', async ()=> {
+namespace('pack', () => {
+    task('create', async () => {
         await packTasks.runPack();
     });
-    task('publish', async ()=> {
+    task('publish', async () => {
         await packTasks.runPublish();
+    });
+});
+
+namespace('housecleaning', () => {
+    namespace('web', () => {
+        task('clear', async () => {
+            await houseCleaningTasks.clearWebBinaries();
+        });
     });
 });

@@ -70,7 +70,7 @@ public class EngineFactoryVkTest
         var immediateCtx = contexts.First();
         
         var swapChain = factory.CreateSwapChain(device, immediateCtx, new SwapChainDesc(),
-            WindowHandle.CreateWin32Window(window.Handle));
+            WindowHandleFactory.CreateWin32Window(window.Handle));
 
 
 		swapChain.Dispose();

@@ -47,14 +47,20 @@ public class CppTypeUtils
     {
         return BuildFunctionName(@class, func);
     }
+
+    public static string GetFunctionVariantName(CppClass @class, CppFunction func, int idx)
+    {
+        var result = new StringBuilder();
+        result.Append(BuildFunctionName(@class, func));
+        result.Append("_v");
+        result.Append(idx);
+        return result.ToString();
+    }
     
     public static string GetFunctionVariantDeclName(CppClass @class, CppFunction func, int idx)
     {
         var result = new StringBuilder();
-        var funcName = BuildFunctionName(@class, func) + "_v" + idx;
-        result.Append(BuildFunctionName(@class, func));
-        result.Append("_v");
-        result.Append(idx);
+        result.Append(GetFunctionVariantName(@class, func, idx));
         result.Append(BuildFunctionArgs(@class, func));
         return result.ToString();
     }

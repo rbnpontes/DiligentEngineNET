@@ -14,7 +14,7 @@ public class SwapChainTest
         using var factory = DiligentCore.GetEngineFactoryD3D11();
         (var device, var contexts) = factory.CreateDeviceAndContexts(new EngineD3D11CreateInfo());
         var swapChain = factory.CreateSwapChain(device, contexts[0], new SwapChainDesc(),
-            new FullScreenModeDesc(), WindowHandle.CreateWin32Window(window.Handle));
+            new FullScreenModeDesc(), WindowHandleFactory.CreateWin32Window(window.Handle));
 
         swapChain.Present();
 
@@ -33,7 +33,7 @@ public class SwapChainTest
         using var factory = DiligentCore.GetEngineFactoryD3D11();
         (var device, var contexts) = factory.CreateDeviceAndContexts(new EngineD3D11CreateInfo());
         var swapChain = factory.CreateSwapChain(device, contexts[0], new SwapChainDesc(),
-            new FullScreenModeDesc(), WindowHandle.CreateWin32Window(window.Handle));
+            new FullScreenModeDesc(), WindowHandleFactory.CreateWin32Window(window.Handle));
 
         swapChain.Resize(100, 100);
 
@@ -50,7 +50,7 @@ public class SwapChainTest
         using var factory = DiligentCore.GetEngineFactoryD3D11();
         (var device, var contexts) = factory.CreateDeviceAndContexts(new EngineD3D11CreateInfo());
         var swapChain = factory.CreateSwapChain(device, contexts[0], new SwapChainDesc(),
-            new FullScreenModeDesc(), WindowHandle.CreateWin32Window(window.Handle));
+            new FullScreenModeDesc(), WindowHandleFactory.CreateWin32Window(window.Handle));
 
         var displayMode = factory.EnumerateDisplayModes(new Version(11, 0), 0, 0, TextureFormat.Rgba8Unorm)
             .First();
@@ -68,7 +68,7 @@ public class SwapChainTest
         using var factory = DiligentCore.GetEngineFactoryD3D11();
         (var device, var contexts) = factory.CreateDeviceAndContexts(new EngineD3D11CreateInfo());
         var swapChain = factory.CreateSwapChain(device, contexts[0], new SwapChainDesc(),
-            new FullScreenModeDesc(), WindowHandle.CreateWin32Window(window.Handle));
+            new FullScreenModeDesc(), WindowHandleFactory.CreateWin32Window(window.Handle));
 
         swapChain.SetWindowedMode();
 
@@ -85,7 +85,7 @@ public class SwapChainTest
         using var factory = DiligentCore.GetEngineFactoryD3D11();
         (var device, var contexts) = factory.CreateDeviceAndContexts(new EngineD3D11CreateInfo());
         var swapChain = factory.CreateSwapChain(device, contexts[0], new SwapChainDesc(),
-            new FullScreenModeDesc(), WindowHandle.CreateWin32Window(window.Handle));
+            new FullScreenModeDesc(), WindowHandleFactory.CreateWin32Window(window.Handle));
 
         swapChain.SetMaximumFrameLatency(30);
 
@@ -102,7 +102,7 @@ public class SwapChainTest
         using var factory = DiligentCore.GetEngineFactoryD3D11();
         (var device, var contexts) = factory.CreateDeviceAndContexts(new EngineD3D11CreateInfo());
         var swapChain = factory.CreateSwapChain(device, contexts[0], new SwapChainDesc(),
-            new FullScreenModeDesc(), WindowHandle.CreateWin32Window(window.Handle));
+            new FullScreenModeDesc(), WindowHandleFactory.CreateWin32Window(window.Handle));
 
         var desc = swapChain.Desc;
         var windowSize = window.Size;
@@ -122,7 +122,7 @@ public class SwapChainTest
         using var factory = DiligentCore.GetEngineFactoryD3D11();
         (var device, var contexts) = factory.CreateDeviceAndContexts(new EngineD3D11CreateInfo());
         var swapChain = factory.CreateSwapChain(device, contexts[0], new SwapChainDesc(),
-            new FullScreenModeDesc(), WindowHandle.CreateWin32Window(window.Handle));
+            new FullScreenModeDesc(), WindowHandleFactory.CreateWin32Window(window.Handle));
 
         Assert.That(swapChain.CurrentBackBufferRTV, Is.Not.Null);
 
@@ -139,7 +139,7 @@ public class SwapChainTest
         using var factory = DiligentCore.GetEngineFactoryD3D11();
         (var device, var contexts) = factory.CreateDeviceAndContexts(new EngineD3D11CreateInfo());
         var swapChain = factory.CreateSwapChain(device, contexts[0], new SwapChainDesc(),
-            new FullScreenModeDesc(), WindowHandle.CreateWin32Window(window.Handle));
+            new FullScreenModeDesc(), WindowHandleFactory.CreateWin32Window(window.Handle));
 
         Assert.That(swapChain.DepthBufferDSV, Is.Not.Null);
 

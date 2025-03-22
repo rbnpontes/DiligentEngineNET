@@ -406,3 +406,4 @@ _deps
 code
 package-lock.json
 node_modules
+DiligentCore.WebTest/wwwroot/libDiligentCore.*

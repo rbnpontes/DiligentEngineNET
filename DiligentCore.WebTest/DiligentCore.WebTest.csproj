@@ -1,20 +1,21 @@
 <!--<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">-->
 <Project Sdk="Microsoft.NET.Sdk.WebAssembly">
-  <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <OutputPath>$(SolutionDir)/net-build/WebTest</OutputPath>
-    <RunAOTCompilation>true</RunAOTCompilation>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <WasmNativeDebugSymbols>true</WasmNativeDebugSymbols>
-    <WasmNativeStrip>false</WasmNativeStrip>
-    <WasmAppDir>./wwwroot</WasmAppDir>
-    <EmccExtraLDFlags>$(EmccExtraLDFlags) -s USE_WEBGL2=1 -s MIN_WEBGL_VERSION=2</EmccExtraLDFlags>
-  </PropertyGroup>
-  <ItemGroup>
-    <NativeFileReference Include="$(SolutionDir)\glue-build\web\bin\DiligentCore.a"/>
-<!--    <NativeFileReference Include="$(SolutionDir)\glue-build\web\bin\*.wasm"/>-->
-    <ProjectReference Include="..\DiligentCore\DiligentCore.csproj" />
-  </ItemGroup>
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <OutputPath>$(SolutionDir)/net-build/WebTest</OutputPath>
+        <RunAOTCompilation>true</RunAOTCompilation>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <WasmAppDir>./wwwroot</WasmAppDir>
+    </PropertyGroup>
+    <ItemGroup>
+        <WasmExtraFilesToDeploy Include="$(SolutionDir)\glue-build\web\bin\libDiligentCore.*"/>
+        <ProjectReference Include="..\DiligentCore\DiligentCore.csproj"/>
+    </ItemGroup>
+
+<!-- Idk why, but it seems WasmExtraFileToDeploy stops to work-->
+    <Target Name="CopyDiligentLib" BeforeTargets="Build">
+        <Copy SourceFiles="@(WasmExtraFilesToDeploy)" DestinationFolder="$(SolutionDir)\DiligentCore.WebTest\wwwroot\" />
+    </Target>
 </Project>

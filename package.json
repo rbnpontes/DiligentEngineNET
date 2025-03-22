@@ -18,7 +18,8 @@
     "ci:bin_artifact": "jake ci:bin_artifact",
     "ci:win_artifact": "jake ci:win_artifact",
     "ci:linux_artifact": "jake ci:linux_artifact",
-    "ci:tag": "jake ci:tag"
+    "ci:tag": "jake ci:tag",
+    "housecleaning:web:clear": "jake housecleaning:web:clear"
   },
   "keywords": [],
   "author": "",

@@ -6,10 +6,7 @@ internal partial class DiligentObject : NativeObject, IDiligentObject
 {
     public bool IsDisposed { get; private set; }
 
-    public IReferenceCounters ReferenceCounters => DiligentObjectsFactory.CreateReferenceCounters(
-        Interop.object_get_reference_counters(Handle),
-        this);
-
+    public IReferenceCounters ReferenceCounters => GetOrCreateReferenceCounters();
     protected DiligentObject() : base(IntPtr.Zero)
     {
         throw new NotSupportedException("Constructor without parameters isn't supported.");
@@ -60,21 +57,37 @@ internal partial class DiligentObject : NativeObject, IDiligentObject
 
     protected virtual int AddRef()
     {
-        return Interop.object_add_ref(Handle);
+        return PlatformUtils.IsWasm ? AddRefWeb() : AddRefDefault();
+
+        int AddRefDefault() => Interop.object_add_ref(Handle);
+        int AddRefWeb() => WebInterop.object_add_ref(Handle);
     }
     
     protected virtual void Release()
     {
-        Interop.object_release(InternalHandle);
+        if(PlatformUtils.IsWasm)
+            ReleaseWeb();
+        else
+            ReleaseDefault();
+        return;
+        
+        void ReleaseDefault() => Interop.object_release(InternalHandle);
+        void ReleaseWeb() => WebInterop.object_release(InternalHandle);
+    }
+
+    private IReferenceCounters GetOrCreateReferenceCounters()
+    {
+        var ptr = PlatformUtils.IsWasm 
+            ? WebInterop.object_get_reference_counters(Handle) 
+            : Interop.object_get_reference_counters(Handle);
+        return DiligentObjectsFactory.CreateReferenceCounters(ptr, this);
     }
 }
 
 public class UnknownObject : NativeObject, IDiligentObject
 {
      public bool IsDisposed { get; private set; }
-     public IReferenceCounters ReferenceCounters => DiligentObjectsFactory.CreateReferenceCounters(
-         DiligentObject.Interop.object_get_reference_counters(Handle),
-         this);
+     public IReferenceCounters ReferenceCounters => GetOrCreateReferenceCounters();
 
      internal UnknownObject(IntPtr handle) : base(handle)
      {
@@ -95,4 +108,11 @@ public class UnknownObject : NativeObject, IDiligentObject
          IsDisposed = true;
      }
 
+     private IReferenceCounters GetOrCreateReferenceCounters()
+     {
+         var ptr = PlatformUtils.IsWasm 
+             ? DiligentObject.WebInterop.object_get_reference_counters(Handle) 
+             : DiligentObject.Interop.object_get_reference_counters(Handle);
+         return DiligentObjectsFactory.CreateReferenceCounters(ptr, this);
+     }
 }

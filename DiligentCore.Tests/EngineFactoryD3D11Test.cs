@@ -83,7 +83,7 @@ public class EngineFactoryD3D11Test
             deviceContexts[0],
             new SwapChainDesc(),
             new FullScreenModeDesc(),
-            WindowHandle.CreateWin32Window(window.Handle));
+            WindowHandleFactory.CreateWin32Window(window.Handle));
         
         Assert.That(swapChain, Is.Not.Null);
         

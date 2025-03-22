@@ -33,6 +33,7 @@ var compilation = CppParser.ParseFiles([
     Path.Combine(diligentCorePath, "Graphics/GraphicsEngineD3D12/interface/EngineFactoryD3D12.h"),
     Path.Combine(diligentCorePath, "Graphics/GraphicsEngineVulkan/interface/EngineFactoryVk.h"),
     Path.Combine(diligentCorePath, "Graphics/GraphicsEngineOpenGL/interface/EngineFactoryOpenGL.h"),
+    Path.Combine(diligentCorePath, "Graphics/GraphicsEngineWebGPU/interface/EngineFactoryWebGPU.h"),
 ], parserOptions);
 
 if (compilation.HasErrors)
@@ -40,7 +41,9 @@ if (compilation.HasErrors)
 
 ICodeGenerator[] generators = [
     new CppCodeGenerator(diligentCorePath, outDir, compilation),
-    new CSharpCodeGenerator(diligentCorePath, outDir, compilation)
+    new CSharpCodeGenerator(diligentCorePath, outDir, compilation),
+    new WebInteropGenerator(outDir, compilation),
+    new FunctionListGenerator(outDir, compilation),
 ];
 
 foreach (var generator in generators)

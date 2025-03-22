@@ -4,7 +4,9 @@
 	#include <EngineFactoryD3D12.h>
 #endif
 
-#ifndef PLATFORM_EMSCRIPTEN
+#ifdef PLATFORM_WEB
+	#include <EngineFactoryWebGPU.h>
+#else
 	#include <EngineFactoryVk.h>
 #endif
 
@@ -31,7 +33,7 @@ EXPORT void* diligent_core_get_d3d12_factory()
 
 EXPORT void* diligent_core_get_vk_factory()
 {
-#ifdef PLATFORM_EMSCRIPTEN
+#ifdef PLATFORM_WEB
 	return nullptr;
 #else
 	return GetEngineFactoryVk();
@@ -41,4 +43,13 @@ EXPORT void* diligent_core_get_vk_factory()
 EXPORT void* diligent_core_get_opengl_factory()
 {
 	return GetEngineFactoryOpenGL();
+}
+
+EXPORT void* diligent_core_get_webgpu_factory()
+{
+#ifdef PLATFORM_WEB
+	return GetEngineFactoryWebGPU();
+#else
+	return nullptr;
+#endif
 }

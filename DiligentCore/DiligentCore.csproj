@@ -26,6 +26,9 @@
         <Compile Include="..\code\NET\*.cs">
             <Link>Bindings\%(Filename)%(Extension)</Link>
         </Compile>
+        <Compile Include="..\code\NET\WebInterop\*.cs">
+            <Link>Bindings\WebInterop\%(Filename)%(Extension)</Link>
+        </Compile>
         <Content Include="$(SolutionDir)\glue-build\win32\bin\$(Configuration)\DiligentCore.dll"
                  Condition="Exists('$(SolutionDir)\glue-build\win32\bin\$(Configuration)\DiligentCore.dll')">
             <Pack>true</Pack>
@@ -67,12 +70,11 @@
             <PackagePath>runtimes/linux-x64/native/libDiligentCore.so</PackagePath>
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
-<!--        <Content Include="C:\Users\rbnpo\Documents\Projects\DiligentEngineNET\\glue-build\web\libDiligentCore.a">-->
+<!--        <Content Include="$(SolutionDir)\glue-build\web\DiligentCore.a">-->
 <!--            <Pack>true</Pack>-->
-<!--            <PackagePath>runtimes/browser-wasm/native/libDiligentCore.a</PackagePath>-->
+<!--            <PackagePath>runtimes/browser-wasm/native/DiligentCore.a</PackagePath>-->
 <!--            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>-->
-<!--            <Link>libDiligentCore.a</Link>-->
+<!--            <Link>DiligentCore.a</Link>-->
 <!--        </Content>-->
-        <NativeFileReference Include="$(SolutionDir)\glue-build\web\*.a"/>
     </ItemGroup>
 </Project>
