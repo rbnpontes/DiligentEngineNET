@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using Diligent;
 using Version = Diligent.Version;
 

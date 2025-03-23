@@ -66,7 +66,7 @@ internal class EngineFactoryOpenGLWebImpl(IntPtr handle) : IEngineFactoryOpenGlI
             swapChainPtr
         );
 
-        var result = stackalloc uint[3];
+        var result = stackalloc nint[3];
         WebInteropUtils.CopyToManaged(outputArgs.Handle, result, outputArgs.Size);
 
         return (
@@ -76,13 +76,31 @@ internal class EngineFactoryOpenGLWebImpl(IntPtr handle) : IEngineFactoryOpenGlI
         );
     }
 
-    public IHLSL2GLSLConverter CreateHlsl2GLSLConverter()
+    public unsafe IHLSL2GLSLConverter CreateHlsl2GLSLConverter()
     {
-        throw new NotImplementedException();
+        var resultPtr = nint.Zero;
+        var buffer = WebScratchBuffer.Require(sizeof(nint));
+        EngineFactoryOpenGL.WebInterop.engine_factory_open_gl_create_hlsl2glslconverter(handle, buffer);
+        WebInteropUtils.CopyToManaged(buffer, &resultPtr, (uint)sizeof(nint));
+        return DiligentObjectsFactory.CreateHlsl2GlslConverter(resultPtr);
     }
 
-    public (IRenderDevice, IDeviceContext) AttachToActiveGLContext(EngineOpenGlCreateInfo createInfo)
+    public unsafe (IRenderDevice, IDeviceContext) AttachToActiveGLContext(EngineOpenGlCreateInfo createInfo)
     {
-        throw new NotImplementedException();
+        var (createInfoPtr, _) = BuildCreateInfoAndSwapChainDescData(createInfo, new SwapChainDesc());
+        using var outputArgs = new WebMemory(sizeof(nint) * 2);
+        
+        EngineFactoryOpenGL.WebInterop.engine_factory_open_gl_attach_to_active_glcontext(
+            handle,
+            createInfoPtr,
+            outputArgs.Handle,
+            outputArgs.Handle + sizeof(nint));
+        var result = stackalloc nint[2];
+        WebInteropUtils.CopyToManaged(outputArgs.Handle, result, outputArgs.Size);
+
+        return (
+            DiligentObjectsFactory.CreateRenderDevice(result[0]),
+            DiligentObjectsFactory.CreateDeviceContext(result[1])
+        );
     }
 }
