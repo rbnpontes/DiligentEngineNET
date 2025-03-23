@@ -1,6 +1,6 @@
 function module_extensions_setup(module) {
     const delegate_tbl = {};
-    const obj_id = [];
+    const obj_list = [];
 
     function memory_copy_net_2_diligent(mem_ptr, net_buffer, size) {
         const ptr_idx = mem_ptr >> 0;
@@ -17,7 +17,7 @@ function module_extensions_setup(module) {
          * @type {Uint8Array}
          */
         const buffer = module.HEAPU8.subarray(ptr_idx, ptr_idx + size);
-        buffer.set(net_buffer, 0);
+        net_buffer.set(buffer, 0);
     }
 
     function delegate_register(delegate, signature) {
@@ -58,30 +58,30 @@ function module_extensions_setup(module) {
     }
 
     function object_list__push(obj) {
-        obj_id.push(obj);
-        return obj_id.length - 1;
+        obj_list.push(obj);
+        return obj_list.length - 1;
     }
 
-    function object_list__get(obj_id) {
-        return obj_id[obj_id];
+    function object_list__get(obj_idx) {
+        return obj_list[obj_idx];
     }
 
-    function object_list__free(obj_id) {
-        if(!obj_id[obj_id])
+    function object_list__free(obj_idx) {
+        if(!obj_list[obj_idx])
             return;
-        obj_id.splice(obj_id, 1);
+        obj_list.splice(obj_idx, 1);
     }
 
-    function object_list__array_get(obj_id, idx) {
-        if(!obj_id[obj_id])
+    function object_list__array_get(obj_idx, idx) {
+        if(!obj_list[obj_idx])
             return;
-        return obj_id[obj_id][idx];
+        return obj_list[obj_idx][idx];
     }
 
-    function object_list__array_set(obj_id, idx, value) {
-        if(!obj_id[obj_id])
+    function object_list__array_set(obj_idx, idx, value) {
+        if(!obj_list[obj_idx])
             return;
-        obj_id[obj_id][idx] = value;
+        obj_list[obj_idx][idx] = value;
     }
 
     const calls = {

@@ -5,9 +5,11 @@ namespace Diligent.Utils;
 internal class WebMemory : IDisposable
 {
     public IntPtr Handle { get; private set; }
+    public uint Size { get; private set; }
     
     public WebMemory(uint size)
     {
+        Size = size;
         var isWasm = OperatingSystem.IsBrowser() || OperatingSystem.IsWasi();
         if(!isWasm)
             throw new PlatformNotSupportedException("WebMemory is supported on Web Assembly only");
@@ -18,7 +20,7 @@ internal class WebMemory : IDisposable
 
     public WebMemory(int size) : this((uint)size){}
     
-    public void Dispose()
+    public virtual void Dispose()
     {
         WebInteropUtils.MemoryFree(Handle);
     }

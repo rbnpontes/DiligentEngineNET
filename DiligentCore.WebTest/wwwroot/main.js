@@ -22,10 +22,6 @@ const { setModuleImports, runMain, ...instance } = await dotnet
 const diligentModuleMemory = [];
 setModuleImports("libDiligentCore.js", {
     ...diligentModule,
-    memcpy: (src, dst, size)=> {
-        if(sizeof === 0)
-            return;
-    }
 });
 runMain();
 

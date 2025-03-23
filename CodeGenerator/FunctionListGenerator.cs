@@ -6,7 +6,7 @@ namespace CodeGenerator;
 public class FunctionListGenerator(string outputBaseDir, CppCompilation compilation): ICodeGenerator
 {
     private readonly string _outputDir = Path.Combine(outputBaseDir, "Native");
-    private readonly List<string> _functionsList = ["exec_web_test", "malloc", "free", "memset"];
+    private readonly List<string> _functionsList = ["malloc", "free", "memset"];
     public void Setup()
     {
         if(!Directory.Exists(_outputDir))

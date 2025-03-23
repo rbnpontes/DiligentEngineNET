@@ -8,12 +8,12 @@ internal class BrowserWindowHandle : WindowHandle
 
     public BrowserWindowHandle(string canvasId)
     {
-        _canvasIdPtr = Marshal.StringToHGlobalAnsi(canvasId);
+        _canvasIdPtr = WebInteropUtils.AllocString(canvasId);
         UpdateInternalWindowHandle(_canvasIdPtr);
     }
     
     ~BrowserWindowHandle()
     {
-        Marshal.FreeHGlobal(_canvasIdPtr);
+        WebInteropUtils.MemoryFree(_canvasIdPtr);
     }
 }

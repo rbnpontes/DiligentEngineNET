@@ -67,7 +67,7 @@ internal static partial class WebInteropUtils
 
     public static void CopyToManaged(IntPtr diligentPtr, Span<byte> data, uint size)
     {
-	    MemoryCopyNet2Diligent(diligentPtr, data, (int)size);
+	    MemoryCopyDiligent2Net(diligentPtr, data, (int)size);
     }
 
     public static unsafe void CopyToManaged(IntPtr diligentPtr, void* data, uint size)

@@ -19,9 +19,7 @@ public static partial class DiligentCore
     {
         if (!PlatformUtils.IsWasm)
             SetupInternalLibrary();
-        
-        if(!PlatformUtils.IsWasm)
-            SetupReleaseFunction();
+        SetupReleaseFunction();
     }
 
     private static void SetupInternalLibrary()
@@ -39,21 +37,15 @@ public static partial class DiligentCore
         }
     }
 
-    private static unsafe void SetupReleaseFunction()
+    private static void SetupReleaseFunction()
     {
         // listen to diligent object destruction
-        ApiExtensionsInterop.SetReleaseCallback(&HandleDiligentRelease);
+        ApiExtensionsInterop.GetInstance().SetReleaseCallback(HandleDiligentRelease);
     }
 
 
-    [UnmanagedCallersOnly(CallConvs =
-    [
-        typeof(CallConvCdecl)
-    ])]
-    private static unsafe void HandleDiligentRelease(void* arg0, void* arg1)
+    private static unsafe void HandleDiligentRelease(nint objPtr, nint refCountPtr)
     {
-        var objPtr = (IntPtr)arg0;
-        var refCountPtr = (IntPtr)arg1;
         var obj = NativeObjectRegistry.TryGetObject(objPtr);
         var refCount = NativeObjectRegistry.TryGetObject(refCountPtr);
 

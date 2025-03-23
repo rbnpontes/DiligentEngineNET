@@ -1,4 +1,5 @@
 using Diligent;
+using Version = Diligent.Version;
 
 // Interop.exec_web_test();
 var vertexShaderCode = @"
@@ -47,19 +48,32 @@ var factory = DiligentCore.GetEngineFactoryOpenGL();
 //var factory = DiligentCore.GetEngineFactoryWebGPU();
 if (factory is null)
     throw new NullReferenceException();
-Console.WriteLine("Gotcha!!! Engine Factory OpenGL has been created.");
-// factory.SetMessageCallback((severity, message, function, file, line) =>
-// {
-//     Console.WriteLine($"[{severity}] {message} {function} ({file}:{line})");
-// });
+
+var adapters = factory.EnumerateAdapters(new Version(11, 0));
+Console.WriteLine($"Found {adapters.Count()} adapters");
+foreach (var adapter in adapters)
+{
+    var vendor = adapter.Vendor;
+    var adapterType = adapter.Type;
+    Console.WriteLine($"Description: {adapter.Description}");
+    Console.WriteLine($"Vendor: {Enum.GetName(typeof(AdapterVendor), vendor)}");
+    Console.WriteLine($"Type: {Enum.GetName(typeof(AdapterType), adapterType)}");
+}
+factory.SetMessageCallback((severity, message, function, file, line) =>
+{
+    Console.WriteLine($"[{severity}] {message} {function} ({file}:{line})");
+});
 //
 // // var (device, context) = factory.CreateDeviceAndContext(new EngineWebGPUCreateInfo());
 // // var swapChain = factory.CreateSwapChain(device, context, new SwapChainDesc(),
 // //     WindowHandleFactory.CreateBrowserWindow("#canvas"));
-// var (device, context, swapChain) = factory.CreateDeviceAndSwapChain(
-//     new EngineOpenGlCreateInfo() { Window = WindowHandleFactory.CreateBrowserWindow("#canvas") }, 
-//     new SwapChainDesc()
-// );
+var (device, context, swapChain) = factory.CreateDeviceAndSwapChain(
+    new EngineOpenGlCreateInfo() { Window = WindowHandleFactory.CreateBrowserWindow("#canvas") }, 
+    new SwapChainDesc()
+);
+
+Console.WriteLine($"Created device: {device}");
+
 //
 // IPipelineState CreatePipelineState()
 // {
