@@ -1,61 +1,42 @@
+using Diligent.Platforms.Default;
+using Diligent.Platforms.Default.Web;
+using Diligent.Utils;
+
 namespace Diligent;
 
 internal partial class SwapChain : ISwapChain
 {
-    public unsafe SwapChainDesc Desc
-    {
-        get
-        {
-            var swapChainDescPtr = (SwapChainDesc.__Internal*)Interop.swap_chain_get_desc(Handle).ToPointer();
-            return SwapChainDesc.FromInternalStruct(*swapChainDescPtr);
-        }
-    }
+    private ISwapChainImpl _impl;
+    public SwapChainDesc Desc => _impl.GetDesc();
 
-    public ITextureView CurrentBackBufferRTV
-    {
-        get
-        {
-            var ptr = Interop.swap_chain_get_current_back_buffer_rtv(Handle);
-            return NativeObjectRegistry.GetOrCreate(() => new UnDisposableTextureView(ptr), ptr);
-        }
-    }
+    public ITextureView CurrentBackBufferRTV => _impl.GetCurrentBackBufferRTV();
 
-    public ITextureView DepthBufferDSV
-    {
-        get
-        {
-            var ptr = Interop.swap_chain_get_depth_buffer_dsv(Handle);
-            return NativeObjectRegistry.GetOrCreate(() => new UnDisposableTextureView(ptr), ptr);
-        }
-    }
+    public ITextureView DepthBufferDSV => _impl.GetDepthBufferDSV();
     
     internal SwapChain(IntPtr handle) : base(handle)
     {
+        if(PlatformUtils.IsWasm)
+            _impl = new SwapChainWebImpl(handle);
+        else
+            _impl = new SwapChainDefaultImpl(handle);
     }
 
-    public void Present(uint syncInterval = 1)
+    protected override void Release()
     {
-        Interop.swap_chain_present(Handle, syncInterval);
+        _impl = new SwapChainDisposedImpl();
+        base.Release();
     }
+
+    public void Present(uint syncInterval = 1) => _impl.Present(syncInterval);
 
     public void Resize(uint newWidth, uint newHeight, SurfaceTransform newTransform)
-    {
-        Interop.swap_chain_resize(Handle, newWidth, newHeight, newTransform);
-    }
+        => _impl.Resize(newWidth, newHeight, newTransform);
 
     public unsafe void SetFullscreenMode(DisplayModeAttribs displayMode)
-    {
-        var displayModeData = DisplayModeAttribs.GetInternalStruct(displayMode);
-        Interop.swap_chain_set_fullscreen_mode(Handle, new IntPtr(&displayModeData));
-    }
-
-    public void SetWindowedMode()
-    {
-        Interop.swap_chain_set_windowed_mode(Handle);
-    }
+        => _impl.SetFullscreenMode(displayMode);
     
-    public void SetMaximumFrameLatency(uint maxLatency)
-    {
-        Interop.swap_chain_set_maximum_frame_latency(Handle, maxLatency);
-    }
+    public void SetWindowedMode() => _impl.SetWindowedMode();
+    
+    public void SetMaximumFrameLatency(uint maxLatency) 
+        => _impl.SetMaximumFrameLatency(maxLatency);
 }
